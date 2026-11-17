@@ -101,8 +101,11 @@ zimage: {
 | **MOSS-Image** | 5B | Euler + Simple，50 步，CFG 3 | Apache-2.0 |
 | **SDXL / Pony / Illustrious** | 6–7B | DPM++ 2M SDE + Karras，20–30 步 | 见各模型 |
 
-加一个新架构要改四处：`_classify`（识别）、`_modules_for`（依赖文件）、`build_graph`（节点图）、`ALLOWED_ARCHS`（白名单）。
-第四处最容易漏——漏了 arch 会被静默改写，然后以错误的编码器报一个看不懂的维度错。
+加一个新架构要改七处：后端四处（`_classify` 识别、`_modules_for` 依赖、`build_graph` 节点图、`ALLOWED_ARCHS` 白名单），
+前端三处（`MODEL_PROFILES`、`SAMPLER_SETS`、`archForModel`）。
+
+白名单那处最容易漏——漏了不会报"未知架构"，而是把 arch 静默换成上一个用过的，
+再以错误的编码器报一个看不懂的维度错。完整步骤见 [`skill.md`](skill.md) 第六节。
 
 ---
 
