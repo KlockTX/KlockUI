@@ -27,7 +27,12 @@ if not exist "%PY%" (
 netstat -ano | findstr ":8188" | findstr "LISTENING" >nul
 if errorlevel 1 (
   echo Starting ComfyUI engine, first launch may take 15-30 seconds...
-  start "ComfyEngine" /min /D "%ENGINE%" "%ENGINE%\run_comfy.bat"
+  if exist "%ENGINE%\run_comfy.bat" (
+    start "ComfyEngine" /min /D "%ENGINE%" "%ENGINE%\run_comfy.bat"
+  ) else (
+    rem Plain ComfyUI clone has no run_comfy.bat; start main.py with sane defaults.
+    start "ComfyEngine" /min /D "%ENGINE%" "%PY%" "%ENGINE%\main.py" --listen 127.0.0.1 --port 8188 --lowvram --cache-ram 2 --preview-method auto
+  )
 )
 
 netstat -ano | findstr ":7861" | findstr "LISTENING" >nul
