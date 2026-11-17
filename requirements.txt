@@ -1,0 +1,13 @@
+# KlockUI 运行依赖
+#
+# 说明：
+#   torch 不在这里声明——它必须和 ComfyUI 用同一份 venv，由 ComfyUI 的安装步骤决定
+#   版本（cu126 / cu130 取决于显卡）。在这里写死版本会和 ComfyUI 打架。
+#
+#   图反推（WD14）是可选的：不装 onnxruntime 时该功能自动隐藏，不影响出图。
+
+Pillow>=10.0
+
+# 可选：WD14 图反推。不需要「拖图反推标签」功能可以注释掉。
+onnxruntime>=1.17
+numpy>=1.24

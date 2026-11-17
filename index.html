@@ -1,0 +1,1117 @@
+<!doctype html>
+<html lang="zh-CN" class="mdui-theme-auto">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="color-scheme" content="light dark">
+<meta name="theme-color" content="#F5F8FA">
+<title>KlockUI · 本地画室</title>
+<script>
+  /* 在样式生效前定好主题，避免深色模式首屏闪白。 */
+  (() => {
+    try {
+      const theme = localStorage.getItem("simplegen.theme.v1") || "auto";
+      const dark = theme === "dark" || (theme !== "light" && matchMedia("(prefers-color-scheme: dark)").matches);
+      if (theme !== "auto") document.documentElement.className = dark ? "mdui-theme-dark" : "mdui-theme-light";
+      else if (dark) document.documentElement.className = "mdui-theme-dark";
+    } catch { /* ignore */ }
+  })();
+</script>
+<link rel="icon" href="/assets/favicon.svg" type="image/svg+xml">
+<link rel="alternate icon" href="/assets/klockui.ico" sizes="any">
+<link rel="stylesheet" href="/vendor/mdui.css">
+<link rel="stylesheet" href="/assets/app.css?v=20261118drop2">
+</head>
+<body data-mode="txt2img">
+<a class="skip-link" href="#promptCard">跳到画面描述</a>
+<noscript><div style="padding:14px;text-align:center;background:#b3261e;color:#fff">需要启用 JavaScript 才能使用 KlockUI。</div></noscript>
+
+<header class="appbar">
+  <div class="appbar-inner">
+    <a class="brand" href="/" aria-label="KlockUI 首页">
+      <span class="brand-mark" aria-hidden="true">
+        <svg viewBox="0 0 24 24" fill="none">
+          <path d="M7.1 4.2v15.6" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/>
+          <path d="M18.1 4.6 8.9 12l9.2 7.4" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </span>
+      <span class="brand-text">
+        <strong>KlockUI</strong>
+        <small>LOCAL · SDXL STUDIO</small>
+      </span>
+    </a>
+    <span class="appbar-spacer"></span>
+    <div class="model-picker" id="modelPicker">
+      <button id="status" class="status-chip model-chip is-checking" type="button" aria-haspopup="menu" aria-expanded="false" aria-controls="modelMenu" title="切换模型">
+        <span class="status-dot" aria-hidden="true"></span>
+        <span class="model-chip-kicker" aria-hidden="true">模型</span>
+        <span id="statusText" class="sr-only">检查引擎</span>
+        <span id="statusShort" class="sr-only">检查</span>
+        <span id="statusModel" class="status-model">读取中…</span>
+        <span class="model-chip-caret" aria-hidden="true"><span class="icon" data-icon="chevron"></span></span>
+      </button>
+      <div class="model-menu" id="modelMenu" role="menu" aria-label="切换模型">
+        <div class="model-menu-head">
+          <span class="model-menu-mark" aria-hidden="true"><span class="icon" data-icon="layers"></span></span>
+          <div class="model-menu-title"><strong>切换模型</strong><span id="modelMenuCount">读取中…</span></div>
+          <button class="model-menu-refresh" id="modelMenuRefresh" type="button" aria-label="刷新模型列表" title="刷新模型列表"><span class="icon" data-icon="refresh"></span></button>
+        </div>
+        <div class="model-options" id="modelOptions" role="group" aria-label="可用模型"></div>
+        <button class="model-menu-status" id="modelMenuStatus" type="button" title="点击重新检查引擎">
+          <span class="status-dot" aria-hidden="true"></span>
+          <span id="modelMenuStatusText">检查引擎中…</span>
+          <span class="model-menu-status-action">重新检查</span>
+        </button>
+        <div class="model-block" id="modelBlock">
+          <div class="field-head">
+            <span>当前模型推荐</span>
+            <span id="modelHint" class="side-card-meta">读取中…</span>
+          </div>
+          <div class="model-profile-row" id="modelProfileRow">
+            <span class="model-profile-note" id="modelProfileNote">读取模型后显示推荐参数</span>
+            <mdui-button variant="tonal" id="applyModelProfile" disabled>应用</mdui-button>
+          </div>
+          <p class="helper helper-tip" id="modelNote">当前模型均为英文提示词；切换模型会自动套用各自的推荐参数。</p>
+        </div>
+        <p class="model-menu-hint" id="modelMenuHint">切换后下一张自动加载新模型，首次约 20–40 秒。</p>
+      </div>
+    </div>
+    <mdui-button-icon id="galleryBtn" aria-label="作品库" title="作品库"><span class="icon" data-icon="gallery"></span></mdui-button-icon>
+    <button id="queueBtn" class="queue-chip" type="button" aria-label="生成队列" title="生成队列">
+      <span class="icon" data-icon="layers"></span>
+      <span class="queue-chip-count" id="queueCount" hidden>0</span>
+    </button>
+    <div class="theme-picker" id="themePicker">
+      <button id="themeBtn" class="theme-chip" type="button" aria-haspopup="menu" aria-expanded="false" aria-controls="themeMenu" aria-label="外观：跟随系统" title="外观：跟随系统">
+        <span id="themeIcon" class="icon" aria-hidden="true"></span>
+        <span id="themeLabel" class="theme-label">跟随系统</span>
+        <span class="theme-caret" aria-hidden="true"><span class="icon" data-icon="chevron"></span></span>
+      </button>
+      <div class="theme-menu" id="themeMenu" role="menu" aria-label="明暗外观">
+        <button class="theme-option" type="button" role="menuitemradio" data-theme-value="light" aria-checked="false">
+          <span class="icon" data-icon="sun"></span><span class="theme-option-text">浅色</span><span class="theme-option-check"><span class="icon" data-icon="check"></span></span>
+        </button>
+        <button class="theme-option" type="button" role="menuitemradio" data-theme-value="dark" aria-checked="false">
+          <span class="icon" data-icon="moon"></span><span class="theme-option-text">深色</span><span class="theme-option-check"><span class="icon" data-icon="check"></span></span>
+        </button>
+        <button class="theme-option" type="button" role="menuitemradio" data-theme-value="auto" aria-checked="false">
+          <span class="icon" data-icon="monitor"></span><span class="theme-option-text">跟随系统</span><span class="theme-option-check"><span class="icon" data-icon="check"></span></span>
+        </button>
+        <span class="theme-menu-hint" id="themeMenuHint">当前：跟随系统</span>
+      </div>
+    </div>
+    <mdui-button-icon id="helpBtn" aria-label="使用说明" title="使用说明"><span class="icon" data-icon="help"></span></mdui-button-icon>
+    <a class="advanced-link" href="http://127.0.0.1:8188" target="_blank" rel="noreferrer" title="打开 ComfyUI 完整界面">
+      <span class="icon" data-icon="external"></span><span class="advanced-label">完整界面</span>
+    </a>
+  </div>
+</header>
+
+<main class="studio" id="composer" data-mobile-view="prompt">
+  <nav class="mobile-views" id="mobileViews" aria-label="移动端工作区视图">
+    <button class="mobile-view is-active" type="button" data-mobile-target="prompt" aria-pressed="true">
+      <span class="icon" data-icon="prompt" aria-hidden="true"></span><span>描述</span>
+    </button>
+    <button class="mobile-view" type="button" data-mobile-target="params" aria-pressed="false">
+      <span class="icon" data-icon="sliders" aria-hidden="true"></span><span>参数</span>
+    </button>
+    <button class="mobile-view" type="button" data-mobile-target="canvas" aria-pressed="false">
+      <span class="icon" data-icon="image" aria-hidden="true"></span><span>画面</span>
+    </button>
+  </nav>
+  <aside class="side-panel" aria-label="创作参数">
+    <div class="side-scroll" id="advanced">
+      <div class="side-top">
+        <mdui-segmented-button-group id="modeGroup" selects="single" value="txt2img" class="side-mode-group" aria-label="生成模式">
+          <mdui-segmented-button value="txt2img"><span slot="icon" class="icon" data-icon="sparkles"></span>文生图</mdui-segmented-button>
+          <mdui-segmented-button value="img2img"><span slot="icon" class="icon" data-icon="image"></span>图生图</mdui-segmented-button>
+        </mdui-segmented-button-group>
+        <mdui-button id="myPresetsBtn" variant="text" class="side-preset"><span slot="icon" class="icon" data-icon="bookmark"></span>参数预设</mdui-button>
+      </div>
+
+      <section class="card prompt-card" id="promptCard">
+        <header class="card-head">
+          <div class="card-title-wrap">
+            <h2>画面描述</h2>
+          </div>
+          <div class="card-tools">
+            <div class="rating-picker" id="ratingPicker">
+              <button class="rating-chip" id="ratingBtn" type="button" data-rating="auto" aria-haspopup="menu" aria-expanded="false" aria-controls="ratingMenu" title="手动评级：自动（不写评级标签）">
+                <span class="rating-name">评级</span><span class="rating-sep" aria-hidden="true">·</span>
+                <span class="rating-value" id="ratingLabel">自动</span>
+                <span class="rating-caret" aria-hidden="true"><span class="icon" data-icon="chevron"></span></span>
+              </button>
+              <div class="rating-menu" id="ratingMenu" role="menu" aria-label="手动评级">
+                <button class="rating-option" type="button" role="menuitemradio" data-rating="auto" aria-checked="true">
+                  <span class="rating-option-text">自动<small>不写评级标签</small></span>
+                  <span class="rating-option-check"><span class="icon" data-icon="check"></span></span>
+                </button>
+                <button class="rating-option" type="button" role="menuitemradio" data-rating="safe" aria-checked="false">
+                  <span class="rating-option-text">安全<small>safe · Pony 用 rating_safe</small></span>
+                  <span class="rating-option-check"><span class="icon" data-icon="check"></span></span>
+                </button>
+                <button class="rating-option" type="button" role="menuitemradio" data-rating="sensitive" aria-checked="false">
+                  <span class="rating-option-text">敏感<small>sensitive · Pony 用 rating_questionable</small></span>
+                  <span class="rating-option-check"><span class="icon" data-icon="check"></span></span>
+                </button>
+                <button class="rating-option" type="button" role="menuitemradio" data-rating="nsfw" aria-checked="false">
+                  <span class="rating-option-text">NSFW<small>nsfw · Pony 用 rating_questionable</small></span>
+                  <span class="rating-option-check"><span class="icon" data-icon="check"></span></span>
+                </button>
+                <button class="rating-option" type="button" role="menuitemradio" data-rating="explicit" aria-checked="false">
+                  <span class="rating-option-text">露骨<small>explicit · Pony 用 rating_explicit</small></span>
+                  <span class="rating-option-check"><span class="icon" data-icon="check"></span></span>
+                </button>
+              </div>
+            </div>
+            <span class="tool-cluster" role="group" aria-label="描述工具">
+              <mdui-button-icon id="dicePromptBtn" aria-label="随机组合灵感" title="随机灵感"><span class="icon" data-icon="dice"></span></mdui-button-icon>
+              <mdui-button-icon id="cleanPromptBtn" aria-label="整理提示词标签" title="整理标签"><span class="icon" data-icon="wand"></span></mdui-button-icon>
+              <mdui-button-icon id="interrogateBtn" aria-label="从图片反推标签" title="图反推：拖一张图进来，自动识别出标签（本地 WD14，约 1–2 秒）"><span class="icon" data-icon="image"></span></mdui-button-icon>
+              <mdui-button-icon id="copyPromptBtn" aria-label="复制提示词" title="复制描述"><span class="icon" data-icon="copy"></span></mdui-button-icon>
+            </span>
+          </div>
+        </header>
+        <mdui-text-field id="prompt" class="prompt-field" variant="outlined" rows="4" autosize max-rows="9" maxlength="4000" clearable placeholder="雨夜霓虹街头，女性，电影感…（中文或英文标签都行）｜ 也可直接拖入预设 JSON" spellcheck="false"></mdui-text-field>
+        <div class="prompt-meta">
+          <span id="promptCount" class="count">0 个标签</span>
+          <button type="button" class="translate-chip is-on" id="translateSwitch" role="switch" aria-checked="true"
+                  title="关闭后原文直接提交，不再转写成当前模型的语言">
+            <span class="translate-dot" aria-hidden="true"></span><span>转写</span>
+          </button>
+        </div>
+        <div class="prompt-chips" id="promptChips" hidden aria-label="已插入的标签"></div>
+        <input type="file" id="interrogateFile" accept="image/*" hidden>
+        <div class="prompt-draft" id="promptDraft" hidden>
+          <div class="prompt-draft-head">
+            <span class="prompt-draft-title"><span class="icon" data-icon="sparkles"></span><span id="promptDraftTitle">英文提示词</span></span>
+            <span class="prompt-draft-note" id="promptDraftNote"></span>
+            <div class="prompt-draft-tools" id="promptDraftTools">
+              <button class="text-link is-primary" id="promptDraftConfirm" type="button" hidden>确认并生成</button>
+              <button class="text-link" id="promptDraftRetry" type="button">换一版</button>
+              <button class="text-link" id="promptDraftEdit" type="button">编辑</button>
+              <button class="text-link" id="promptDraftCopy" type="button">复制</button>
+              <button class="text-link" id="promptDraftHide" type="button">收起</button>
+            </div>
+          </div>
+          <div class="prompt-draft-state" id="promptDraftState" hidden></div>
+          <div class="prompt-draft-notes" id="promptDraftNotes" hidden></div>
+          <div class="prompt-draft-body" id="promptDraftBody"></div>
+          <div class="prompt-draft-editor" id="promptDraftEditorWrap" hidden>
+            <textarea id="promptDraftEditor" spellcheck="false" aria-label="英文提示词编辑"></textarea>
+            <div class="prompt-draft-actions">
+              <button class="text-link" id="promptDraftCancel" type="button">取消</button>
+              <button class="text-link" id="promptDraftSave" type="button">保存并使用</button>
+            </div>
+          </div>
+        </div>
+        <div class="prompt-tool-row">
+          <div class="style-strip" id="styleStrip" role="group" aria-label="风格预设"></div>
+          <div class="prompt-tool-actions">
+            <button class="text-link prompt-draft-open" id="promptDraftOpen" type="button" hidden><span class="icon" data-icon="sparkles"></span>英文预览</button>
+            <button class="text-link" id="promptConvertBtn" type="button" title="把输入框里的中文描述转成当前模型的英文提示词"><span class="icon" data-icon="sparkles"></span>转写预览</button>
+          </div>
+        </div>
+        <p class="helper helper-tip" id="mossLayoutHint" hidden>预设：点分类切换，点词条追加到提示词（可跨分类叠加，再点一次取消）。布局：点「布局框」插入 <code>@box x0,y0,x1,y1 | 描述</code>，坐标是 0–100 百分比（左上→右下）；切到别的模型会自动忽略这些行。</p>
+        <details class="neg-details" id="negDetails">
+          <summary>
+            <span class="summary-title"><span class="icon" data-icon="shield"></span>负面提示词</span>
+            <span id="negSummary" class="summary-note">0 个标签</span>
+            <span class="chev"><span class="icon" data-icon="chevron"></span></span>
+          </summary>
+          <mdui-text-field id="negative" variant="outlined" rows="3" autosize max-rows="6" maxlength="2000" clearable placeholder="bad quality, censor, watermark…" spellcheck="false"></mdui-text-field>
+          <div class="neg-meta">
+            <p class="helper" id="negHelper">默认已排除低质量、文字水印相关标签，建议保留。</p>
+            <button class="text-link" id="openNegativeInspiration" type="button"><span class="icon" data-icon="shield"></span>负面标签库<span class="icon" data-icon="arrowRight"></span></button>
+          </div>
+        </details>
+      </section>
+
+      <section class="card ref-card img2img-only" id="refBlock">
+        <header class="side-card-head">
+          <h3>参考图</h3>
+          <span id="refHint" class="side-card-meta">选一张图开始</span>
+        </header>
+        <div class="dropzone" id="dropzone" role="button" tabindex="0" aria-label="选择参考图">
+          <div class="dropzone-empty" id="dropzoneEmpty">
+            <span class="drop-icon"><span class="icon" data-icon="imagePlus"></span></span>
+            <strong>拖入图片，或点这里选择</strong>
+            <span>PNG / JPG / WEBP · 长边自动压到 1280</span>
+          </div>
+          <div class="ref-preview" id="refPreview" hidden>
+            <img id="refImg" alt="参考图预览">
+            <div class="ref-info">
+              <strong id="refName"></strong>
+              <span id="refMeta"></span>
+              <span class="ref-size" id="refSize"></span>
+            </div>
+          </div>
+        </div>
+        <input type="file" id="fileInput" accept="image/png,image/jpeg,image/webp" hidden>
+        <div class="ref-actions" id="refActions" hidden>
+          <mdui-button variant="tonal" id="replaceRef">更换参考图</mdui-button>
+          <mdui-button variant="text" id="removeRef">移除</mdui-button>
+        </div>
+        <div class="detail-block">
+          <div class="switch-row">
+            <span>局部重绘</span>
+            <mdui-switch id="maskEnable" aria-label="开启局部重绘蒙版"></mdui-switch>
+          </div>
+          <div class="sub-options" id="maskOptions" hidden>
+            <div class="mask-stage" id="maskStage">
+              <img id="maskBase" alt="涂抹底图">
+              <canvas id="maskCanvas"></canvas>
+            </div>
+            <div class="mask-tools">
+              <label for="brushSize">笔刷 <output id="brushOut">48</output></label>
+              <mdui-slider id="brushSize" min="8" max="200" step="4" value="48"></mdui-slider>
+              <div class="mask-actions">
+                <mdui-button variant="text" id="maskClear">清除蒙版</mdui-button>
+                <span class="mask-stat" id="maskStat">未涂抹</span>
+              </div>
+            </div>
+            <p class="helper">沿要改的部位涂，涂过的地方重绘、其余像素原样保留。别把边界切在头发、衣领这类结构线上——切过去模型会当成新结构重画，容易出新发际线或双头。重绘幅度建议 0.85–0.95。</p>
+          </div>
+        </div>
+        <div class="slider-field denoise-field">
+          <label for="initDenoise">重绘幅度 <output id="denoiseOut">0.55</output></label>
+          <mdui-slider id="initDenoise" min="0.1" max="0.9" step="0.05" value="0.55"></mdui-slider>
+        </div>
+        <p class="helper">越高越偏离原图；0.45–0.65 适合保留构图换风格。参考图只在本页内存中处理。</p>
+        <div class="detail-block">
+          <div class="switch-row">
+            <span>细节增强 / 放大</span>
+            <mdui-switch id="detailEnhance" aria-label="开启细节增强与放大"></mdui-switch>
+          </div>
+          <div class="sub-options" id="detailOptions" hidden>
+            <mdui-segmented-button-group id="detailScale" selects="single" value="1.25" aria-label="输出尺寸">
+              <mdui-segmented-button value="1">原尺寸</mdui-segmented-button>
+              <mdui-segmented-button value="1.25">1.25×</mdui-segmented-button>
+              <mdui-segmented-button value="1.5">1.5×</mdui-segmented-button>
+            </mdui-segmented-button-group>
+            <p class="helper" id="detailHint">补细节并放大；建议重绘幅度 0.25–0.4，越大改动越多。</p>
+          </div>
+        </div>
+        <div class="refine-entry">
+          <button type="button" class="text-link" id="refinePresetsBtn"><span class="icon" data-icon="sparkles"></span>细化预设</button>
+        </div>
+      </section>
+
+      <section class="card spec-card" aria-label="输出规格">
+        <header class="side-card-head">
+          <h3>输出规格</h3>
+          <span id="qualityHint" class="side-card-meta">标准 · 24 步</span>
+        </header>
+        <mdui-segmented-button-group id="qualityGroup" selects="single" value="standard" class="side-quality" aria-label="画质档位">
+          <mdui-segmented-button value="gacha" id="gachaQualityBtn" class="txt2img-only" hidden>抽卡</mdui-segmented-button>
+          <mdui-segmented-button value="draft">速写</mdui-segmented-button>
+          <mdui-segmented-button value="standard">标准</mdui-segmented-button>
+          <mdui-segmented-button value="fine">精细</mdui-segmented-button>
+          <mdui-segmented-button value="hires" id="hiresQualityBtn" class="txt2img-only">高清</mdui-segmented-button>
+        </mdui-segmented-button-group>
+        <p class="helper gacha-hint" id="gachaHint" hidden>抽卡：自动挂 Turbo，10 步 / CFG 1 / Euler·Beta；选中图送去重绘会自动切到细化参数。</p>
+
+        <div class="spec-group txt2img-only" id="ratioBlock">
+          <div class="field-head">
+            <span>画面比例</span>
+            <span id="sizeHint" class="side-card-meta" hidden>1024 × 1024</span>
+          </div>
+          <div class="ratio-grid" id="ratioGrid" role="group" aria-label="画面比例">
+            <button class="ratio-tile is-selected" type="button" data-key="1:1" data-w="1024" data-h="1024" aria-pressed="true" title="1024 × 1024">
+              <span class="ratio-ghost"><i style="width:16px;height:16px"></i></span>
+              <span class="ratio-label">1:1</span>
+            </button>
+            <button class="ratio-tile" type="button" data-key="2:3" data-w="832" data-h="1216" aria-pressed="false" title="832 × 1216">
+              <span class="ratio-ghost"><i style="width:13px;height:19px"></i></span>
+              <span class="ratio-label">2:3</span>
+            </button>
+            <button class="ratio-tile" type="button" data-key="3:2" data-w="1216" data-h="832" aria-pressed="false" title="1216 × 832">
+              <span class="ratio-ghost"><i style="width:19px;height:13px"></i></span>
+              <span class="ratio-label">3:2</span>
+            </button>
+            <button class="ratio-tile" type="button" data-key="9:16" data-w="768" data-h="1344" aria-pressed="false" title="768 × 1344">
+              <span class="ratio-ghost"><i style="width:11px;height:19px"></i></span>
+              <span class="ratio-label">9:16</span>
+            </button>
+            <button class="ratio-tile" type="button" data-key="16:9" data-w="1344" data-h="768" aria-pressed="false" title="1344 × 768">
+              <span class="ratio-ghost"><i style="width:19px;height:11px"></i></span>
+              <span class="ratio-label">16:9</span>
+            </button>
+          </div>
+          <details class="custom-size">
+            <summary>
+              <span>自定义尺寸</span>
+              <span class="chev"><span class="icon" data-icon="chevron"></span></span>
+            </summary>
+            <div class="custom-size-row">
+              <mdui-text-field id="customW" class="compact-field" label="宽" variant="outlined" type="number" min="512" max="1536" step="8" value="1024"></mdui-text-field>
+              <mdui-text-field id="customH" class="compact-field" label="高" variant="outlined" type="number" min="512" max="1536" step="8" value="1024"></mdui-text-field>
+            </div>
+            <p class="helper">宽高取 8 的倍数，范围 512–1536；8GB 显存不建议超过 1344。</p>
+          </details>
+          <select id="ratioSelect" hidden aria-hidden="true" tabindex="-1">
+            <option value="1:1">1:1 · 1024</option>
+            <option value="2:3">2:3 · 832×1216</option>
+            <option value="3:2">3:2 · 1216×832</option>
+            <option value="9:16">9:16 · 768×1344</option>
+            <option value="16:9">16:9 · 1344×768</option>
+            <option value="custom">自定义尺寸</option>
+          </select>
+        </div>
+
+        <div class="spec-row">
+          <div class="side-inline" id="batchPicker">
+            <span>张数</span>
+            <div class="batch-picker">
+              <button class="batch-chip" id="batchBtn" type="button" aria-haspopup="menu" aria-expanded="false" aria-controls="batchMenu" aria-label="批量张数：1 张；打开张数菜单">
+                <span class="batch-value" id="batchLabel">1 张</span>
+                <span class="batch-caret" aria-hidden="true"><span class="icon" data-icon="chevron"></span></span>
+              </button>
+              <div class="batch-menu" id="batchMenu" role="menu" aria-label="批量张数"></div>
+            </div>
+          </div>
+          <span class="side-quick-note" id="batchNote">8GB · 建议 1–2 张</span>
+        </div>
+        <input type="hidden" id="batch" value="1">
+
+      </section>
+
+      <section class="card enhance-card" aria-label="LoRA 增强">
+        <div class="lora-block" id="loraBlock">
+          <header class="side-card-head">
+            <h3>LoRA 增强</h3>
+            <span id="loraHint" class="side-card-meta">读取中…</span>
+            <mdui-button-icon id="manageLorasBtn" aria-label="选择 LoRA" title="选择 LoRA" disabled>
+              <span class="icon" data-icon="layers"></span>
+            </mdui-button-icon>
+          </header>
+          <div class="lora-active-chips" id="loraActiveChips" hidden></div>
+          <p class="helper" id="loraHelper">启用后在提示词末尾追加 &lt;lora:名称:权重&gt;；触发词用「插入」写进描述框。</p>
+        </div>
+      </section>
+
+      <section class="card param-card" id="paramCard" aria-label="生成参数">
+        <header class="side-card-head">
+          <h3>采样与步数</h3>
+          <span id="samplerPresetHint" class="side-card-meta">均衡</span>
+          <button type="button" class="card-fold" id="paramFold" aria-expanded="true" aria-controls="paramBody" title="收起/展开采样与步数">
+            <span class="icon" data-icon="chevron"></span>
+          </button>
+        </header>
+        <div class="param-body" id="paramBody">
+        <div class="sampler-presets" id="samplerPresets" role="group" aria-label="采样器与调度器组合"></div>
+        <div class="two-col">
+          <mdui-select id="sampler" label="采样器" variant="outlined" value="Euler a">
+            <mdui-menu-item value="Euler a">Euler a</mdui-menu-item>
+            <mdui-menu-item value="Euler">Euler</mdui-menu-item>
+            <mdui-menu-item value="DPM++ 2M">DPM++ 2M</mdui-menu-item>
+            <mdui-menu-item value="DPM++ 2M SDE">DPM++ 2M SDE</mdui-menu-item>
+            <mdui-menu-item value="DPM++ SDE">DPM++ SDE</mdui-menu-item>
+            <mdui-menu-item value="ER SDE">ER SDE</mdui-menu-item>
+            <mdui-menu-item value="Res Multistep">Res Multistep</mdui-menu-item>
+            <mdui-menu-item value="DDIM">DDIM</mdui-menu-item>
+            <mdui-menu-item value="UniPC">UniPC</mdui-menu-item>
+          </mdui-select>
+          <mdui-select id="scheduler" label="调度器" variant="outlined" value="Karras">
+            <mdui-menu-item value="Karras">Karras</mdui-menu-item>
+            <mdui-menu-item value="Beta">Beta</mdui-menu-item>
+            <mdui-menu-item value="SGM Uniform">SGM Uniform</mdui-menu-item>
+            <mdui-menu-item value="Automatic">Automatic</mdui-menu-item>
+            <mdui-menu-item value="Simple">Simple</mdui-menu-item>
+            <mdui-menu-item value="Exponential">Exponential</mdui-menu-item>
+            <mdui-menu-item value="Linear Quadratic">Linear Quadratic</mdui-menu-item>
+            <mdui-menu-item value="Normal">Normal</mdui-menu-item>
+          </mdui-select>
+        </div>
+        <p class="helper" id="samplerAdvice">不确定采样器时选 Euler a + Karras；写实可换 DPM++ 2M SDE。</p>
+
+        <div class="slider-pair">
+          <div class="slider-field">
+            <label for="steps">步数 <output id="stepsOut">24</output></label>
+            <mdui-slider id="steps" min="6" max="60" step="1" value="24"></mdui-slider>
+          </div>
+          <div class="slider-field">
+            <label for="cfg">提示词强度 <output id="cfgOut">5.5</output></label>
+            <mdui-slider id="cfg" min="1" max="10" step="0.5" value="5.5"></mdui-slider>
+          </div>
+        </div>
+
+        <div class="hires-block txt2img-only" id="hiresBlock">
+          <div class="switch-row">
+            <span>高清放大</span>
+            <mdui-switch id="hires" aria-label="开启高清放大"></mdui-switch>
+          </div>
+          <div class="sub-options" id="hiresOptions" hidden>
+            <div class="two-col">
+              <mdui-select id="hrScale" label="放大倍数" variant="outlined" value="1.5">
+                <mdui-menu-item value="1.25">1.25x · 平衡</mdui-menu-item>
+                <mdui-menu-item value="1.35">1.35x · Krea 推荐</mdui-menu-item>
+                <mdui-menu-item value="1.5">1.5x · 结构更稳</mdui-menu-item>
+              </mdui-select>
+              <mdui-select id="hrUpscaler" label="放大算法" variant="outlined" value="Lanczos">
+                <mdui-menu-item value="Latent">Latent · 最快</mdui-menu-item>
+                <mdui-menu-item value="Lanczos">Lanczos · 通用</mdui-menu-item>
+                <mdui-menu-item value="Nearest">Nearest · 硬边</mdui-menu-item>
+              </mdui-select>
+            </div>
+            <div class="slider-field">
+              <label for="hrDenoise">重绘幅度 <output id="hrOut">0.40</output></label>
+              <mdui-slider id="hrDenoise" min="0.2" max="0.6" step="0.05" value="0.4"></mdui-slider>
+            </div>
+            <p class="helper" id="hrUpscalerHelper" title="Latent 最快、细节少；Lanczos 通用；Nearest 适合像素风。ESRGAN 放大模型未安装，暂不提供。">8 个算法 · Lanczos 通用；ESRGAN 未安装。</p>
+            <p class="helper warn" id="hrWarn" hidden>1.5x 在 8GB 显存上可能不足，建议先用 1.25x。</p>
+          </div>
+        </div>
+
+        <div class="anima-block" id="animaBlock" hidden>
+          <div class="slider-field">
+            <label for="shift"><span id="shiftLabel">位移</span> <span class="label-note">Shift</span> <output id="shiftOut">3.5</output></label>
+            <mdui-slider id="shift" min="1" max="6" step="0.1" value="3.5"></mdui-slider>
+            <span id="animaHint" class="sr-only">Shift 3.5</span>
+          </div>
+        </div>
+
+
+        <div class="sub-block">
+          <div class="switch-row">
+            <span>种子</span>
+            <label class="switch-inline"><span>固定</span><mdui-switch id="seedLock" aria-label="固定种子"></mdui-switch></label>
+          </div>
+          <div class="seed-row">
+            <mdui-text-field id="seed" class="compact-field" variant="outlined" type="number" value="-1" disabled aria-label="随机种子"></mdui-text-field>
+            <mdui-button-icon id="diceSeed" aria-label="随机一个种子" title="随机一个种子" disabled><span class="icon" data-icon="dice"></span></mdui-button-icon>
+          </div>
+          <p class="helper">关闭时随机；固定后可复现同一构图。</p>
+        </div>
+
+        <details class="adv-details">
+          <summary>
+            <span class="adv-title"><span class="icon" data-icon="sliders"></span>高级参数</span>
+            <span class="summary-note">引擎 · 性能</span>
+            <span class="chev"><span class="icon" data-icon="chevron"></span></span>
+          </summary>
+          <div class="adv-body">
+            <section class="adv-group">
+              <div class="field-head">
+                <span>引擎</span>
+                <span id="engineHint" class="side-card-meta">CLIP 1 · VAE 自动</span>
+              </div>
+              <div class="two-col">
+                <mdui-select id="clipSkip" label="CLIP 跳过层" variant="outlined" value="2">
+                  <mdui-menu-item value="1">1 层</mdui-menu-item>
+                  <mdui-menu-item value="2">2 层（推荐）</mdui-menu-item>
+                  <mdui-menu-item value="3">3 层</mdui-menu-item>
+                  <mdui-menu-item value="4">4 层</mdui-menu-item>
+                </mdui-select>
+                <mdui-select id="vae" label="VAE / 模块" variant="outlined" value="Automatic">
+                  <mdui-menu-item value="Automatic">自动 · 跟随底模</mdui-menu-item>
+                </mdui-select>
+              </div>
+              <p class="helper" id="clipHelper">CLIP 跳过层 2 是 Pony / SDXL 的常用值；调高会更弱化提示词，不建议随意改。</p>
+              <p class="helper" id="vaeHelper">当前未检测到独立 VAE，自动使用底模内置；把 VAE 放进 models\vae 后刷新模型列表即可选择。</p>
+            </section>
+            <section class="adv-group" id="controlnetGroup" hidden>
+              <div class="field-head">
+                <span>控制图 · Anima LLLite</span>
+                <span id="controlnetHint" class="side-card-meta">未选控制图</span>
+              </div>
+              <div class="two-col">
+                <mdui-select id="controlModel" label="控制类型" variant="outlined" value="">
+                  <mdui-menu-item value="">不使用</mdui-menu-item>
+                  <mdui-menu-item value="anima-lllite-lineart-1.safetensors">线稿 Lineart</mdui-menu-item>
+                  <mdui-menu-item value="anima-lllite-depth-1.safetensors">深度 Depth</mdui-menu-item>
+                  <mdui-menu-item value="anima-lllite-pose-1.safetensors">姿态 Pose</mdui-menu-item>
+                  <mdui-menu-item value="anima-lllite-scribble-1.safetensors">涂鸦 Scribble</mdui-menu-item>
+                </mdui-select>
+                <mdui-button variant="outlined" id="controlPickBtn">选择控制图</mdui-button>
+              </div>
+              <input type="file" id="controlImageInput" accept="image/png,image/jpeg,image/webp" hidden>
+              <div class="slider-field">
+                <label for="controlStrength">控制强度 <output id="controlStrengthOut">1.0</output></label>
+                <mdui-slider id="controlStrength" min="0" max="2" step="0.05" value="1"></mdui-slider>
+              </div>
+              <p class="helper" id="controlnetHelper">LLLite 用控制图约束构图：线稿吃线条、深度吃远近、姿态吃骨架、涂鸦吃色块。强度 0.8–1.2 最稳，>1.5 容易照抄控制图。控制图不随配置保存，刷新后需重新选择。</p>
+            </section>
+            <section class="adv-group" id="styleRefGroup" hidden>
+              <div class="field-head">
+                <span>风格参考 · Krea 2</span>
+                <span id="styleRefHint" class="side-card-meta">未选参考图</span>
+              </div>
+              <div class="two-col">
+                <mdui-button variant="outlined" id="styleRefPickBtn">选择参考图</mdui-button>
+                <mdui-button variant="text" id="styleRefClearBtn">清空</mdui-button>
+              </div>
+              <input type="file" id="styleRefInput" accept="image/png,image/jpeg,image/webp" multiple hidden>
+              <div class="style-ref-strip" id="styleRefStrip" hidden></div>
+              <p class="helper" id="styleRefHelper">参考图只提供画风（笔触、色板、纸张质感），不决定画面内容——画什么仍由提示词决定。最多 3 张，第 2、3 张会与第 1 张混合；叠加顺序越靠前，对整体色调的影响越大。参考图不随配置保存。</p>
+            </section>
+            <section class="adv-group">
+              <div class="field-head">
+                <span>性能</span>
+                <span id="perfHint" class="side-card-meta" hidden>跳步缓存</span>
+              </div>
+              <div class="switch-block">
+                <div class="switch-row">
+                  <span>跳步缓存</span>
+                  <label class="switch-inline"><span>EasyCache</span><mdui-switch id="easyCache" aria-label="开启 ComfyUI 原生跳步缓存"></mdui-switch></label>
+                </div>
+                <p class="helper">ComfyUI 原生 EasyCache：复用相邻采样步的计算。实测约 2 倍提速、画质几乎无损；仅在 16 步以上生效，8 步 turbo 抽卡自动跳过。</p>
+              </div>
+              <div class="switch-block">
+                <div class="switch-row">
+                  <span>低显存保底</span>
+                  <label class="switch-inline"><span>NeverOOM</span><mdui-switch id="lowVram" aria-label="开启低显存保底"></mdui-switch></label>
+                </div>
+                <p class="helper">整批生成结束后释放 ComfyUI 显存缓存；Hires 1.5x 或批量爆显存时再开，采样不会变慢但下一轮要重载模型。</p>
+              </div>
+            </section>
+          </div>
+        </details>
+        </div>
+      </section>
+
+
+      <div class="side-reset"></div>
+    </div>
+    <div class="side-foot">
+      <div class="progress-panel" id="progressPanel" hidden>
+        <div class="progress-top"><span id="progressText">准备中…</span><span id="etaText"></span></div>
+        <mdui-linear-progress id="progressBar" max="100" value="0"></mdui-linear-progress>
+        <div class="progress-foot"><span id="batchText"></span><mdui-button id="stopInline" variant="text"><span slot="icon" class="icon" data-icon="stop"></span>停止</mdui-button></div>
+      </div>
+      <div class="side-send">
+        <span id="sendSummary">Euler a · Karras · 24 步</span>
+        <span id="sendSummaryDetail">本次将发送 · 读取参数中…</span>
+      </div>
+      <mdui-button id="generate" variant="filled" class="side-generate" data-generate>
+        <span slot="icon" class="icon" data-icon="sparkles"></span>
+        <span class="btn-label">生成画面</span><span class="btn-kbd">Ctrl ↵</span>
+      </mdui-button>
+    </div>
+  </aside>
+
+<section class="stage card" id="stage" aria-label="生成结果">
+    <header class="stage-head">
+      <div>
+        <h2>画面</h2>
+      </div>
+      <div class="stage-head-right">
+        <span id="modeBadge" class="mode-badge">文生图</span>
+        <mdui-button-icon id="openOutput" aria-label="打开出图文件夹" title="打开出图文件夹"><span class="icon" data-icon="folder"></span></mdui-button-icon>
+      </div>
+    </header>
+
+    <div class="canvas-wrap" id="canvasWrap">
+      <div class="placeholder" id="placeholder">
+        <div class="placeholder-art" aria-hidden="true">
+          <svg viewBox="0 0 260 190" fill="none">
+            <defs>
+              <linearGradient id="phSky" x1="130" y1="35" x2="130" y2="128" gradientUnits="userSpaceOnUse">
+                <stop stop-color="rgb(var(--mdui-color-primary))" stop-opacity=".30"/>
+                <stop offset=".62" stop-color="rgb(var(--mdui-color-primary))" stop-opacity=".10"/>
+                <stop offset="1" stop-color="rgb(var(--mdui-color-tertiary))" stop-opacity=".18"/>
+              </linearGradient>
+              <linearGradient id="phHillFar" x1="130" y1="98" x2="130" y2="145" gradientUnits="userSpaceOnUse">
+                <stop stop-color="rgb(var(--mdui-color-primary))" stop-opacity=".26"/>
+                <stop offset="1" stop-color="rgb(var(--mdui-color-primary))" stop-opacity=".34"/>
+              </linearGradient>
+              <linearGradient id="phHillNear" x1="130" y1="110" x2="130" y2="145" gradientUnits="userSpaceOnUse">
+                <stop stop-color="rgb(var(--mdui-color-tertiary))" stop-opacity=".40"/>
+                <stop offset="1" stop-color="rgb(var(--mdui-color-tertiary))" stop-opacity=".58"/>
+              </linearGradient>
+              <linearGradient id="phBackFill" x1="84" y1="42" x2="160" y2="150" gradientUnits="userSpaceOnUse">
+                <stop stop-color="rgb(var(--mdui-color-primary))" stop-opacity=".18"/>
+                <stop offset="1" stop-color="rgb(var(--mdui-color-tertiary))" stop-opacity=".10"/>
+              </linearGradient>
+              <linearGradient id="phMidFill" x1="104" y1="150" x2="196" y2="40" gradientUnits="userSpaceOnUse">
+                <stop stop-color="rgb(var(--mdui-color-primary))" stop-opacity=".14"/>
+                <stop offset="1" stop-color="rgb(var(--mdui-color-tertiary))" stop-opacity=".30"/>
+              </linearGradient>
+              <linearGradient id="phShine" x1="0" y1="0" x2="1" y2="0">
+                <stop stop-color="#fff" stop-opacity="0"/>
+                <stop offset=".5" stop-color="#fff" stop-opacity=".42"/>
+                <stop offset="1" stop-color="#fff" stop-opacity="0"/>
+              </linearGradient>
+              <clipPath id="phFrontPhoto"><rect x="84" y="35" width="94" height="110" rx="8"/></clipPath>
+            </defs>
+
+            <ellipse cx="130" cy="98" rx="96" ry="78" fill="rgb(var(--mdui-color-primary))" opacity=".075"/>
+
+            <g class="ph-card" transform="rotate(-13 116 100)">
+              <rect x="64" y="32" width="108" height="132" rx="13" fill="rgb(var(--mdui-color-surface-container-lowest))" stroke="rgb(var(--mdui-color-outline))" stroke-opacity=".34" stroke-width="1.1"/>
+              <rect x="73" y="41" width="90" height="114" rx="8" fill="url(#phBackFill)"/>
+              <circle cx="94" cy="67" r="10" fill="#E8C7A3" fill-opacity=".82"/>
+              <path d="M73 118c13-10 24-8 34 0 11 9 24 4 34-4 8-6 14-7 22-5v44H73Z" fill="rgb(var(--mdui-color-primary))" fill-opacity=".16"/>
+            </g>
+
+            <g class="ph-card" transform="rotate(11 146 100)">
+              <rect x="90" y="30" width="108" height="132" rx="13" fill="rgb(var(--mdui-color-surface-container-lowest))" stroke="rgb(var(--mdui-color-outline))" stroke-opacity=".34" stroke-width="1.1"/>
+              <rect x="99" y="39" width="90" height="114" rx="8" fill="url(#phMidFill)"/>
+              <circle cx="160" cy="65" r="9" fill="#E8C7A3" fill-opacity=".9"/>
+              <circle cx="160" cy="65" r="16" fill="#E8C7A3" fill-opacity=".14"/>
+              <path d="M99 122c14-12 27-11 38-1 10 9 22 6 31-2 8-7 14-7 21-4v38H99Z" fill="rgb(var(--mdui-color-tertiary))" fill-opacity=".22"/>
+            </g>
+
+            <g class="ph-card ph-card-front" transform="rotate(-3 130 95)">
+              <rect x="75" y="26" width="112" height="136" rx="13" fill="rgb(var(--mdui-color-surface-container-lowest))" stroke="rgb(var(--mdui-color-outline))" stroke-opacity=".46" stroke-width="1.2"/>
+              <rect x="84" y="35" width="94" height="110" rx="8" fill="url(#phSky)"/>
+              <g clip-path="url(#phFrontPhoto)">
+                <circle cx="112" cy="71" r="11" fill="#E8C7A3"/>
+                <circle cx="112" cy="71" r="21" fill="#E8C7A3" fill-opacity=".16"/>
+                <path d="M84 101c11-9 21-8 31-1 11 8 23 3 33-5 8-6 15-7 30-2v52H84Z" fill="url(#phHillFar)"/>
+                <path d="M84 119c13-11 26-9 38-1 12 8 25 2 35-6 8-6 16-7 25-3v36H84Z" fill="url(#phHillNear)"/>
+                <path d="M84 132c18-4 35-2 50 2 17 4 31 4 44 1v10H84Z" fill="rgb(var(--mdui-color-primary))" fill-opacity=".26"/>
+                <g class="ph-shine"><rect x="-58" y="18" width="32" height="146" fill="url(#phShine)" transform="skewX(-16)"/></g>
+              </g>
+              <rect x="75.6" y="26.6" width="110.8" height="134.8" rx="12.4" stroke="rgb(var(--mdui-color-on-surface))" stroke-opacity=".055" stroke-width="1"/>
+            </g>
+
+            <path class="ph-spark" d="M209 25c.7 5.4 2.5 7.2 7.9 7.9-5.4.7-7.2 2.5-7.9 7.9-.7-5.4-2.5-7.2-7.9-7.9 5.4-.7 7.2-2.5 7.9-7.9Z" fill="rgb(var(--mdui-color-tertiary))" fill-opacity=".78"/>
+            <path class="ph-spark ph-spark-late" d="M48 141c.5 3.7 1.7 4.9 5.4 5.4-3.7.5-4.9 1.7-5.4 5.4-.5-3.7-1.7-4.9-5.4-5.4 3.7-.5 4.9-1.7 5.4-5.4Z" fill="rgb(var(--mdui-color-primary))" fill-opacity=".5"/>
+            <ellipse cx="130" cy="171" rx="55" ry="5.5" fill="rgb(var(--mdui-color-on-surface))" opacity=".07"/>
+          </svg>
+        </div>
+        <p id="placeholderTitle">还没有画面</p>
+        <span id="placeholderHint">写好描述，点「生成画面」或按 Ctrl + Enter。</span>
+        <span id="placeholderHintMobile">写好描述，点下方「生成」。</span>
+        <span class="placeholder-kbd"><kbd>Ctrl</kbd><span>+</span><kbd>Enter</kbd></span>
+        <div class="placeholder-ideas" id="placeholderIdeas" aria-label="快速套用配方"></div>
+        <mdui-button class="placeholder-mobile-cta" id="mobileToPrompt" variant="tonal">
+          <span slot="icon" class="icon" data-icon="prompt"></span>去写描述
+        </mdui-button>
+      </div>
+      <div class="canvas-frame" id="canvasFrame" hidden>
+        <img id="result" alt="生成的画面" tabindex="0" role="button" title="点击放大">
+        <div class="result-overlay"><span class="overlay-hint">点击放大</span></div>
+      </div>
+      <div class="live-stage" id="liveStage" hidden aria-live="polite">
+        <img id="livePreview" alt="生成过程的实时预览">
+        <span class="live-badge"><span class="busy-dot"></span><span id="liveStep">实时预览</span></span>
+      </div>
+      <div class="busy-overlay" id="busyOverlay" hidden><span class="busy-dot"></span>正在绘制</div>
+    </div>
+
+    <div class="batch-compare" id="batchCompare" hidden>
+      <div class="batch-compare-head">
+        <span class="small-label">本批对比 <b id="batchCompareCount">0</b></span>
+        <span class="batch-compare-hint">点击切换主图</span>
+      </div>
+      <div class="batch-compare-strip" id="batchCompareStrip" aria-label="本批生成结果"></div>
+    </div>
+
+    <div class="result-info" id="resultInfo" hidden>
+      <div class="meta-chips" id="metaChips"></div>
+      <div class="result-actions">
+        <mdui-button variant="tonal" id="again"><span slot="icon" class="icon" data-icon="repeat"></span>换一张</mdui-button>
+        <mdui-button variant="tonal" id="sameSeed"><span slot="icon" class="icon" data-icon="refresh"></span>同种子</mdui-button>
+        <mdui-button variant="tonal" id="toImg2img"><span slot="icon" class="icon" data-icon="send"></span>送去重绘</mdui-button>
+        <mdui-button variant="tonal" id="favoriteCurrent" aria-pressed="false"><span slot="icon" class="icon" id="favoriteIcon" data-icon="star"></span><span id="favoriteLabel">收藏</span></mdui-button>
+        <mdui-button variant="tonal" id="download"><span slot="icon" class="icon" data-icon="download"></span>下载</mdui-button>
+        <mdui-button variant="text" id="loadParams" class="load-params"><span slot="icon" class="icon" data-icon="rotate"></span>载入参数</mdui-button>
+      </div>
+    </div>
+
+    <div class="history-head">
+      <span class="small-label">最近作品 <b id="historyCount">0</b></span>
+      <div class="history-head-actions">
+        <mdui-button id="openGallery" variant="text"><span slot="icon" class="icon" data-icon="gallery"></span>作品库</mdui-button>
+        <mdui-button-icon id="clearHistory" aria-label="清空最近作品" title="清空最近作品"><span class="icon" data-icon="trash"></span></mdui-button-icon>
+      </div>
+    </div>
+    <div class="history-strip" id="history" aria-label="最近生成">
+      <p class="history-empty" id="historyEmpty">生成的画面会留在这里；磁盘上的成图不会被删除。</p>
+    </div>
+  </section>
+
+</main>
+
+<footer class="app-foot">
+  <span>本地运行 · 图片不出本机</span>
+  <span class="dot">·</span>
+  <button class="foot-link" id="openOutputFoot" type="button"><span class="icon" data-icon="folder"></span>打开出图目录</button>
+  <span class="dot">·</span>
+  <span>本地 SDXL · MDUI 2.1.5</span>
+</footer>
+
+<div class="mobile-bar" id="mobileBar">
+  <div class="mobile-progress" id="mobileProgress" hidden><mdui-linear-progress id="mobileProgressBar" max="100" value="0"></mdui-linear-progress></div>
+  <div class="mobile-bar-inner">
+    <div class="mobile-status">
+      <strong id="mobileMode">文生图</strong>
+      <span id="mobileHint">24 步 · 1024 × 1024</span>
+    </div>
+    <mdui-button id="stopMobile" variant="tonal" aria-label="停止生成" title="停止生成" hidden><span slot="icon" class="icon" data-icon="stop"></span>停止</mdui-button>
+    <mdui-button id="generateMobile" variant="filled" data-generate>
+      <span slot="icon" class="icon" data-icon="sparkles"></span><span class="btn-label">生成</span>
+    </mdui-button>
+  </div>
+</div>
+
+<mdui-dialog id="inspirationDialog" class="wide-dialog library-dialog" close-on-esc close-on-overlay-click>
+  <span slot="headline">灵感与标签</span>
+  <span slot="description" id="libraryDesc">先套用整套配方，再按标签微调；点选会直接写入提示词。</span>
+  <div class="library-body">
+    <aside class="library-rail is-collapsed" id="recipeSection">
+      <div class="rail-head">
+        <div class="section-heading">
+          <h3>整套配方</h3>
+          <span class="rail-count" id="recipeRailCount">16 套</span>
+          <button class="rail-toggle" id="railToggle" type="button" aria-expanded="false" aria-controls="recipeGrid">展开</button>
+        </div>
+        <p class="rail-hint">保留人物标签，只换场景与质感</p>
+      </div>
+      <div class="rail-scroll">
+        <div class="recipe-grid" id="recipeGrid"></div>
+        <div class="preset-empty rail-empty" id="recipeEmpty" hidden>没有匹配的配方，换个词试试。</div>
+      </div>
+    </aside>
+    <div class="library-main">
+      <div class="library-toolbar">
+        <div class="library-search-row">
+          <mdui-segmented-button-group id="tagTargetSwitch" selects="single" value="positive">
+            <mdui-segmented-button value="positive"><span slot="icon" class="icon" data-icon="sparkles"></span>正向</mdui-segmented-button>
+            <mdui-segmented-button value="negative"><span slot="icon" class="icon" data-icon="shield"></span>负面</mdui-segmented-button>
+          </mdui-segmented-button-group>
+          <mdui-text-field id="presetSearch" variant="outlined" placeholder="搜索中文、英文或分类…" clearable>
+            <span slot="icon" class="icon" data-icon="search"></span>
+          </mdui-text-field>
+          <span class="target-count" id="tagTargetCount">正向 · 0 个标签</span>
+        </div>
+        <div class="library-nav-row">
+          <div class="tag-group-nav" id="tagGroupNav" role="navigation" aria-label="标签分类"></div>
+          <span class="result-count" id="presetResultCount"></span>
+        </div>
+      </div>
+      <div class="library-scroll" id="libraryScroll">
+        <section class="preset-section tag-section">
+          <div class="section-heading">
+            <h3 id="tagSectionTitle">正向标签</h3>
+            <span id="tagSectionHint">点击加入，再点一次移除</span>
+            <span class="tag-selected-count" id="tagSelectedCount">当前 0 个标签</span>
+          </div>
+          <div class="tag-groups" id="tagGroups"></div>
+          <div class="preset-empty" id="presetEmpty" hidden>没有匹配的标签，换个词试试。</div>
+        </section>
+        <div class="preset-note" id="libraryNote">角色预设已独立到风格条里的「角色」入口；这里保留场景、镜头、服装等通用标签。</div>
+      </div>
+    </div>
+  </div>
+  <mdui-button slot="action" variant="text" id="resetNegativeTags" hidden>恢复推荐负面</mdui-button>
+  <mdui-button slot="action" variant="text" id="closeInspiration">关闭</mdui-button>
+</mdui-dialog>
+
+<mdui-dialog id="characterDialog" class="wide-dialog library-dialog character-dialog" close-on-esc close-on-overlay-click>
+  <span slot="headline">角色库</span>
+  <span slot="description" id="characterDesc">396 个成年角色 · 点一次写入角色、系列与外观，再点撤销</span>
+  <div class="library-body">
+    <div class="library-main character-main">
+      <div class="library-toolbar">
+        <div class="library-search-row">
+          <mdui-segmented-button-group id="characterModeSwitch" selects="single" value="adult">
+            <mdui-segmented-button value="adult">成年角色</mdui-segmented-button>
+            <mdui-segmented-button value="allages">全年龄</mdui-segmented-button>
+          </mdui-segmented-button-group>
+          <mdui-text-field id="characterSearch" variant="outlined" placeholder="搜索角色、系列、发色或外观…" clearable>
+            <span slot="icon" class="icon" data-icon="search"></span>
+          </mdui-text-field>
+          <span class="target-count" id="characterResultCount">396 个成年角色</span>
+        </div>
+        <div class="library-nav-row">
+          <div class="tag-group-nav" id="characterGroupNav" role="navigation" aria-label="角色系列"></div>
+        </div>
+      </div>
+      <div class="library-scroll" id="characterScroll">
+        <div class="character-groups" id="characterGroups"></div>
+        <div class="preset-empty" id="characterEmpty" hidden>没有匹配的角色，换个名字或系列试试。</div>
+        <div class="preset-note" id="characterNote">角色包按「角色 + 系列 + 成年 + 外观」整包写入；冷门角色和原创模板只用外观描述，模型不认识角色名也能出对造型。只收成年角色。</div>
+      </div>
+    </div>
+  </div>
+  <mdui-button slot="action" variant="text" id="closeCharacterDialog">关闭</mdui-button>
+</mdui-dialog>
+
+<mdui-dialog id="artistDialog" class="wide-dialog library-dialog artist-dialog" close-on-esc close-on-overlay-click>
+  <span slot="headline">画师风格</span>
+  <span slot="description" id="artistDesc">画师来自 Anima 训练索引；1 位最稳，2–4 位按权重混合。</span>
+  <div class="library-body">
+    <aside class="library-rail artist-rail">
+      <div class="rail-head">
+        <div class="section-heading">
+          <h3>混合台</h3>
+          <span class="rail-count" id="artistPickCount">0 / 4</span>
+        </div>
+        <p class="rail-hint">首位是主画师；后加的画师默认 0.65</p>
+      </div>
+      <div class="artist-picks" id="artistPicks"></div>
+      <div class="artist-pick-empty" id="artistPickEmpty">点右侧画师加入混合</div>
+      <div class="artist-mix-actions">
+        <button type="button" class="artist-mix-btn" id="artistBalanceBtn">均衡 1.0</button>
+        <button type="button" class="artist-mix-btn" id="artistPrimaryBtn">主辅 1.0 / 0.55</button>
+        <button type="button" class="artist-mix-btn is-danger" id="artistClearBtn">清空</button>
+      </div>
+      <div class="artist-preview">
+        <div class="artist-preview-head">
+          <span>写入预览</span>
+          <span id="artistPreviewCount">0 位</span>
+        </div>
+        <code id="artistPreview">—</code>
+      </div>
+      <mdui-button id="applyArtistsBtn" variant="filled" class="artist-apply">
+        <span slot="icon" class="icon" data-icon="check"></span>写入提示词
+      </mdui-button>
+    </aside>
+    <div class="library-main">
+      <div class="library-toolbar">
+        <div class="library-search-row">
+          <mdui-text-field id="artistSearch" variant="outlined" placeholder="搜索画师、风格或分类…" clearable>
+            <span slot="icon" class="icon" data-icon="search"></span>
+          </mdui-text-field>
+          <span class="target-count" id="artistResultCount"></span>
+        </div>
+        <div class="library-nav-row">
+          <div class="tag-group-nav" id="artistGroupNav" role="navigation" aria-label="画师分类"></div>
+        </div>
+      </div>
+      <div class="library-scroll" id="artistScroll">
+        <div class="artist-groups" id="artistGroups"></div>
+        <div class="preset-empty" id="artistEmpty" hidden>没有匹配的画师，换个词试试。</div>
+        <div class="preset-note">@ 前缀是 Anima 画师标签的核心，写入时自动带上；括号中的消歧名会转义。风格词为人工归纳，只作挑选参考。</div>
+      </div>
+    </div>
+  </div>
+  <mdui-button slot="action" variant="text" id="closeArtistDialog">关闭</mdui-button>
+</mdui-dialog>
+
+<mdui-dialog id="savePresetDialog" class="small-dialog" close-on-esc>
+  <span slot="headline">存为预设</span>
+  <span slot="description">保存当前描述、模型和全部参数，下次一键载入；参考图不保存。</span>
+  <mdui-text-field id="presetName" class="save-name-field" label="预设名称" variant="outlined" maxlength="40" clearable autofocus></mdui-text-field>
+  <p class="dialog-helper">只保存在本机浏览器，不会上传。</p>
+  <mdui-button slot="action" variant="text" id="cancelSavePreset">取消</mdui-button>
+  <mdui-button slot="action" variant="filled" id="confirmSavePreset">保存</mdui-button>
+</mdui-dialog>
+
+<mdui-dialog id="savedDialog" class="medium-dialog" close-on-esc>
+  <span slot="headline">我的预设</span>
+  <span slot="description">预设会记录描述、尺寸、画质、采样参数和当时使用的模型；载入时按需切换模型。也可以把 .json 预设直接拖到描述框上。</span>
+  <div class="saved-list" id="savedList"></div>
+  <div class="preset-empty" id="savedEmpty" hidden>还没有保存的预设。调整好参数后，点左侧「预设」→「存当前为预设」。</div>
+  <mdui-button slot="action" variant="tonal" id="saveCurrentFromList">存当前为预设</mdui-button>
+  <mdui-button slot="action" variant="text" id="importPresetFile">导入 JSON</mdui-button>
+  <mdui-button slot="action" variant="text" id="exportPresetFile">导出当前</mdui-button>
+  <mdui-button slot="action" variant="text" id="closeSaved">关闭</mdui-button>
+  <input type="file" id="presetFileInput" accept=".json,application/json" multiple hidden>
+</mdui-dialog>
+
+<mdui-dialog id="refineDialog" class="medium-dialog refine-dialog" close-on-esc close-on-overlay-click>
+  <span slot="headline">细化预设</span>
+  <span slot="description">点「套用」会关闭 Turbo、写入细化参数；细节词与 LoRA 触发词追加在转写后的 Tags 行，不交给转写模型改写。</span>
+  <div class="refine-list" id="refineList"></div>
+  <p class="helper dialog-helper">套用会替换上一组预设词，只保留当前这一组；步数按所选值实际采样，重绘 0.30–0.40 保构图，0.40–0.55 改光影和布料。</p>
+  <mdui-button slot="action" variant="text" id="closeRefineDialog">关闭</mdui-button>
+</mdui-dialog>
+
+<mdui-dialog id="loraDialog" class="medium-dialog lora-dialog" close-on-esc close-on-overlay-click>
+  <span slot="headline">LoRA 增强</span>
+  <span slot="description">只列出已安装的 LoRA。官方增强 0.5–0.8，画风 0.6–0.9，滑块一次只调一个。</span>
+  <div class="lora-dialog-body">
+    <div class="lora-dialog-head">
+      <span id="loraDialogHint">读取中…</span>
+      <mdui-button-icon id="refreshLorasBtn" aria-label="刷新 LoRA 列表" title="刷新 LoRA 列表"><span class="icon" data-icon="refresh"></span></mdui-button-icon>
+    </div>
+    <div class="lora-cats" id="loraCats" role="group" aria-label="LoRA 分类"></div>
+    <div class="lora-list" id="loraList"></div>
+    <div class="preset-empty" id="loraEmpty" hidden>还没有安装 LoRA。把 .safetensors 放进 D:\AI\models\loras 后点刷新。</div>
+  </div>
+  <p class="helper dialog-helper">LoRA 要和底模架构匹配：Anima 底模用已登记的 Anima LoRA，SDXL 系只在 Pony 底模可用；同时挂多个时，建议 1 个画风 + 1 个增强，每个 0.5–0.8。</p>
+  <mdui-button slot="action" variant="text" id="closeLoraDialog">完成</mdui-button>
+</mdui-dialog>
+
+<mdui-dialog id="helpDialog" class="small-dialog" close-on-esc>
+  <span slot="headline">使用说明</span>
+  <div class="help-body">
+    <section class="help-section">
+      <h4>手机上</h4>
+      <p>顶部三档：描述 / 参数 / 画面；生成后自动切到画面，底栏始终可以生成或停止。大图预览支持左右滑翻页、双指缩放，1× 时下滑关闭。作品库卡片点图进入预览，收藏、参数、导出、删除都在预览里完成。</p>
+    </section>
+    <section class="help-section">
+      <h4>快捷键</h4>
+      <div class="shortcut-grid">
+        <kbd>Ctrl + Enter</kbd><span>开始生成 / 停止</span>
+        <kbd>Alt + 1…4</kbd><span>切换 速写 / 标准 / 精细 / 高清</span>
+        <kbd>Alt + 5</kbd><span>切到抽卡模式（Anima）</span>
+        <kbd>Alt + B</kbd><span>切换批量张数（抽卡到 12）</span>
+        <kbd>Esc</kbd><span>关闭弹层</span>
+        <kbd>← / →</kbd><span>大图预览切上一张 / 下一张</span>
+        <kbd>滚轮</kbd><span>放大预览缩放 · 按住拖动平移 · 双击复位</span>
+        <kbd>点击大图</kbd><span>放大预览与下载</span>
+      </div>
+    </section>
+    <section class="help-section">
+      <h4>日常用法</h4>
+      <p>生成时主画面会同步显示每一步的采样预览，左侧栏底部显示进度与剩余时间。左侧按工作流从上到下排：模式与预设、画面描述、画质与张数、尺寸、采样、步数与强度、种子、高清放大、引擎细节、模型与 LoRA；参数栏自己滚动，生成按钮和发送摘要固定在栏底，始终可见。画质里的「抽卡 / 速写 / 标准 / 精细 / 高清」会自动设置步数、CFG 与高清放大，档位会随当前模型变化（MiaoMiao 标准 32 步，Silvermoon 标准 28 步）。「抽卡」只在 Anima 的文生图出现：自动挂 Turbo LoRA，10 步 / CFG 1 / Euler·Beta，张数可选 1 / 2 / 4 / 8 / 12（其余画质档仍为 1 / 2 / 4）；切到图生图时抽卡档会自动转成细化参数（关 Turbo、28 步实采 / CFG 4），张数收回 1。从图库把抽卡图送去重绘时会自动切到细化参数，之后可在参考图卡片里点「细化预设」加一组细节词（预设词与 LoRA 触发词都追加在转写后的 Tags 行）。切换模型会自动套用该模型的推荐采样与记住的参数；想固定同一张脸和构图时，打开「固定种子」；「换一张」会重新随机。批量多图会按顺序生成，画布下方出现本批对比条，拼图另存在 <code>txt2img-grids</code>。</p>
+      <p>图生图先选参考图，用重绘幅度控制变化大小。图生图按所选步数实际采样，不会被重绘幅度折算成更少步数。参考图长边超过 1280 会等比压到 1280；PNG 来源保持无损（超过约 6MB 才转 JPEG），避免反复重绘叠加压缩噪点。画质里的「抽卡」和「高清」只出现在文生图：重绘没有 Hires 二采，切到图生图时这两档会自动退回当前参数。生成的画面可以一键「送去重绘」，继续细修；送去重绘时张数固定为 1。从图库送去重绘时，如果原图带提示词，提示条上的「载入原词」可一键载入原提示词和负面词；「查看参数 → 载入参数」也会恢复重绘幅度，图生图作品会自动切到图生图模式（参考图需重新选择）。左侧参数栏可切换采样组合（SDXL：均衡 / 写实 / 结构 / 柔和 / 低步；Anima：均衡 / 厚涂 / 结构 / 柔和 / 低步；Krea 2：Euler·Simple / Euler·Beta / Euler a / 6 步极速），步数与强度仍由画质档或滑杆控制；「引擎细节」可改 CLIP 跳过层（Pony / SDXL 用 2）、VAE / 模块与 Hires 放大算法。Anima 与 Krea 2 底模会多出 Shift 滑杆（Krea 2 默认 1.15）。Hires 二次步数自动取基础步数一半（至少 8 步），8GB 显存优先 1.25x + Lanczos。Krea 2 Turbo 是 12B 流匹配 DiT + Qwen3-VL 4B 编码器：标准档 8 步 / CFG 1 / Euler·Simple / Shift 1.15，首次加载权重较慢，之后复用系统页缓存。所有设置会自动保存在本机浏览器，最近作品只在当前页面会话中保留。</p>
+      <p>风格条上有三个库：<b>角色</b>收录近 400 个成年角色，点一次把角色、系列与外观整包写入；弹窗顶部可切到<b>全年龄</b>库，收录 271 个经典 IP：Vocaloid / UTAU、东方、番剧、VTuber，以及王者荣耀、无畏契约、原神、崩坏：星穹铁道、英雄联盟、守望先锋、明日方舟、永劫无间和经典单机角色；只写非性化的正常服装与外观，应用时会自动剔除 adult / mature female 等成人词并把评级切到「安全」。<b>画师</b>按 Anima 画师标签混合；<b>灵感与标签</b>里有 <b id="helpTagCount">720+</b> 个正向标签和 <b id="helpNegTagCount">170+</b> 个负面标签，全部中文显示，点击写入英文。三个库都支持搜索与分类跳转，角色与标签会显示当前选中状态。右上角「外观」菜单可选浅色、深色或跟随系统。</p>
+      <p>「画面描述」可以直接写中文自然语言。点「生成画面」时会先调用本机 Qwen3.5-4B（CPU 推理，不占显存、不联网），按当前底模自动写成英文提示词：Anima 写成三句画面叙事加一行 Danbooru 标签，Krea 2 写成完整自然语言描述（不带 Tags 行、不套画师标签惯例），Pony / SDXL 写成纯标签。英文草稿会显示在输入框下方，可「换一版 / 编辑 / 复制 / 收起」；生成时自动使用草稿，输入框里的中文原样保留。纯英文标签默认原样发送、不调用模型；点过「转写预览」后生成时改用那份草稿（可能带上质量前缀与风格标签），草稿失效则回到原样发送。首次转写要加载模型，约 10–30 秒。</p>
+      <p>「画面描述」标题右侧的「评级」按钮由你手动决定评级：默认「自动」不写任何评级标签（保持 raw 直出）；选「安全 / 敏感 / NSFW / 露骨」后，生成时会在标签里写入对应评级，Anima 用 safe / sensitive / nsfw / explicit，Pony 用 rating_safe / rating_questionable / rating_explicit（Pony 没有敏感档，敏感与 NSFW 都落到 rating_questionable）；Krea 2 不写评级标签，评级只决定转译时是否保留成人细节。评级也会参与 4B 转译：NSFW / 露骨档会要求模型保留你写出的成人动作和身体细节、不写委婉语，并把对应评级标签写进英文草稿的 Tags 行；切换评级后旧草稿会标记为需重新转译。中文输入框始终原样保留。</p>
+    </section>
+    <section class="help-section">
+      <h4>显存与保存</h4>
+      <p>8GB 显存实测（832×1216；桌面壁纸、浏览器等常驻程序会占用显存，耗时可能上下浮动 20–50%）：MiaoMiao bf16 / 32 步约 35–65 秒，峰值 7.0–7.5GB；Silvermoon INT8 / 28 步约 26–40 秒，峰值 5.3–7.2GB。刚切换模型的第一张还要加载权重：MiaoMiao 约 30–60 秒，Silvermoon 约 20–40 秒。MiaoMiao 开 Hires 1.25x / 32 步实测约 94 秒，峰值 7.5GB，已经接近上限；Silvermoon 同档 28 步约 47 秒。1.5x 不建议直接上。成图自动保存在 <code>D:\AI\sd-webui-forge-neo\output\txt2img-images</code>，图生图在 <code>img2img-images</code>。</p>
+    </section>
+    <section class="help-section">
+      <h4>内容边界</h4>
+    </section>
+    <div class="help-note"><strong>隐私：</strong>引擎与界面都只监听 127.0.0.1；参考图只在当前页面内存中处理，不写入浏览器存储。界面基于 MDUI 2.1.5（MIT）。<br><strong>KlockUI：</strong>本地生图工作台 · 浅灰蓝主题 · ComfyUI 引擎。</div>
+  </div>
+  <mdui-button slot="action" variant="text" id="closeHelp">知道了</mdui-button>
+</mdui-dialog>
+
+<mdui-dialog id="lightboxDialog" class="lightbox-dialog" fullscreen close-on-esc>
+  <span slot="headline" class="lightbox-head">
+    <span class="lightbox-title">画面预览</span>
+    <span class="lightbox-counter" id="lightboxCounter" aria-live="polite" hidden></span>
+    <span class="lightbox-zoom" id="lightboxZoom" hidden></span>
+    <span class="lightbox-head-actions" id="lightboxHeadActions" hidden>
+      <button type="button" class="lightbox-head-btn" id="lightboxUpscale" title="无损放大" aria-label="无损放大"><span class="icon" data-icon="upscale"></span></button>
+      <button type="button" class="lightbox-head-btn" id="lightboxFavorite" title="收藏" aria-label="收藏" aria-pressed="false"><span class="icon" id="lightboxFavoriteIcon" data-icon="star"></span></button>
+      <button type="button" class="lightbox-head-btn" id="lightboxSend" title="送去图生图" aria-label="送去图生图"><span class="icon" data-icon="send"></span></button>
+      <button type="button" class="lightbox-head-btn is-danger" id="lightboxDelete" title="删除作品" aria-label="删除作品"><span class="icon" data-icon="trash"></span></button>
+    </span>
+  </span>
+  <div class="lightbox-body">
+    <img id="lightboxImg" alt="放大预览" draggable="false">
+    <button type="button" class="lightbox-nav is-prev" id="lightboxPrev" aria-label="上一张" title="上一张（←）" hidden><span class="icon" data-icon="arrowLeft"></span></button>
+    <button type="button" class="lightbox-nav is-next" id="lightboxNext" aria-label="下一张" title="下一张（→）" hidden><span class="icon" data-icon="arrowRight"></span></button>
+  </div>
+  <mdui-button slot="action" variant="text" id="lightboxInfo"><span slot="icon" class="icon" data-icon="sliders"></span>参数</mdui-button>
+  <mdui-button slot="action" variant="tonal" id="lightboxDownload"><span slot="icon" class="icon" data-icon="download"></span>导出原图</mdui-button>
+  <mdui-button slot="action" variant="text" id="closeLightbox">关闭</mdui-button>
+</mdui-dialog>
+
+<mdui-dialog id="galleryInfoDialog" class="medium-dialog gallery-info-dialog" close-on-esc close-on-overlay-click>
+  <span slot="headline">画面参数</span>
+  <span slot="description" id="galleryInfoDesc">从 PNG 元数据读取，可载入回工作台。</span>
+  <div class="gallery-info-body">
+    <div class="gallery-info-status" id="galleryInfoStatus">读取中…</div>
+    <section class="gallery-info-section" id="galleryInfoPromptSection" hidden>
+      <div class="gallery-info-head"><strong>正向提示词</strong><button type="button" class="text-link" id="galleryInfoCopyPrompt">复制</button></div>
+      <p class="gallery-info-text" id="galleryInfoPrompt"></p>
+    </section>
+    <section class="gallery-info-section" id="galleryInfoNegativeSection" hidden>
+      <div class="gallery-info-head"><strong>负面提示词</strong><button type="button" class="text-link" id="galleryInfoCopyNegative">复制</button></div>
+      <p class="gallery-info-text" id="galleryInfoNegative"></p>
+    </section>
+    <section class="gallery-info-section" id="galleryInfoMetaSection" hidden>
+      <div class="gallery-info-head"><strong>生成参数</strong><span class="ai-review-meta" id="galleryInfoMetaHint"></span></div>
+      <dl class="gallery-meta-grid" id="galleryInfoMeta"></dl>
+    </section>
+  </div>
+  <mdui-button slot="action" variant="text" id="closeGalleryInfo">关闭</mdui-button>
+  <mdui-button slot="action" variant="tonal" id="galleryInfoUpscale"><span slot="icon" class="icon" data-icon="upscale"></span>放大</mdui-button>
+  <mdui-button slot="action" variant="tonal" id="galleryInfoSend">送去图生图</mdui-button>
+  <mdui-button slot="action" variant="filled" id="galleryInfoLoad" disabled>载入参数</mdui-button>
+</mdui-dialog>
+
+<mdui-dialog id="queueDialog" class="medium-dialog queue-dialog" close-on-esc close-on-overlay-click>
+  <span slot="headline">生成队列</span>
+  <span slot="description" id="queueDesc">任务按顺序执行；排队中的可以取消，运行中的停止会保留中途结果。</span>
+  <div class="queue-body">
+    <div class="queue-status" id="queueStatus">读取中…</div>
+    <div class="queue-list" id="queueList" aria-live="polite"></div>
+  </div>
+  <mdui-button slot="action" variant="text" id="closeQueue">关闭</mdui-button>
+</mdui-dialog>
+
+<mdui-dialog id="upscaleDialog" class="medium-dialog upscale-dialog" close-on-esc close-on-overlay-click>
+  <span slot="headline">无损放大</span>
+  <span slot="description" id="upscaleDesc">选算法 → 开始放大 → 满意再保存。只保留 AI 超分模型，按模型原生倍数出图；保存与导出都会写入出图目录。</span>
+  <div class="upscale-body">
+    <div class="upscale-preview" id="upscalePreview">
+      <img id="upscaleImg" alt="放大预览" hidden>
+      <span class="upscale-empty" id="upscaleEmpty">选好算法后点「开始放大」</span>
+    </div>
+    <div class="upscale-controls">
+      <div class="upscale-row" id="upscaleScaleRow">
+        <span class="upscale-label">倍数</span>
+        <mdui-segmented-button-group id="upscaleScale" selects="single" value="2">
+          <mdui-segmented-button value="1.5">1.5x</mdui-segmented-button>
+          <mdui-segmented-button value="2">2x</mdui-segmented-button>
+          <mdui-segmented-button value="3">3x</mdui-segmented-button>
+          <mdui-segmented-button value="4">4x</mdui-segmented-button>
+        </mdui-segmented-button-group>
+        <span class="upscale-native is-off" id="upscaleNativeHint">原生倍数</span>
+      </div>
+      <div class="upscale-row">
+        <span class="upscale-label">算法</span>
+        <mdui-segmented-button-group id="upscaleAlgo" selects="single" value="Lanczos">
+          <mdui-segmented-button value="Lanczos">Lanczos</mdui-segmented-button>
+          <mdui-segmented-button value="Nearest">Nearest</mdui-segmented-button>
+        </mdui-segmented-button-group>
+      </div>
+      <p class="helper" id="upscaleHint">超分模型是固定倍数的（本地三个都是 4×）：直接按原生倍数出图，不再缩回小倍数。选模型就是选风格，尺寸由模型决定。</p>
+      <div class="upscale-meta" id="upscaleMeta">还没有预览。</div>
+    </div>
+  </div>
+  <mdui-button slot="action" variant="text" id="closeUpscale">关闭</mdui-button>
+  <mdui-button slot="action" variant="tonal" id="upscalePreviewBtn"><span slot="icon" class="icon" data-icon="sparkles"></span>开始放大</mdui-button>
+  <mdui-button slot="action" variant="tonal" id="upscaleSave" disabled><span slot="icon" class="icon" data-icon="gallery"></span>保存到作品库</mdui-button>
+  <mdui-button slot="action" variant="filled" id="upscaleExport" disabled><span slot="icon" class="icon" data-icon="download"></span>导出 PNG</mdui-button>
+</mdui-dialog>
+
+<mdui-dialog id="galleryDialog" class="gallery-dialog" close-on-esc>
+  <span slot="headline">作品库</span>
+  <span slot="description" id="galleryDesc">本机出图目录里的全部作品；收藏、导出，或送去图生图。</span>
+  <div class="gallery-body">
+    <div class="gallery-toolbar">
+      <mdui-segmented-button-group id="galleryFilter" selects="single" value="all">
+        <mdui-segmented-button value="all">全部</mdui-segmented-button>
+        <mdui-segmented-button value="txt2img">文生图</mdui-segmented-button>
+        <mdui-segmented-button value="img2img">图生图</mdui-segmented-button>
+        <mdui-segmented-button value="favorite">收藏</mdui-segmented-button>
+      </mdui-segmented-button-group>
+      <div class="gallery-tools">
+        <span class="gallery-count" id="galleryCount">读取中…</span>
+        <mdui-button-icon id="gallerySelect" aria-label="多选作品" title="多选"><span class="icon" data-icon="checks"></span></mdui-button-icon>
+        <mdui-button-icon id="galleryRefresh" aria-label="刷新作品库" title="刷新"><span class="icon" data-icon="refresh"></span></mdui-button-icon>
+        <mdui-button-icon id="galleryOpenFolder" aria-label="打开出图目录" title="打开出图目录"><span class="icon" data-icon="folder"></span></mdui-button-icon>
+      </div>
+    </div>
+    <div class="gallery-selectbar" id="gallerySelectBar" hidden>
+      <span class="gallery-select-count" id="gallerySelectCount">已选 0 张</span>
+      <div class="gallery-select-tools">
+        <button class="text-link" id="gallerySelectAll" type="button">全选本页</button>
+        <button class="text-link" id="gallerySelectClear" type="button">清空</button>
+        <button class="text-link" id="gallerySelectDone" type="button">完成</button>
+      </div>
+    </div>
+    <div class="gallery-status" id="galleryStatus" hidden></div>
+    <div class="gallery-grid" id="galleryGrid" aria-live="polite"></div>
+    <div class="gallery-empty" id="galleryEmpty" hidden>
+      <span class="gallery-empty-icon" data-icon="gallery"></span>
+      <strong id="galleryEmptyTitle">还没有作品</strong>
+      <p id="galleryEmptyHint">生成第一张画面后，作品会自动出现在这里。</p>
+    </div>
+    <div class="gallery-more-wrap" id="galleryMoreWrap" hidden>
+      <mdui-button id="galleryMore" variant="tonal">加载更多</mdui-button>
+    </div>
+    <div class="gallery-batchbar" id="galleryBatchBar" hidden>
+      <span class="gallery-batch-count" id="galleryBatchCount">已选 0 张</span>
+      <div class="gallery-batch-actions">
+        <button class="gallery-batch-action" id="galleryBatchFavorite" type="button"><span class="icon" data-icon="star"></span><span id="galleryBatchFavoriteLabel">收藏</span></button>
+        <button class="gallery-batch-action" id="galleryBatchExport" type="button"><span class="icon" data-icon="download"></span><span>导出</span></button>
+        <button class="gallery-batch-action" id="galleryBatchSend" type="button" disabled><span class="icon" data-icon="send"></span><span>重绘</span></button>
+        <button class="gallery-batch-action is-danger" id="galleryBatchDelete" type="button"><span class="icon" data-icon="trash"></span><span>删除</span></button>
+      </div>
+    </div>
+  </div>
+  <mdui-button slot="action" variant="text" id="closeGallery">关闭</mdui-button>
+</mdui-dialog>
+
+<script src="/vendor/mdui.global.js"></script>
+<script src="/assets/artists.js?v=20261029m"></script>
+<script src="/assets/characters.js?v=20261031char9"></script>
+<script src="/assets/characters-normal.js?v=20261103normal4"></script>
+<script src="/assets/app.js?v=20261118drop2"></script>
+</body>
+</html>

@@ -1,0 +1,32 @@
+{
+  "klockui": 1,
+  "name": "初音 · 樱花坡道",
+  "note": "初音未来插画组 · 画风版",
+  "model": "krea2_turbo_int8_convrot.safetensors",
+  "prompt": "anime illustration, cel shading, clean lineart, flat colors, bright saturated colors, 2D artwork, hatsune miku running up a slope lined with cherry blossom trees, petals swirling around her, hair and skirt flying, bright spring sunlight, petals as flat pink shapes, joyful laughing expression, low angle tracking view",
+  "negative": "",
+  "quality": "standard",
+  "size": {
+    "width": 832,
+    "height": 1216
+  },
+  "steps": 12,
+  "cfg": 1,
+  "sampler": "Euler",
+  "scheduler": "Simple",
+  "shift": 3,
+  "seed": -1,
+  "batch": 1,
+  "hires": false,
+  "easyCache": true,
+  "loras": [
+    {
+      "name": "krea2_fuzichoco",
+      "weight": 0.8
+    },
+    {
+      "name": "krea2_kantoku",
+      "weight": 0.5
+    }
+  ]
+}

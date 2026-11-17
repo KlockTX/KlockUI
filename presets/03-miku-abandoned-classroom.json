@@ -1,0 +1,32 @@
+{
+  "klockui": 1,
+  "name": "初音 · 废弃教室",
+  "note": "初音未来插画组 · 画风版",
+  "model": "krea2_turbo_int8_convrot.safetensors",
+  "prompt": "anime film still, background art, studio anime production, hand-painted background, 1990s anime aesthetic, limited color palette, hatsune miku sitting sideways on a windowsill in an abandoned classroom, legs drawn up, afternoon sunlight through dusty glass, chalk dust as small light dots, faded desks stacked against the wall, muted warm colors, subtle screentone",
+  "negative": "",
+  "quality": "standard",
+  "size": {
+    "width": 832,
+    "height": 1216
+  },
+  "steps": 14,
+  "cfg": 1,
+  "sampler": "Euler",
+  "scheduler": "Simple",
+  "shift": 3,
+  "seed": -1,
+  "batch": 1,
+  "hires": false,
+  "easyCache": true,
+  "loras": [
+    {
+      "name": "krea2_90s_aesthetic",
+      "weight": 0.8
+    },
+    {
+      "name": "krea2_loundraw",
+      "weight": 0.5
+    }
+  ]
+}

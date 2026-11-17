@@ -1,0 +1,68 @@
+# ---- Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+venv/
+env/
+
+# ---- KlockUI 运行时产物
+outputs/
+logs/
+*.log
+.cache/
+history.json
+*.history.json
+thumbnails/
+.gallery/
+
+# ---- 本地凭证与个人数据（绝对不能进仓库）
+*.token
+civitai.token
+auth.json
+cookies*.txt
+*.session
+
+# ---- 模型权重：仓库不分发模型
+*.safetensors
+*.ckpt
+*.pt
+*.pth
+*.gguf
+*.onnx
+models/
+!presets/**/*.json
+
+# ---- 编辑器 / 系统
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# ---- 临时文件
+*.tmp
+*.bak
+*.swp
+*~
+
+# ---- 项目内部：备份、私密配置、个人数据
+_backup/
+.private/
+*.disabled-*
+gallery-favorites.json
+
+# ---- 个人工作笔记（不属于产品代码）
+perf-report-*.md
+explore-report-*.md
+lora-list.md
+prompts-miku*.md
+plan-preset-json.md
+server.log
+server.log.*
+plan-*.md
+anima-research-*.md
+*.bak
+*.bak-*
+plan.md
+assets/*.bak-*

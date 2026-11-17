@@ -1,0 +1,28 @@
+{
+  "klockui": 1,
+  "name": "初音 · 图书馆",
+  "note": "初音未来插画组 · 画风版",
+  "model": "krea2_turbo_int8_convrot.safetensors",
+  "prompt": "anime illustration, cel shading, soft clean colors, delicate lineart, 2D artwork, hatsune miku in a library aisle, hugging a stack of books to her chest, looking back over her shoulder, tall shelves fading into shadow behind her, warm lamp light, dust motes as tiny dots, gentle smile, three-quarter view",
+  "negative": "",
+  "quality": "standard",
+  "size": {
+    "width": 832,
+    "height": 1216
+  },
+  "steps": 12,
+  "cfg": 1,
+  "sampler": "Euler",
+  "scheduler": "Simple",
+  "shift": 3,
+  "seed": -1,
+  "batch": 1,
+  "hires": false,
+  "easyCache": true,
+  "loras": [
+    {
+      "name": "krea2_anmi",
+      "weight": 0.8
+    }
+  ]
+}

@@ -1,0 +1,155 @@
+{
+  "$schema": "klockui-models/2",
+  "verified_at": "2026-11-18",
+  "note": "KlockUI 不附带任何模型。本清单只描述『哪个架构需要哪几个文件、去哪下、多大、什么许可』。安装代理应先用第 0 节的询问流程确定用户要哪些架构，只下对应条目。",
+  "mirrors": {
+    "cn": "https://hf-mirror.com",
+    "global": "https://huggingface.co"
+  },
+  "download_rules": [
+    "URL = mirrors[当前源] + \"/\" + asset.path。国内优先 cn，失败或过慢（<300KB/s 持续 30 秒）再切 global。",
+    "global 源在中国大陆通常直连不通，切换前先提示用户开启代理（Clash/V2Ray 的 HTTP 代理），再设置 HTTPS_PROXY 环境变量。",
+    "每个文件下载完必须比对 size（精确字节数）；不等于清单值即判定截断，删除重下，绝不尝试加载。",
+    "hf-mirror 限流时会返回 HTTP 200 但只有几百字节的错误体——判断依据永远是字节数，不是状态码。",
+    "sha256 只在清单提供时校验；大文件用 size + safetensors header 双重校验即可。"
+  ],
+  "ask": {
+    "question": "要装哪些模型的 LoRA 生态？（可多选，只影响能跑哪些底模，不影响 KlockUI 本身）",
+    "options": [
+      { "arch": "anima", "label": "Anima 2.9B（推荐，约 5.4GB）", "note": "写实/二次元通用，28–50 步，生态成熟。非商用许可。" },
+      { "arch": "zimage", "label": "Z-Image Turbo（约 12GB）", "note": "9 步出图，唯一能正确渲染中文的架构。Apache-2.0。" },
+      { "arch": "krea", "label": "Krea 2 Turbo（约 19GB）", "note": "画质上限最高，12.9B。8GB 显存需 --lowvram。社区许可。" },
+      { "arch": "moss", "label": "MOSS-Image（约 13GB）", "note": "支持 JSON 布局排版与中英文字。Apache-2.0。" }
+    ],
+    "rule": "用户只选一个也能完整出图。不要默认全装——总量约 49GB。"
+  },
+  "assets": [
+    {
+      "id": "anima-aesthetic",
+      "arch": "anima",
+      "file": "anima-aesthetic-v1.1.safetensors",
+      "dir": "diffusion_models",
+      "path": "circlestone-labs/Anima/resolve/main/split_files/diffusion_models/anima-aesthetic-v1.1.safetensors",
+      "size": 4182230656,
+      "sha256": "3c1868387a3a1ff504bbb87c33678321965ead381fcf87afbd0264daa600c082",
+      "license": "CircleStone Labs Non-Commercial",
+      "note": "Anima 主力底模。非商用，商业用途需自行替换。"
+    },
+    {
+      "id": "anima-turbo",
+      "arch": "anima",
+      "file": "anima-turbo-v1.1.safetensors",
+      "dir": "diffusion_models",
+      "path": "circlestone-labs/Anima/resolve/main/split_files/diffusion_models/anima-turbo-v1.1.safetensors",
+      "size": 4182230656,
+      "license": "CircleStone Labs Non-Commercial",
+      "note": "8 步蒸馏版，约 3 倍速度，画质略低。可选。"
+    },
+    {
+      "id": "anima-te",
+      "arch": "anima",
+      "file": "qwen_3_06b_base.safetensors",
+      "dir": "text_encoders",
+      "path": "circlestone-labs/Anima/resolve/main/split_files/text_encoders/qwen_3_06b_base.safetensors",
+      "size": 1192135096,
+      "license": "Apache-2.0",
+      "note": "CLIPLoader type 必须是 stable_diffusion。"
+    },
+    {
+      "id": "anima-vae",
+      "arch": "anima",
+      "file": "qwen_image_vae.safetensors",
+      "dir": "vae",
+      "path": "circlestone-labs/Anima/resolve/main/split_files/vae/qwen_image_vae.safetensors",
+      "size": 253806246,
+      "license": "Apache-2.0",
+      "note": "Anima 与 Krea 2 共用同一份 VAE。"
+    },
+    {
+      "id": "zimage-model",
+      "arch": "zimage",
+      "file": "z_image_turbo_int8_convrot.safetensors",
+      "dir": "diffusion_models",
+      "path": "Comfy-Org/Z-Image-Turbo/resolve/main/split_files/diffusion_models/z_image_turbo_int8_convrot.safetensors",
+      "size": 6201001296,
+      "license": "Apache-2.0",
+      "note": "6B 蒸馏，9 步。int8 版本对 8GB 显存最友好。"
+    },
+    {
+      "id": "zimage-te",
+      "arch": "zimage",
+      "file": "qwen_3_4b_fp8_mixed.safetensors",
+      "dir": "text_encoders",
+      "path": "Comfy-Org/Z-Image-Turbo/resolve/main/split_files/text_encoders/qwen_3_4b_fp8_mixed.safetensors",
+      "size": 5631994051,
+      "license": "Apache-2.0",
+      "note": "CLIPLoader type 必须是 lumina2。"
+    },
+    {
+      "id": "zimage-vae",
+      "arch": "zimage",
+      "file": "ae.safetensors",
+      "dir": "vae",
+      "path": "Comfy-Org/Z-Image-Turbo/resolve/main/split_files/vae/ae.safetensors",
+      "size": 335304388,
+      "license": "Apache-2.0",
+      "note": "FLUX 的 ae VAE。"
+    },
+    {
+      "id": "krea-model",
+      "arch": "krea",
+      "file": "krea2_turbo_int8_convrot.safetensors",
+      "dir": "diffusion_models",
+      "path": "Comfy-Org/Krea-2/resolve/main/diffusion_models/krea2_turbo_int8_convrot.safetensors",
+      "size": 13492686496,
+      "license": "Krea 2 Community（年收入 <100 万美元免费）",
+      "note": "12.9B / 8 步蒸馏。8GB 显存必须配 --lowvram。"
+    },
+    {
+      "id": "krea-te",
+      "arch": "krea",
+      "file": "qwen3vl_4b_fp8_scaled.safetensors",
+      "dir": "text_encoders",
+      "path": "Comfy-Org/Krea-2/resolve/main/text_encoders/qwen3vl_4b_fp8_scaled.safetensors",
+      "size": 5242467968,
+      "license": "Apache-2.0",
+      "note": "CLIPLoader type 必须是 krea2。"
+    },
+    {
+      "id": "moss-model",
+      "arch": "moss",
+      "file": "moss_image_sft_int8_convrot.safetensors",
+      "dir": "diffusion_models",
+      "path": "Comfy-Org/MOSS-Image/resolve/main/diffusion_models/moss_image_sft_int8_convrot.safetensors",
+      "size": 5413698958,
+      "license": "Apache-2.0",
+      "note": "5B，支持 JSON 布局。"
+    },
+    {
+      "id": "moss-te",
+      "arch": "moss",
+      "file": "qwen3.5_9b_w4a8_gptq.safetensors",
+      "dir": "text_encoders",
+      "path": "Comfy-Org/MOSS-Image/resolve/main/text_encoders/qwen3.5_9b_w4a8_gptq.safetensors",
+      "size": 7343591088,
+      "license": "Apache-2.0",
+      "note": "7.3GB，比 5.4GB 的底模还大，显存规划时别忽略。"
+    },
+    {
+      "id": "moss-vae",
+      "arch": "moss",
+      "file": "flux2-vae_small.safetensors",
+      "dir": "vae",
+      "path": "Comfy-Org/MOSS-Image/resolve/main/vae/flux2-vae_small.safetensors",
+      "size": 249521340,
+      "license": "Apache-2.0",
+      "note": "FLUX.2 小 VAE（128 通道 latent）。"
+    }
+  ],
+  "arch_requires": {
+    "anima": ["anima-aesthetic", "anima-te", "anima-vae"],
+    "zimage": ["zimage-model", "zimage-te", "zimage-vae"],
+    "krea": ["krea-model", "krea-te", "anima-vae"],
+    "moss": ["moss-model", "moss-te", "moss-vae"]
+  }
+}
