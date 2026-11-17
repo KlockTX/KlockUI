@@ -133,6 +133,41 @@ cd KlockUI
 ../ComfyUI/venv/bin/python -c "import server, comfy_bridge; print('ok')"
 ```
 
+### 4.1 安装 skill（强烈建议，别跳过）
+
+`skill.md` 是给 agent 用的配置手册：架构参数、排错表、加/删模型的七处改动、文件与功能索引。
+把它装进你的技能目录，以后用户问"怎么换个底模""报错了"，下一个会话的 agent 能直接查到，
+不必重新翻代码。
+
+**装法**：整份复制成 `SKILL.md`，目录名用 `klockui`。
+
+```bash
+# WorkBuddy
+mkdir -p ~/.workbuddy/skills/klockui
+cp skill.md ~/.workbuddy/skills/klockui/SKILL.md
+
+# Claude Code
+mkdir -p ~/.claude/skills/klockui
+cp skill.md ~/.claude/skills/klockui/SKILL.md
+
+# 其他 agent：放进它约定的技能目录，文件名统一叫 SKILL.md
+```
+
+Windows 下用 `%USERPROFILE%\.workbuddy\skills\klockui\SKILL.md` 这种形式。
+
+**不用改内容**：`skill.md` 开头已经带了 YAML frontmatter（`name: klockui` + `description`），
+直接改名即可被识别。
+
+**验收**：目录里能看到这个文件，且它开头三行是：
+
+```
+---
+name: klockui
+description: ...
+```
+
+若用户不想装技能，**不要因此中断安装**——它是增强项，不是运行依赖。跳过时在报告里注明一句即可。
+
 ---
 
 ## 5. P2 · 模型（全部可选，按第 2 节的回答装）
@@ -328,6 +363,7 @@ python -c "import comfy_bridge as c; print(c.MODELS_ROOT, c.DIFF_DIR)"
 - [ ] `8188/system_stats` → 200
 - [ ] `7861/api/status` → `online: true` 且 `model` 非空（为空即未完成，见 6.3）
 - [ ] 6.4 返回 `done`，产出 PNG
+- [ ] skill.md 已复制为 `<技能目录>/klockui/SKILL.md`（用户拒绝则注明）
 - [ ] 环境报告已填写
 - [ ] 未改 ComfyUI 源码、未用系统 Python
 

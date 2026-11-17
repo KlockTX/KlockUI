@@ -118,7 +118,7 @@ zimage: {
 > 安装 https://github.com/KlockTX/KlockUI ，按仓库里的 `install.md` 执行。
 
 它会 clone 代码、建 Python 环境、按你的显卡选量化档、**问你要装哪些模型**、
-逐个文件校验下载，最后跑一张测试图确认可用。
+逐个文件校验下载、把 `skill.md` 装成 agent 技能，最后跑一张测试图确认可用。
 
 手动装也可以，[`install.md`](install.md) 里每一步都带断言，照着走即可。
 
