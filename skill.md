@@ -355,7 +355,7 @@ KlockUI 支持把整套设置写成 `.json`，拖到界面「画面描述」框�
   "prompt": "...",
   "negative": "",
   "quality": "standard",
-  "size": { "width": 832, "height": 1216 },
+  "size": { "ratio": "2:3", "width": 832, "height": 1216 },
   "steps": 12,
   "cfg": 1,
   "sampler": "Euler",

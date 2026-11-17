@@ -8302,7 +8302,9 @@
       ...cfg,
       // 这两个字段在界面上是隐式的，导出时写实，方便手改
       model: state.activeModel,
-      seed: cfg.seedLocked ? cfg.seed : -1
+      seed: cfg.seedLocked ? cfg.seed : -1,
+      // 比例键与具体像素都写进去：手改时知道这是哪一档，导入时也能还原选中态
+      size: { ratio: cfg.ratioKey || "custom", width: cfg.width, height: cfg.height }
     }, "当前参数");
   }
 

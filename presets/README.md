@@ -20,7 +20,8 @@
 | `prompt` | string | 正面提示词 |
 | `negative` | string | 负面（Krea / Z-Image 是 CFG 1，填了也不生效） |
 | `quality` | string | 画质档：`gacha` / `draft` / `standard` / `fine` / `hires` |
-| `size` | object | `{width, height}` 或 `{ratio: "2:3"}` |
+| `size` | object | `{ratio: "2:3", width, height}` —— 比例键决定界面选中哪一档，宽高决定实际像素 |
+| `ratioKey` | string | 与 `size.ratio` 等价，顶层写法（导出时两者都会出现） |
 | `steps` | number | 6–60 |
 | `cfg` | number | 1–10 |
 | `sampler` | string | `Euler` / `Res Multistep` / `DPM++ 2M` … |

@@ -73,7 +73,9 @@ IDLE_UNLOAD_SECONDS = int(os.environ.get("KLOCK_IDLE_UNLOAD_SECONDS", "600"))
 # 空闲这么久就直接退出，下次需要时冷启动（约 10-30 秒）。设 0 可关闭该行为。
 PROMPT_LLM_IDLE_SECONDS = int(os.environ.get("KLOCK_PROMPT_IDLE_SECONDS", "600"))
 HISTORY_MAX = 60
-HISTORY_FILE = os.path.join(ROOT, ".cache", "history.json")
+# 缓存目录（历史、缩略图、导出）。支持改路径，方便多实例并存或做干净演示环境。
+CACHE_DIR = os.environ.get("KLOCK_CACHE_DIR") or os.path.join(ROOT, ".cache")
+HISTORY_FILE = os.path.join(CACHE_DIR, "history.json")
 JOBS = {}
 JOB_QUEUE = []
 JOBS_LOCK = threading.Lock()
@@ -966,7 +968,7 @@ FAVORITES_DIRNAME = "favorites"
 FAVORITES_DIR = os.path.join(OUTPUT_ROOT, FAVORITES_DIRNAME)
 IMAGE_DIRS = ("txt2img-images", "img2img-images", FAVORITES_DIRNAME)
 IMAGE_EXTS = {".png", ".jpg", ".jpeg", ".webp"}
-THUMB_DIR = os.path.join(ROOT, ".cache", "thumbs")
+THUMB_DIR = os.path.join(CACHE_DIR, "thumbs")
 FAVORITES_FILE = os.path.join(ROOT, "gallery-favorites.json")
 GALLERY_LOCK = threading.Lock()
 GALLERY_BATCH_MAX = 200
@@ -6718,7 +6720,7 @@ class Handler(BaseHTTPRequestHandler):
             return
         stamp = time.strftime("%Y%m%d-%H%M")
         name = "KlockUI-作品-%s.zip" % stamp
-        export_root = os.path.join(ROOT, ".cache", "exports")
+        export_root = os.path.join(CACHE_DIR, "exports")
         tmp_dir = ""
         try:
             os.makedirs(export_root, exist_ok=True)

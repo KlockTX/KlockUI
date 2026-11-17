@@ -10,6 +10,8 @@
 
 面向 8–16GB 显存的消费级显卡：多架构预设、LoRA 按架构隔离、参数配方可存可分享。
 
+![KlockUI 主界面](docs/shot-main.jpg)
+
 > **不含推理引擎，也不含任何模型权重。**
 > 引擎（ComfyUI）与底模由 [`install.md`](install.md) 指导安装——把仓库链接交给你的 agent 即可。
 
