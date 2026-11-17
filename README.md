@@ -35,14 +35,14 @@ KlockUI 把这些固定在代码里：
 
 ## 快速开始
 
-```bash
-git clone <this-repo> KlockUI
-```
+把下面这句话发给你的 agent（Claude Code / Cursor / WorkBuddy 等都可以）：
 
-然后**让 agent 读 `install.md` 执行**——它会给 ComfyUI 建环境、按你的显卡选量化档、
-问你要装哪些架构、逐文件校验下载、最后跑一张测试图验收。
+> 安装 https://github.com/KlockTX/KlockUI ，按仓库里的 `install.md` 执行。
 
-手动装也可以，`install.md` 里的每一步都带断言，照着走即可。
+它会 clone 代码、建 Python 环境、按你的显卡选量化档、**问你要装哪些模型**、
+逐个文件校验下载，最后跑一张测试图确认可用。
+
+手动装也可以，`install.md` 里每一步都带断言，照着走即可。
 
 装完后启动：
 

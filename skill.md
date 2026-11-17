@@ -26,6 +26,8 @@ KlockUI 由三部分组成：
 
 ## 一、安装
 
+触发方式：用户把仓库链接（`https://github.com/KlockTX/KlockUI`）交给你并要求"按 install.md 安装"。
+
 完整安装步骤见 **`install.md`**（面向安装代理的分阶段规格），模型清单位于 **`models.manifest.json`**。
 下面是摘要，细节与验收判据以 `install.md` 为准。
 
