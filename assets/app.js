@@ -4108,6 +4108,10 @@
     "krea2_poster_graphics",
     "krea2_chibi_animal",
     "krea2_ghibli_background",
+    "sdxl_harrlogos_text",
+    "sdxl_texta_text",
+    "krea2_textfusion_refusal",
+    "zimage_comic_book_page",
     "zimage_hands",
     "zimage_detail_perfection",
     "zimage_skin_texture",
@@ -5080,6 +5084,27 @@
       title: "Z-Image · WLOP 印象",
       weight: 0.85,
       desc: "WLOP 一脉的半写实厚涂：强逆光、冷蓝紫、情绪化氛围。无触发词；建议 0.8–1.0。Z-Image 上 WLOP 系下载最高的一支（6.2k），但明显弱于 Krea 那版（9.5k）。"
+    },
+    // ---- 文字渲染（2026-11-18）
+    "sdxl_harrlogos_text": {
+      title: "SDXL · Harrlogos 文字生成",
+      weight: 0.8,
+      desc: "SDXL 上最知名的文字渲染 LoRA（3.5 万下载），能在画面里生成可读的英文短词。激活词：3D / Neon / Egyptian / Pastel / Viking 分别对应不同字体气质。建议 0.7–0.9。中文不行。"
+    },
+    "sdxl_texta_text": {
+      title: "SDXL · Texta 文字生成",
+      weight: 0.8,
+      desc: "另一支专攻文字的 SDXL LoRA（1.9 万下载），和 Harrlogos 思路不同：更适合短标题与标识。无触发词，建议 0.7–0.9。两支别同时挂。"
+    },
+    "krea2_textfusion_refusal": {
+      title: "Krea 2 · 文字融合解限",
+      weight: 0.7,
+      desc: "26MB 的小件，作用是降低 Krea 2 TextFusion 对「画面里写文字」类提示词的拒绝率。不负责字形本身，只让模型愿意画。英文有效；中文还是交给 Z-Image / MOSS。"
+    },
+    "zimage_comic_book_page": {
+      title: "Z-Image · 漫画分镜页",
+      weight: 0.8,
+      desc: "带对白框、分格与拟声词的漫画页风格（ZIT 分卷）。Z-Image 本身就能写中文，这支管的是「排版成漫画页」而不是字形。建议 0.7–0.9。"
     },
     // ---- 补齐：本地有文件但之前没写介绍的
     "MOSS-Image-Anime-LoRA-ComfyUI": {
