@@ -3,19 +3,19 @@
   "name": "初音 · 天台夜空",
   "note": "初音未来插画组 · 画风版",
   "model": "krea2_turbo_int8_convrot.safetensors",
+  "arch": "krea",
   "prompt": "anime illustration, cel shading, clean lineart, flat colors, high contrast, 2D artwork, hatsune miku standing on a rooftop at midnight with arms spread wide, city lights as scattered dots below, wind pulling at her twin tails and skirt, vast starry sky, strong rim light separating her silhouette, low angle looking up, sense of liberation",
   "negative": "",
   "quality": "standard",
   "size": {
     "ratio": "2:3",
-    "width": 832,
-    "height": 1216
+    "width": 1024,
+    "height": 1536
   },
   "steps": 14,
   "cfg": 1,
   "sampler": "Euler",
   "scheduler": "Simple",
-  "shift": 3,
   "seed": -1,
   "batch": 1,
   "hires": false,

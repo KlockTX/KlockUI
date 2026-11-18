@@ -3,19 +3,19 @@
   "name": "初音 · 夏日祭",
   "note": "初音未来插画组 · 画风版",
   "model": "krea2_turbo_int8_convrot.safetensors",
+  "arch": "krea",
   "prompt": "anime illustration, cel shading, clean lineart, flat colors, vibrant flat colors, 2D artwork, hatsune miku at a summer festival, holding a paper lantern up at her side, wearing a teal-patterned yukata, warm orange light from the stalls painted onto her face, crowd suggested as simplified silhouettes, festival lanterns as glowing circles in the background, joyful expression, three-quarter view",
   "negative": "",
   "quality": "standard",
   "size": {
     "ratio": "2:3",
-    "width": 832,
-    "height": 1216
+    "width": 1024,
+    "height": 1536
   },
   "steps": 12,
   "cfg": 1,
   "sampler": "Euler",
   "scheduler": "Simple",
-  "shift": 3,
   "seed": -1,
   "batch": 1,
   "hires": false,

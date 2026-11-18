@@ -3202,7 +3202,7 @@
     el.scheduler.value = cfg.scheduler || "Karras";
     if (el.shift) {
       el.shift.value = clampShift(cfg.shift);
-      el.shiftOut.textContent = Number(el.shift.value).toFixed(1);
+      el.shiftOut.textContent = String(Number(el.shift.value));
     }
     el.clipSkip.value = String(normalizeClipSkip(cfg.clipSkip));
     el.vae.value = String(cfg.vae || VAE_AUTO);
@@ -3562,7 +3562,8 @@
   function clampShift(value) {
     const number = Number(value);
     if (!Number.isFinite(number)) return 3.5;
-    return Math.min(6, Math.max(1, Math.round(number * 10) / 10));
+    // 保留两位：Krea 2 的内置 shift 是 1.15，按一位取整会被抹成 1.1 或 1.2。
+    return Math.min(6, Math.max(1, Math.round(number * 100) / 100));
   }
 
   function fileBaseName(value) {
@@ -8142,23 +8143,25 @@
 
   function presetSizeOverrides(size, cfg) {
     if (!size || typeof size !== "object") return cfg;
+    const ratio = String(size.ratio || "").trim();
     const w = Number(size.width);
     const h = Number(size.height);
-    if (w >= 256 && h >= 256) {
-      cfg.width = w;
-      cfg.height = h;
-      cfg.ratioKey = "custom";
-      return cfg;
-    }
-    const ratio = String(size.ratio || "");
+    // 先认比例键：它决定界面上哪一档高亮，比像素更能表达作者意图。
     if (ratio) {
       const table = ratioTableFor(activeProfile()?.arch || "sdxl");
       const opt = table.find((item) => item.key === ratio);
       if (opt) {
         cfg.ratioKey = ratio;
-        cfg.width = opt.w;
-        cfg.height = opt.h;
+        // 没有显式像素时才用档位默认值；有就用作者的
+        cfg.width = w >= 256 ? w : opt.w;
+        cfg.height = h >= 256 ? h : opt.h;
+        return cfg;
       }
+    }
+    if (w >= 256 && h >= 256) {
+      cfg.width = w;
+      cfg.height = h;
+      cfg.ratioKey = "custom";
     }
     return cfg;
   }
@@ -8235,19 +8238,35 @@
     const notes = [];
 
     // ① 模型
+    // 三级匹配：指定模型 → 同架构任意模型 → 保持当前。
+    // 配方是拿去分享的，写死的模型名大概率对方没有（同一个架构有一堆微调），
+    // 所以 arch 兜底比死磕文件名实用。
     let modelSkipped = "";
+    let modelNote = "";
     const wantModel = String(data.model || "").trim();
-    if (wantModel) {
-      const entry = presetModelEntry(wantModel);
-      const same = activeModelMatches(wantModel);
-      if (same) {
-        // 已经是当前模型，什么都不做——之前这里会误报"模型未切换"
-      } else if (!entry) {
-        modelSkipped = wantModel;
+    const wantArch = String(data.arch || "").trim().toLowerCase();
+    const currentArch = (activeProfile()?.arch || "").toLowerCase();
+    const entry = wantModel ? presetModelEntry(wantModel) : null;
+    if (wantModel && activeModelMatches(wantModel)) {
+      // 已经是当前模型，什么都不做
+    } else if (entry) {
+      const switched = await switchModel(entry.value, { preserveSettings: true, silent: true });
+      if (!switched) modelSkipped = wantModel;
+    } else if (wantArch) {
+      const candidates = state.models.filter((item) => (archForModel(item.value) || "") === wantArch);
+      const pick = candidates.find((item) => !activeModelMatches(item.value)) || null;
+      if (currentArch === wantArch) {
+        // 当前模型就是同架构的，直接用，不折腾切换
+        if (wantModel) modelNote = `配方指定 ${modelShortName(wantModel)}，已用同架构的当前模型`;
+      } else if (pick) {
+        const switched = await switchModel(pick.value, { preserveSettings: true, silent: true });
+        if (switched) modelNote = `配方指定 ${modelShortName(wantModel) || wantArch}，已改用同架构的 ${modelShortName(pick.value)}`;
+        else modelSkipped = wantModel || wantArch;
       } else {
-        const switched = await switchModel(entry.value, { preserveSettings: true, silent: true });
-        if (!switched) modelSkipped = wantModel;
+        modelSkipped = wantModel || wantArch;
       }
+    } else if (wantModel) {
+      modelSkipped = wantModel;
     }
 
     // ② 画质档先套（它会写入步数 / CFG / 二采 / 采样器）
@@ -8272,9 +8291,10 @@
     scheduleSave();
     if (!silent) {
       if (modelSkipped) notes.unshift(`模型未切换（缺失或引擎忙）：${modelSkipped}`);
+      else if (modelNote) notes.unshift(modelNote);
       snack(notes.length ? `已载入「${name}」· ${notes.join("；")}` : `已载入「${name}」`);
     }
-    return { ok: true, name, notes, modelSkipped };
+    return { ok: true, name, notes, modelSkipped, modelNote };
   }
 
   // 导出的是完整的 currentConfig()，导入端按同名键回填，保证往返一致。
@@ -8450,7 +8470,7 @@
     el.scheduler.value = cfg.scheduler || "Karras";
     if (el.shift) {
       el.shift.value = clampShift(cfg.shift);
-      el.shiftOut.textContent = Number(el.shift.value).toFixed(1);
+      el.shiftOut.textContent = String(Number(el.shift.value));
     }
     el.clipSkip.value = String(normalizeClipSkip(cfg.clipSkip));
     el.vae.value = String(cfg.vae || VAE_AUTO);
@@ -12805,7 +12825,7 @@
     el.sampler.addEventListener("change", () => { updateSamplerPresetUI(); updateAdvancedSummary(); updateModelProfileUI(); scheduleSave(); });
     el.scheduler.addEventListener("change", () => { updateSamplerPresetUI(); updateAdvancedSummary(); updateModelProfileUI(); scheduleSave(); });
     el.shift?.addEventListener("input", () => {
-      el.shiftOut.textContent = Number(el.shift.value).toFixed(1);
+      el.shiftOut.textContent = String(Number(el.shift.value));
       updateEngineHint();
       updateAdvancedSummary();
       updateModelProfileUI();

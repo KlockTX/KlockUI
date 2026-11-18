@@ -3,6 +3,7 @@
   "name": "初音 · 演唱会海报",
   "note": "初音未来插画组 · 画风版",
   "model": "z_image_turbo_int8_convrot.safetensors",
+  "arch": "zimage",
   "prompt": "一张演唱会海报。初音未来正面站立，张开一只手向观众，蓝绿色双马尾被风吹起，舞台灯光从背后打来形成强轮廓光，背景是深色渐变与光斑。画面顶部有醒目的中文标题「未来之声」，下方一行小字「2026 巡回演唱会」。",
   "negative": "",
   "quality": "standard",

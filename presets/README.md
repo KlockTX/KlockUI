@@ -16,7 +16,8 @@
 |---|---|---|
 | `klockui` | number | 格式版本，目前固定 1 |
 | `name` | string | 载入时提示的名字 |
-| `model` | string | 底模文件名，必须与 `models/diffusion_models/` 里一致 |
+| `model` | string | 首选底模文件名（对方没有时会自动找同架构的） |
+| `arch` | string | `krea` / `zimage` / `anima` / `moss` / `sdxl`。**建议填**：指定底模缺失时按它兜底 |
 | `prompt` | string | 正面提示词 |
 | `negative` | string | 负面（Krea / Z-Image 是 CFG 1，填了也不生效） |
 | `quality` | string | 画质档：`gacha` / `draft` / `standard` / `fine` / `hires` |
@@ -48,6 +49,13 @@ model → quality → 显式字段（steps/cfg/sampler/shift…）→ loras
 **例**：`quality: "fine"` + `steps: 12` → 二采用 fine 的 1.25x/0.30，步数用 12。
 
 ---
+
+## 两个架构的特殊点
+
+| 架构 | shift | 推荐尺寸 | 采样 |
+|---|---|---|---|
+| Krea 2 | **不要写**（已烤进模型，固定 1.15） | 1024×1536 起，低于 1K 画质掉 | Euler + Simple |
+| Z-Image | 写 `3` | 1024×1536 | Res Multistep + Simple |
 
 ## 最小示例
 

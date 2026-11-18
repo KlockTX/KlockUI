@@ -3,19 +3,19 @@
   "name": "初音 · 废墟都市",
   "note": "初音未来插画组 · 画风版",
   "model": "krea2_turbo_int8_convrot.safetensors",
+  "arch": "krea",
   "prompt": "painterly anime illustration, heavy shading, muted desaturated palette, dramatic lighting, hatsune miku crouching with her knees pulled to her chest in the ruins of a collapsed city, rebar and broken concrete around her, one flickering streetlight in the distance as the only warm accent, dirty face, exhausted but defiant eyes, wide composition emphasizing emptiness",
   "negative": "",
   "quality": "standard",
   "size": {
     "ratio": "2:3",
-    "width": 832,
-    "height": 1216
+    "width": 1024,
+    "height": 1536
   },
   "steps": 18,
   "cfg": 1,
   "sampler": "Euler",
   "scheduler": "Simple",
-  "shift": 3,
   "seed": -1,
   "batch": 1,
   "hires": false,

@@ -3,19 +3,19 @@
   "name": "初音 · 海边黄昏",
   "note": "初音未来插画组 · 画风版",
   "model": "krea2_turbo_int8_convrot.safetensors",
+  "arch": "krea",
   "prompt": "painterly anime illustration, airy color blending, soft rim of light, atmospheric perspective, hatsune miku standing barefoot in shallow water at dusk, waves washing around her ankles, wet hair sticking to her neck, orange and violet sky as blended color bands, backlit with warm glow on the edges, calm and quiet mood, full body view",
   "negative": "",
   "quality": "standard",
   "size": {
     "ratio": "2:3",
-    "width": 832,
-    "height": 1216
+    "width": 1024,
+    "height": 1536
   },
   "steps": 14,
   "cfg": 1,
   "sampler": "Euler",
   "scheduler": "Simple",
-  "shift": 3,
   "seed": -1,
   "batch": 1,
   "hires": false,

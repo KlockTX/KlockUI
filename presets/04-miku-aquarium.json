@@ -3,19 +3,19 @@
   "name": "初音 · 水族馆",
   "note": "初音未来插画组 · 画风版",
   "model": "krea2_turbo_int8_convrot.safetensors",
+  "arch": "krea",
   "prompt": "painterly anime illustration, visible brush strokes, soft blended shading, rich color depth, hatsune miku standing in a dim aquarium tunnel, head tilted up watching a school of fish pass overhead, blue caustic light rippling across her face and hair, her reflection faint on the curved glass, visitors far behind as simplified dark shapes, dreamy and weightless",
   "negative": "",
   "quality": "standard",
   "size": {
     "ratio": "2:3",
-    "width": 832,
-    "height": 1216
+    "width": 1024,
+    "height": 1536
   },
   "steps": 14,
   "cfg": 1,
   "sampler": "Euler",
   "scheduler": "Simple",
-  "shift": 3,
   "seed": -1,
   "batch": 1,
   "hires": false,

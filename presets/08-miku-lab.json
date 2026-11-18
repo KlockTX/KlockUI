@@ -3,19 +3,19 @@
   "name": "初音 · 未来实验室",
   "note": "初音未来插画组 · 画风版",
   "model": "krea2_turbo_int8_convrot.safetensors",
+  "arch": "krea",
   "prompt": "anime illustration, clean lineart, precise mechanical detail, cool flat colors, 2D artwork, hatsune miku floating in a seated pose inside a white laboratory, holographic panels orbiting around her, cables and hoses drifting weightlessly, cold blue-white light, sharp reflections on polished floor, sci-fi concept art, low angle",
   "negative": "",
   "quality": "standard",
   "size": {
     "ratio": "2:3",
-    "width": 832,
-    "height": 1216
+    "width": 1024,
+    "height": 1536
   },
   "steps": 14,
   "cfg": 1,
   "sampler": "Euler",
   "scheduler": "Simple",
-  "shift": 3,
   "seed": -1,
   "batch": 1,
   "hires": false,

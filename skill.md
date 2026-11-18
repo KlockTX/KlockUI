@@ -352,15 +352,15 @@ KlockUI 支持把整套设置写成 `.json`，拖到界面「画面描述」框�
   "klockui": 1,
   "name": "配方名",
   "model": "krea2_xxx.safetensors",
+  "arch": "krea",
   "prompt": "...",
   "negative": "",
   "quality": "standard",
-  "size": { "ratio": "2:3", "width": 832, "height": 1216 },
+  "size": { "ratio": "2:3", "width": 1024, "height": 1536 },
   "steps": 12,
   "cfg": 1,
   "sampler": "Euler",
-  "scheduler": "Simple",
-  "shift": 3,
+  "scheduler": "Simple"
   "seed": -1,
   "batch": 1,
   "hires": false,
@@ -368,6 +368,13 @@ KlockUI 支持把整套设置写成 `.json`，拖到界面「画面描述」框�
   "loras": [{ "name": "krea2_yoneyama_mai", "weight": 0.75 }]
 }
 ```
+
+**写配方的三个坑**（都踩过）：
+
+1. **Krea 2 不要写 `shift`** —— 它烤在模型里（固定 1.15），写了只会让滑杆显示一个不生效的值
+2. **Krea 2 尺寸至少 1K** —— 832×1216 会掉画质，按 `2:3 = 1024×1536` 写
+3. **`model` 要配 `arch`** —— 分享出去后对方多半没有你那个微调文件；
+   有 `arch` 就能自动落到同架构的任意底模，没有就只报"模型未切换"
 
 **字段优先级**：`model` → `quality` → 显式字段 → `loras`。
 
