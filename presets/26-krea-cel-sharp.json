@@ -1,0 +1,33 @@
+{
+  "klockui": 1,
+  "name": "二次元 · 清透赛璐璐",
+  "model": "krea2_turbo_int8_convrot.safetensors",
+  "arch": "krea",
+  "prompt": "anime illustration, cel shading, crisp lineart, flat colors, a girl in a school uniform standing under cherry blossom trees, petals as flat pink shapes, bright spring sunlight, clean background with soft light dots, joyful expression",
+  "negative": "",
+  "quality": "standard",
+  "size": {
+    "ratio": "2:3",
+    "width": 1024,
+    "height": 1536
+  },
+  "steps": 14,
+  "cfg": 1,
+  "sampler": "Euler",
+  "scheduler": "Simple",
+  "seed": -1,
+  "batch": 1,
+  "hires": false,
+  "easyCache": true,
+  "loras": [
+    {
+      "name": "krea2_clear_anime",
+      "weight": 0.8
+    },
+    {
+      "name": "krea2_fuzichoco",
+      "weight": 0.45
+    }
+  ],
+  "note": "二次元串配置 · 来自 docs/anime-recipes.md"
+}

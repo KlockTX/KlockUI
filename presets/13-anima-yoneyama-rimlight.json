@@ -1,0 +1,33 @@
+{
+  "klockui": 1,
+  "name": "二次元 · 米山舞强光影",
+  "model": "miaomiaoHarem_29BBETA11_bf16.safetensors",
+  "arch": "anima",
+  "prompt": "masterpiece, best quality, score_9, score_8, very aesthetic, ultra detailed, 1girl, teal twintails, aqua eyes, looking back over shoulder, dramatic rim light, wind-blown hair, dynamic composition, simple background, @flatline, soft cel shading",
+  "negative": "worst quality, low quality, score_1, score_2, blurry, jpeg artifacts, watermark, extra fingers, bad hands",
+  "quality": "standard",
+  "size": {
+    "ratio": "2:3",
+    "width": 832,
+    "height": 1216
+  },
+  "steps": 36,
+  "cfg": 4,
+  "sampler": "Euler",
+  "scheduler": "SGM Uniform",
+  "seed": -1,
+  "batch": 1,
+  "hires": false,
+  "easyCache": true,
+  "loras": [
+    {
+      "name": "anima_yoneyama_mai",
+      "weight": 0.8
+    },
+    {
+      "name": "anima_flatline",
+      "weight": 0.5
+    }
+  ],
+  "note": "二次元串配置 · 来自 docs/anime-recipes.md"
+}

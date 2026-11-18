@@ -1,0 +1,33 @@
+{
+  "klockui": 1,
+  "name": "二次元 · Anmi 温柔",
+  "model": "krea2_turbo_int8_convrot.safetensors",
+  "arch": "krea",
+  "prompt": "anime illustration with soft clean colors and delicate lineart, a girl in a library hugging a stack of books and looking back over her shoulder, warm lamp light, dust motes as tiny dots, gentle smile, three-quarter view",
+  "negative": "",
+  "quality": "standard",
+  "size": {
+    "ratio": "2:3",
+    "width": 1024,
+    "height": 1536
+  },
+  "steps": 14,
+  "cfg": 1,
+  "sampler": "Euler",
+  "scheduler": "Simple",
+  "seed": -1,
+  "batch": 1,
+  "hires": false,
+  "easyCache": true,
+  "loras": [
+    {
+      "name": "krea2_anmi",
+      "weight": 0.85
+    },
+    {
+      "name": "krea2_celdepth_25d",
+      "weight": 0.4
+    }
+  ],
+  "note": "二次元串配置 · 来自 docs/anime-recipes.md"
+}

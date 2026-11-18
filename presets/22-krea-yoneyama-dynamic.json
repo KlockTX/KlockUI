@@ -1,0 +1,33 @@
+{
+  "klockui": 1,
+  "name": "二次元 · 米山舞动感",
+  "model": "krea2_turbo_int8_convrot.safetensors",
+  "arch": "krea",
+  "prompt": "anime illustration with dramatic rim light, a girl turning back over her shoulder on a rooftop at sunset, wind pulling at her teal twin tails and skirt, strong silhouette, dynamic low angle, simplified background with layered warm color shapes",
+  "negative": "",
+  "quality": "standard",
+  "size": {
+    "ratio": "2:3",
+    "width": 1024,
+    "height": 1536
+  },
+  "steps": 16,
+  "cfg": 1,
+  "sampler": "Euler",
+  "scheduler": "Simple",
+  "seed": -1,
+  "batch": 1,
+  "hires": false,
+  "easyCache": true,
+  "loras": [
+    {
+      "name": "krea2_yoneyama_mai",
+      "weight": 0.85
+    },
+    {
+      "name": "krea2_rim_light",
+      "weight": 0.5
+    }
+  ],
+  "note": "二次元串配置 · 来自 docs/anime-recipes.md"
+}

@@ -1,0 +1,33 @@
+{
+  "klockui": 1,
+  "name": "二次元 · 90年代动画",
+  "model": "krea2_turbo_int8_convrot.safetensors",
+  "arch": "krea",
+  "prompt": "anime film still with 1990s aesthetic and limited color palette, a girl sitting sideways on a windowsill in an abandoned classroom, legs drawn up, afternoon sunlight through dusty glass, chalk dust as small light dots, muted warm colors, subtle screentone",
+  "negative": "",
+  "quality": "standard",
+  "size": {
+    "ratio": "2:3",
+    "width": 1024,
+    "height": 1536
+  },
+  "steps": 14,
+  "cfg": 1,
+  "sampler": "Euler",
+  "scheduler": "Simple",
+  "seed": -1,
+  "batch": 1,
+  "hires": false,
+  "easyCache": true,
+  "loras": [
+    {
+      "name": "krea2_90s_aesthetic",
+      "weight": 0.85
+    },
+    {
+      "name": "krea2_loundraw",
+      "weight": 0.4
+    }
+  ],
+  "note": "二次元串配置 · 来自 docs/anime-recipes.md"
+}

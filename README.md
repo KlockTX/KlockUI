@@ -176,7 +176,7 @@ stop.bat       :: 只停界面，引擎保留
 `quality` 是档位名（`gacha`/`draft`/`standard`/`fine`/`hires`），会一次性写入步数、CFG、二采；
 JSON 里再写 `steps` 则以显式值为准。
 
-`presets/` 里有 12 个可直接使用的例子，字段说明见 [`presets/README.md`](presets/README.md)。
+`presets/` 里有 26 个可直接使用的例子，字段说明见 [`presets/README.md`](presets/README.md)。
 
 二次元向的画师 LoRA 串、触发词与提示词模板整理在 [`docs/anime-recipes.md`](docs/anime-recipes.md)。
 
@@ -262,7 +262,7 @@ KlockUI/
 │  ├─ artists.js        # 画师词库
 │  └─ characters*.js    # 角色词库
 ├─ vendor/              # mdui + 图标字体（离线，无构建步骤）
-├─ presets/             # 12 个示例配方
+├─ presets/             # 26 个示例配方
 ├─ docs/                # 架构图 + 二次元配方
 ├─ install.md           # 安装说明（写给 agent）
 ├─ skill.md             # 配置知识与排错（写给 agent）

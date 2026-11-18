@@ -1,0 +1,33 @@
+{
+  "klockui": 1,
+  "name": "二次元 · 蔚蓝档案立绘",
+  "model": "krea2_turbo_int8_convrot.safetensors",
+  "arch": "krea",
+  "prompt": "azure youth anime art style, a cheerful schoolgirl standing in a sunlit hallway, clean cel shading, bright pastel palette, strong rim light separating her silhouette, three-quarter view, simple background with soft light dots",
+  "negative": "",
+  "quality": "standard",
+  "size": {
+    "ratio": "2:3",
+    "width": 1024,
+    "height": 1536
+  },
+  "steps": 14,
+  "cfg": 1,
+  "sampler": "Euler",
+  "scheduler": "Simple",
+  "seed": -1,
+  "batch": 1,
+  "hires": false,
+  "easyCache": true,
+  "loras": [
+    {
+      "name": "krea2_blue_archive_style",
+      "weight": 0.85
+    },
+    {
+      "name": "krea2_rim_light",
+      "weight": 0.5
+    }
+  ],
+  "note": "二次元串配置 · 来自 docs/anime-recipes.md"
+}
