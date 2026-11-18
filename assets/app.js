@@ -4112,6 +4112,15 @@
     "sdxl_texta_text",
     "krea2_textfusion_refusal",
     "zimage_comic_book_page",
+    "anima_moriimee_gothic",
+    "anima_rimix",
+    "anima_anime_flat",
+    "anima_anime_in_real",
+    "anima_takeda_hiromitsu",
+    "anima_yoneyama_mai",
+    "anima_flatline",
+    "anima_90s_melancholy",
+    "krea2_blue_archive_style",
     "zimage_hands",
     "zimage_detail_perfection",
     "zimage_skin_texture",
@@ -5084,6 +5093,53 @@
       title: "Z-Image · WLOP 印象",
       weight: 0.85,
       desc: "WLOP 一脉的半写实厚涂：强逆光、冷蓝紫、情绪化氛围。无触发词；建议 0.8–1.0。Z-Image 上 WLOP 系下载最高的一支（6.2k），但明显弱于 Krea 那版（9.5k）。"
+    },
+    // ---- 优质二次元（2026-11-18，C 站高下载量 + 官方触发词）
+    "anima_moriimee_gothic": {
+      title: "Anima · MoriiMee 哥特霓虹",
+      weight: 0.8,
+      desc: "C 站 15.4 万下载的风格件，Anima 分卷。暗底霓虹、蕾丝金属、哥特洛丽塔。无触发词；建议 0.7–0.9。和 90s 怀旧叠加时各降到 0.5。"
+    },
+
+    "anima_rimix": {
+      title: "Anima · Ri-mix 综合风格",
+      weight: 0.75,
+      desc: "5.9 万下载的多架构综合风格件（504MB），Anima 分卷。偏厚涂插画，色块与笔触都强。建议 0.6–0.8，别和画师件叠太满。"
+    },
+    "anima_anime_flat": {
+      title: "Anima · 平涂二次元",
+      weight: 0.85,
+      desc: "4.3 万下载。干净色块、无多余纹理、番剧感。无触发词；建议 0.8–1.0。和 HS 风格集叠时后者降到 0.4。"
+    },
+    "anima_anime_in_real": {
+      title: "Anima · 现实系动画",
+      weight: 0.8,
+      desc: "4.1 万下载。把动画角色放进写实光影环境：皮肤质感、复杂光线、反差大。建议 0.7–0.9。"
+    },
+    "anima_takeda_hiromitsu": {
+      title: "Anima · 武田弘光",
+      weight: 0.8,
+      desc: "3.1 万下载的画师风格件。厚涂、体积感强、女性角色比例偏好明显。无触发词；建议 0.7–0.9。成人向作者，注意使用场景。"
+    },
+    "anima_yoneyama_mai": {
+      title: "Anima · 米山舞",
+      weight: 0.8,
+      desc: "1.8 万下载的画师件（Anima 分卷，和 krea2_yoneyama_mai 不是同一文件）。强光影、锐利脸型、动感构图。无触发词；建议 0.7–0.9。"
+    },
+    "anima_flatline": {
+      title: "Anima · Flatline",
+      weight: 0.7,
+      desc: "22MB 小件，2.3 万下载。触发词：@flatline。线条利落、平涂高对比。当辅料用，0.5–0.7。"
+    },
+    "anima_90s_melancholy": {
+      title: "Anima · 90 年代忧郁",
+      weight: 0.8,
+      desc: "1.5 万下载。触发词：90s_melancholy, retro。旧动画的褪色质感与静谧氛围，适合情绪向插画。建议 0.7–0.9。"
+    },
+    "krea2_blue_archive_style": {
+      title: "Krea 2 · 蔚蓝档案画风",
+      weight: 0.85,
+      desc: "3.2 万下载的 BArtstyle，Krea 2 分卷（895MB）。触发词：azure youth anime art style。干净明亮的日系手游立绘感。建议 0.8–1.0。"
     },
     // ---- 文字渲染（2026-11-18）
     "sdxl_harrlogos_text": {
