@@ -393,6 +393,9 @@
     presetFileInput: $("#presetFileInput"), importPresetFile: $("#importPresetFile"),
     exportPresetFile: $("#exportPresetFile"),
     repoPresets: $("#repoPresets"), repoPresetCount: $("#repoPresetCount"),
+    promptHistoryBtn: $("#promptHistoryBtn"), promptHistoryDialog: $("#promptHistoryDialog"),
+    promptHistoryList: $("#promptHistoryList"), promptHistorySearch: $("#promptHistorySearch"),
+    promptHistoryClear: $("#promptHistoryClear"), promptHistoryClose: $("#promptHistoryClose"),
     openCompare: $("#openCompare"), compareDialog: $("#compareDialog"), compareA: $("#compareA"),
     compareB: $("#compareB"), compareMetaA: $("#compareMetaA"), compareMetaB: $("#compareMetaB"),
     compareDiff: $("#compareDiff"), compareSwap: $("#compareSwap"), comparePrev: $("#comparePrev"),
@@ -5650,6 +5653,76 @@
     renderRepoPresets(repoPresetCache);
   }
 
+  /* ------------------------------------------------------- 提示词历史 */
+  // 本地保存最近 30 条提交过的提示词。生成很贵，重跑一次旧配置比重新打字划算。
+  const STORE_PROMPT_HISTORY = "simplegen.promptHistory.v1";
+  const PROMPT_HISTORY_MAX = 30;
+
+  function loadPromptHistory() {
+    try {
+      const raw = JSON.parse(localStorage.getItem(STORE_PROMPT_HISTORY) || "[]");
+      return Array.isArray(raw) ? raw.filter((item) => item && item.prompt) : [];
+    } catch {
+      return [];
+    }
+  }
+
+  function rememberPrompt(prompt, negative) {
+    const text = String(prompt || "").trim();
+    if (text.length < 4) return;
+    const list = loadPromptHistory().filter((item) => item.prompt !== text);
+    list.unshift({
+      prompt: text,
+      negative: String(negative || "").trim(),
+      model: state.activeModel || "",
+      steps: Number(el.steps?.value) || 0,
+      at: Date.now()
+    });
+    try {
+      localStorage.setItem(STORE_PROMPT_HISTORY, JSON.stringify(list.slice(0, PROMPT_HISTORY_MAX)));
+    } catch {
+      /* 配额满就算了，历史不是关键路径 */
+    }
+  }
+
+  function renderPromptHistory() {
+    if (!el.promptHistoryList) return;
+    const query = String(el.promptHistorySearch?.value || "").trim().toLowerCase();
+    const all = loadPromptHistory();
+    const list = query
+      ? all.filter((item) => `${item.prompt} ${item.negative}`.toLowerCase().includes(query))
+      : all;
+    el.promptHistoryList.replaceChildren();
+    if (!list.length) {
+      el.promptHistoryList.appendChild(
+        h("div", { class: "compare-empty", text: query ? "没有匹配的历史提示词。" : "还没有历史。生成一次之后这里会留下最近的提示词。" })
+      );
+      return;
+    }
+    list.forEach((item) => {
+      const when = new Date(item.at || Date.now());
+      const stamp = `${String(when.getMonth() + 1).padStart(2, "0")}-${String(when.getDate()).padStart(2, "0")} ${String(when.getHours()).padStart(2, "0")}:${String(when.getMinutes()).padStart(2, "0")}`;
+      const meta = [stamp, item.steps ? `${item.steps} 步` : "", item.model ? item.model.replace(/\.safetensors$/, "") : ""]
+        .filter(Boolean).join(" · ");
+      el.promptHistoryList.appendChild(
+        h("button", { class: "prompt-history-item", type: "button", on: { click: () => applyPromptHistory(item) } },
+          h("span", { class: "prompt-history-text", text: item.prompt }),
+          h("span", { class: "prompt-history-meta", text: meta })
+        )
+      );
+    });
+  }
+
+  function applyPromptHistory(item) {
+    if (!item) return;
+    if (el.prompt) el.prompt.value = item.prompt;
+    if (el.negative && item.negative !== undefined) el.negative.value = item.negative;
+    saveSettings();
+    state.promptDraft = null;
+    el.promptHistoryDialog.open = false;
+    snack("已载入历史提示词");
+  }
+
   /* ------------------------------------------------------- 画面对比 */
   // 只做「看」的事：不写文件、不改状态，A/B 只是历史里的两个索引。
   const compareState = { a: 0, b: 1, scale: 1, x: 0, y: 0 };
@@ -9594,6 +9667,8 @@
     state.submitting = true;
     let request = null;
     try {
+      // 提交前记一条历史：生成很贵，重跑旧配置比重新打字划算
+      rememberPrompt(el.prompt.value, el.negative?.value);
       // 中文自然语言先按当前模型转成英文提示词；转写失败不会把中文送进 Forge。
       // 加速 LoRA（MOSS 8 步 DMD / Anima Turbo）是蒸馏件：只在 8–12 步成立。
       // 手动把步数拖到 50 而它仍挂着，等于拿 50 步去跑一个只学过 8 步的权重，
@@ -10093,6 +10168,21 @@
     el.applyModelProfile.addEventListener("click", applyRecommendedProfile);
     el.manageLorasBtn.addEventListener("click", openLoraDialog);
     if (el.openCompare) el.openCompare.addEventListener("click", openCompareDialog);
+    if (el.promptHistoryBtn) {
+      el.promptHistoryBtn.addEventListener("click", () => {
+        if (el.promptHistorySearch) el.promptHistorySearch.value = "";
+        renderPromptHistory();
+        el.promptHistoryDialog.open = true;
+      });
+      bindDialog(el.promptHistoryDialog, el.promptHistoryClose);
+      el.promptHistorySearch?.addEventListener("input", debounce(renderPromptHistory, 120));
+      el.promptHistorySearch?.addEventListener("search", renderPromptHistory);
+      el.promptHistoryClear?.addEventListener("click", () => {
+        try { localStorage.removeItem(STORE_PROMPT_HISTORY); } catch { /* 忽略 */ }
+        renderPromptHistory();
+        snack("已清空提示词历史");
+      });
+    }
     bindCompareInteractions();
     bindDialog(el.loraDialog, el.closeLoraDialog);
     el.refreshLorasBtn.addEventListener("click", refreshLoras);

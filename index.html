@@ -20,7 +20,7 @@
 <link rel="icon" href="/assets/favicon.svg" type="image/svg+xml">
 <link rel="alternate icon" href="/assets/klockui.ico" sizes="any">
 <link rel="stylesheet" href="/vendor/mdui.css">
-<link rel="stylesheet" href="/assets/app.css?v=20261119pin1">
+<link rel="stylesheet" href="/assets/app.css?v=20261119hist1">
 </head>
 <body data-mode="txt2img">
 <a class="skip-link" href="#promptCard">跳到画面描述</a>
@@ -209,6 +209,7 @@
           <div class="style-strip" id="styleStrip" role="group" aria-label="风格预设"></div>
           <div class="prompt-tool-actions">
             <button class="text-link prompt-draft-open" id="promptDraftOpen" type="button" hidden><span class="icon" data-icon="sparkles"></span>英文预览</button>
+            <button class="text-link" id="promptHistoryBtn" type="button" title="最近用过的提示词"><span class="icon" data-icon="history"></span>历史</button>
             <button class="text-link" id="promptConvertBtn" type="button" title="把输入框里的中文描述转成当前模型的英文提示词"><span class="icon" data-icon="sparkles"></span>转写预览</button>
           </div>
         </div>
@@ -928,6 +929,15 @@
   <mdui-button slot="action" variant="text" id="closeRefineDialog">关闭</mdui-button>
 </mdui-dialog>
 
+<mdui-dialog id="promptHistoryDialog" class="medium-dialog" close-on-esc>
+  <span slot="headline">提示词历史</span>
+  <span slot="description">本机保存最近 30 条提交过的提示词，点一条即可载入。</span>
+  <label class="pill-search pill-search-wide"><span class="icon pill-search-icon" data-icon="search"></span><input type="search" id="promptHistorySearch" class="pill-search-input" placeholder="搜索历史提示词…" autocomplete="off" spellcheck="false"></label>
+  <div class="prompt-history-list" id="promptHistoryList"></div>
+  <mdui-button slot="action" variant="text" id="promptHistoryClear">清空历史</mdui-button>
+  <mdui-button slot="action" variant="filled" id="promptHistoryClose">关闭</mdui-button>
+</mdui-dialog>
+
 <mdui-dialog id="compareDialog" class="large-dialog compare-dialog" close-on-esc>
   <span slot="headline">画面对比</span>
   <span slot="description">滚轮同步缩放、拖动同步平移；下方只列参数不同的项。</span>
@@ -1153,11 +1163,11 @@
 </mdui-dialog>
 
 <script src="/vendor/mdui.global.js"></script>
-<script src="/assets/artists.js?v=20261119pin1"></script>
-<script src="/assets/characters.js?v=20261119pin1"></script>
-<script src="/assets/characters-normal.js?v=20261119pin1"></script>
-<script src="/assets/data.js?v=20261119pin1"></script>
-<script src="/assets/ui.js?v=20261119pin1"></script>
-<script src="/assets/app.js?v=20261119pin1"></script>
+<script src="/assets/artists.js?v=20261119hist1"></script>
+<script src="/assets/characters.js?v=20261119hist1"></script>
+<script src="/assets/characters-normal.js?v=20261119hist1"></script>
+<script src="/assets/data.js?v=20261119hist1"></script>
+<script src="/assets/ui.js?v=20261119hist1"></script>
+<script src="/assets/app.js?v=20261119hist1"></script>
 </body>
 </html>
