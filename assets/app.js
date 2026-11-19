@@ -7477,9 +7477,10 @@
       button.title = `${item.finalWidth}×${item.finalHeight} · seed ${item.seed ?? "—"}`;
       button.setAttribute("aria-label", `查看生成记录 ${item.finalWidth}×${item.finalHeight}`);
       const img = document.createElement("img");
-      img.src = item.url;
+      img.src = historyThumbUrl(item);
       img.alt = "历史生成";
       img.loading = "lazy";
+      img.decoding = "async";
       const badge = document.createElement("span");
       badge.className = "thumb-badge";
       badge.textContent = item.interrupted
@@ -7587,9 +7588,10 @@
       button.title = `第 ${item.batchIndex}/${item.batchTotal} 张 · seed ${item.seed ?? "—"}`;
       button.setAttribute("aria-label", `查看本批第 ${item.batchIndex} 张`);
       const img = document.createElement("img");
-      img.src = item.url;
+      img.src = historyThumbUrl(item);
       img.alt = `本批第 ${item.batchIndex} 张`;
       img.loading = "lazy";
+      img.decoding = "async";
       button.appendChild(img);
       button.addEventListener("click", () => showResult(item));
       return button;
@@ -7646,6 +7648,14 @@
 
   function galleryThumbUrl(item) {
     return `/local/gallery/thumb?path=${encodeURIComponent(item.path)}&v=${item.mtime}`;
+  }
+
+  // 历史条 / 批次的缩略图：走服务端 480px 缓存，别直接塞原图。
+  // 60 张 1024×1536 的原图解码后约 360MB 显存/内存，而 480px 只要几 MB。
+  function historyThumbUrl(item) {
+    const rel = item.galleryPath || item.path;
+    if (!rel) return item.url;
+    return `/local/gallery/thumb?path=${encodeURIComponent(rel)}`;
   }
 
   function galleryTime(ts) {
