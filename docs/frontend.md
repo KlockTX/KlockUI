@@ -7,8 +7,9 @@
 
 | 文件 | 放什么 | 不放什么 |
 |---|---|---|
+| `assets/data.js` | **只读数据**：词库、LoRA 目录、图标、架构档案、画质档 | 逻辑、DOM、state |
 | `assets/ui.js` | 纯工具：建元素、架构名、关弹窗、防抖 | 任何业务状态、任何 `fetch` |
-| `assets/app.js` | 业务逻辑、状态、事件绑定 | 通用工具（放 ui.js） |
+| `assets/app.js` | 业务逻辑、状态、事件绑定 | 通用工具（ui.js）、静态数据（data.js） |
 | `index.html` | 结构；每个会被 JS 引用的节点必须有 `id` | 内联样式、内联事件 |
 | `assets/app.css` | 样式；只用设计令牌 | 硬编码颜色 / 字号 |
 
@@ -80,3 +81,56 @@ h("div", { class: "row" },
 - **不要为了 DRY 过度抽象**：只有重复 3 次以上、且形状稳定的才抽。
 - **不要在渲染函数里绑事件**：列表重建会重复绑定，内存与行为都会漂。
 - **不要把业务状态挂到 `window`**：现在的 `window.__klockui` 是只读调试入口，别再扩大。
+
+## 七、加载顺序（错了会白屏）
+
+```html
+<script src="/assets/data.js"></script>   <!-- 1. 数据，app.js 解构依赖它 -->
+<script src="/assets/ui.js"></script>     <!-- 2. 工具，挂 window.KUI -->
+<script src="/assets/app.js"></script>    <!-- 3. 主逻辑 -->
+```
+
+`app.js` 开头有两行解构，就是这三者的契约：
+
+```js
+const { h, archLabel, bindDialog, debounce } = window.KUI;
+const { MODEL_PROFILES, LORA_LIBRARY, TAG_GROUPS, ... } = window.KLOCK_DATA;
+```
+
+**新增数据表**：写进 `data.js` → 在 `data.js` 末尾的导出对象里加名字 → 在 `app.js` 的解构里加名字。
+三处漏一处就是 `undefined`，症状通常是"某个下拉空了"，而不是报错。
+
+## 八、2026-11-19 拆分记录
+
+| | 拆分前 | 拆分后 |
+|---|---|---|
+| `app.js` | 561.9 KB | 423.5 KB（−24.6%） |
+| `data.js` | — | 152.9 KB |
+| `ui.js` | — | 3.0 KB |
+
+搬走的 20 个数据块：`LORA_LIBRARY`(37KB)、`TAG_GROUPS`(21KB)、`KREA_PRESET_GROUPS`(14KB)、
+`MOSS_CHARACTER_GROUPS`(12KB)、`MOSS_TAG_GROUPS`(9KB)、`MODEL_PROFILES`(9KB)、`ICONS`(6KB) 等。
+
+**两个必须记住的坑**（第一次拆分就踩了第一个）：
+
+1. 切块时 `start` 吃掉了 const 前的换行，`end` 又带走块尾换行，**直接删会把上一行注释和
+   下一行代码粘成一行**，下一行被注释吃掉。`MODEL_PROFILE_LIST` 就这么消失过。
+   正确做法是删除后补一个 `\n`。
+2. 数据块之间有引用（`MODEL_PROFILES → QUALITY_GENERIC`、`MOSS_PRESET_GROUPS → MOSS_STYLES`），
+   所以 `data.js` 必须写成「顺序 const + 末尾导出」，不能写成一个对象字面量。
+
+## 九、为什么没有继续拆「行为模块」
+
+本轮只拆了数据，没拆逻辑（预设 / LoRA / 图库这些）。
+
+原因是纯函数抽取被**共享常量**卡住：`loraDefaultWeight` → `loraInfo` → `LORA_LIBRARY`，
+`loraInfo` 按"不碰 el/state"算是纯函数，但它依赖模板作用域里的数据表。搬出去就必须
+给每个模块注入 data，等于重建一套依赖系统——**在没有测试的情况下，这是纯风险**。
+
+要继续拆，先补这三样（按顺序）：
+
+1. **冒烟脚本**：能自动跑「加载页 → 开三个弹窗 → 生成一张 512×512 → 断言 done」
+2. **命名空间**：`window.Klock = { state, el, data, fns }`，模块只从这里取
+3. **按领域切**：`presets.js` / `loras.js` / `gallery.js` / `prompt.js`，每次只切一个并跑冒烟
+
+顺序不能颠倒。先切模块再补测试，等于蒙着眼改。
