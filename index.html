@@ -20,7 +20,7 @@
 <link rel="icon" href="/assets/favicon.svg" type="image/svg+xml">
 <link rel="alternate icon" href="/assets/klockui.ico" sizes="any">
 <link rel="stylesheet" href="/vendor/mdui.css">
-<link rel="stylesheet" href="/assets/app.css?v=20261120fix6">
+<link rel="stylesheet" href="/assets/app.css?v=20261120fix8">
 </head>
 <body data-mode="txt2img">
 <a class="skip-link" href="#promptCard">跳到画面描述</a>
@@ -1132,12 +1132,22 @@
         <mdui-segmented-button value="favorite">收藏</mdui-segmented-button>
       </mdui-segmented-button-group>
       <div class="gallery-tools">
+        <!-- 恒显组：总数 + 刷新 + 文件夹，固定在左侧 -->
         <span class="gallery-count" id="galleryCount">读取中…</span>
+        <mdui-button-icon id="galleryRefresh" aria-label="刷新作品库" title="刷新"><span class="icon" data-icon="refresh"></span></mdui-button-icon>
+        <mdui-button-icon id="galleryOpenFolder" aria-label="打开出图目录" title="打开出图目录"><span class="icon" data-icon="folder"></span></mdui-button-icon>
+        <!-- 仅选中时显示，靠右 -->
         <span class="gallery-select-count" id="gallerySelectCount" hidden>已选 0 张</span>
         <button class="text-link gallery-sel-action" id="gallerySelectClear" type="button" hidden>清空</button>
         <button class="text-link gallery-sel-action" id="gallerySelectDone" type="button" hidden>完成</button>
-        <mdui-button-icon id="galleryRefresh" aria-label="刷新作品库" title="刷新"><span class="icon" data-icon="refresh"></span></mdui-button-icon>
-        <mdui-button-icon id="galleryOpenFolder" aria-label="打开出图目录" title="打开出图目录"><span class="icon" data-icon="folder"></span></mdui-button-icon>
+      </div>
+    </div>
+    <div class="gallery-batchbar" id="galleryBatchBar" hidden>
+      <div class="gallery-batch-actions">
+        <button class="gallery-batch-action" id="galleryBatchFavorite" type="button"><span class="icon" data-icon="star"></span><span id="galleryBatchFavoriteLabel">收藏</span></button>
+        <button class="gallery-batch-action" id="galleryBatchExport" type="button"><span class="icon" data-icon="download"></span><span>导出</span></button>
+        <button class="gallery-batch-action" id="galleryBatchSend" type="button" disabled><span class="icon" data-icon="send"></span><span>重绘</span></button>
+        <button class="gallery-batch-action is-danger" id="galleryBatchDelete" type="button"><span class="icon" data-icon="trash"></span><span>删除</span></button>
       </div>
     </div>
     <div class="gallery-status" id="galleryStatus" hidden></div>
@@ -1150,24 +1160,16 @@
     <div class="gallery-more-wrap" id="galleryMoreWrap" hidden>
       <mdui-button id="galleryMore" variant="tonal">加载更多</mdui-button>
     </div>
-    <div class="gallery-batchbar" id="galleryBatchBar" hidden>
-      <div class="gallery-batch-actions">
-        <button class="gallery-batch-action" id="galleryBatchFavorite" type="button"><span class="icon" data-icon="star"></span><span id="galleryBatchFavoriteLabel">收藏</span></button>
-        <button class="gallery-batch-action" id="galleryBatchExport" type="button"><span class="icon" data-icon="download"></span><span>导出</span></button>
-        <button class="gallery-batch-action" id="galleryBatchSend" type="button" disabled><span class="icon" data-icon="send"></span><span>重绘</span></button>
-        <button class="gallery-batch-action is-danger" id="galleryBatchDelete" type="button"><span class="icon" data-icon="trash"></span><span>删除</span></button>
-      </div>
-    </div>
   </div>
   <mdui-button slot="action" variant="text" id="closeGallery">关闭</mdui-button>
 </mdui-dialog>
 
 <script src="/vendor/mdui.global.js"></script>
-<script src="/assets/artists.js?v=20261120fix6"></script>
-<script src="/assets/characters.js?v=20261120fix6"></script>
-<script src="/assets/characters-normal.js?v=20261120fix6"></script>
-<script src="/assets/data.js?v=20261120fix6"></script>
-<script src="/assets/ui.js?v=20261120fix6"></script>
-<script src="/assets/app.js?v=20261120fix6"></script>
+<script src="/assets/artists.js?v=20261120fix8"></script>
+<script src="/assets/characters.js?v=20261120fix8"></script>
+<script src="/assets/characters-normal.js?v=20261120fix8"></script>
+<script src="/assets/data.js?v=20261120fix8"></script>
+<script src="/assets/ui.js?v=20261120fix8"></script>
+<script src="/assets/app.js?v=20261120fix8"></script>
 </body>
 </html>

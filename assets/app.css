@@ -2015,7 +2015,7 @@
   .gallery-body { display: flex; flex-direction: column; gap: var(--sp-5); min-height: 0; flex: 1; }
   .gallery-toolbar { display: flex; align-items: center; justify-content: space-between; gap: 10px; flex-wrap: wrap; }
   .gallery-toolbar mdui-segmented-button-group { font-size: var(--fs-xs); --shape-corner: 999px; }
-  .gallery-tools { display: flex; align-items: center; gap: var(--sp-1); margin-left: auto; }
+  .gallery-tools { display: flex; align-items: center; gap: var(--sp-1); width: 100%; }
   .gallery-count {
     margin-right: 4px; color: rgb(var(--mdui-color-on-surface-variant));
     font-size: var(--fs-xs); font-variant-numeric: tabular-nums; white-space: nowrap;
@@ -3091,7 +3091,7 @@ mdui-select::part(menu) mdui-menu-item { white-space: nowrap; }
   #galleryDesc { display: none; }
   .gallery-toolbar { flex-wrap: nowrap; gap: var(--sp-3); }
   .gallery-toolbar mdui-segmented-button-group { flex: 0 1 auto; min-width: 0; font-size: var(--fs-xs); }
-  .gallery-tools { flex: none; margin-left: auto; gap: 0; }
+  .gallery-tools { flex: 1 1 auto; width: auto; gap: 0; }
   .gallery-tools mdui-button-icon { width: 40px; height: 40px; }
   /* 手机上「打开出图目录」开的是服务器那台机器，没有意义；让出宽度给筛选 */
   #galleryOpenFolder { display: none; }
@@ -3860,7 +3860,20 @@ mdui-menu-item:not(:defined) {
 .history-strip::-webkit-scrollbar { width: 0; height: 0; display: none; }
 
 /* 选中信息簇（已选 N 张 / 清空 / 完成）靠工具栏最右，与常驻总数互不替代 */
-#gallerySelectCount:not([hidden]) { margin-left: auto; }
 
 /* 选中信息簇（已选 N 张 / 清空 / 完成）靠工具栏最右，与常驻总数互不替代 */
+
+/* 恒显组（总数/刷新/文件夹）在左；选中信息单独靠右 */
 #gallerySelectCount:not([hidden]) { margin-left: auto; }
+
+/* 批量操作条常驻在工具栏下方，选中时立刻可见，不再沉到弹窗底部 */
+.gallery-batchbar {
+  display: flex; align-items: center; justify-content: flex-end;
+  gap: var(--sp-4); padding: var(--sp-3) var(--sp-4);
+  border-radius: var(--r-md);
+  background: rgb(var(--mdui-color-primary) / .08);
+  border: 1px solid rgb(var(--mdui-color-primary) / .22);
+  margin-top: calc(-1 * var(--sp-3));
+}
+.gallery-batchbar[hidden] { display: none; }
+.gallery-batch-actions { display: flex; align-items: center; gap: var(--sp-2); }
