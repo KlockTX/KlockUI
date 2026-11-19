@@ -3646,3 +3646,66 @@ mdui-menu-item:not(:defined) {
 }
 .repo-preset-new:hover { background: rgb(var(--mdui-color-primary) / .1); }
 .repo-preset-actions { display: flex; align-items: center; gap: var(--sp-1); }
+
+/* ---------- 自建胶囊搜索框 ----------
+ * 原来用 mdui-text-field，高度和胶囊按钮对不上，描边也重。
+ * 现在自己拼：图标 + 原生 input，尺寸完全跟 --h-sm 走。 */
+.pill-search {
+  display: inline-flex; align-items: center; gap: var(--sp-3);
+  height: var(--h-sm); min-height: var(--h-sm);
+  padding: 0 var(--pad-ctl-2);
+  border-radius: var(--r-full);
+  background: rgb(var(--mdui-color-surface-container));
+  border: 1px solid var(--app-outline-soft);
+  transition: border-color var(--dur-fast) ease, background var(--dur-fast) ease;
+  min-width: 0;
+}
+.pill-search:focus-within {
+  border-color: rgb(var(--mdui-color-primary) / .55);
+  background: rgb(var(--mdui-color-surface-container-high));
+  outline: var(--focus-ring); outline-offset: 0;
+}
+.pill-search-wide { display: flex; width: 100%; }
+.pill-search-icon {
+  width: 13px; height: 13px; flex: none;
+  color: rgb(var(--mdui-color-on-surface-variant)); opacity: .75;
+}
+.pill-search-icon svg { width: 13px; height: 13px; }
+.pill-search-input {
+  flex: 1 1 auto; min-width: 0;
+  height: 100%; padding: 0; margin: 0;
+  border: 0; background: transparent; outline: none;
+  color: rgb(var(--mdui-color-on-surface));
+  font-size: var(--fs-xs); font-family: inherit;
+}
+.pill-search-input::placeholder { color: rgb(var(--mdui-color-on-surface-variant)); opacity: .72; }
+/* 原生搜索框的清除按钮：Chrome/Edge 用 ::-webkit-search-cancel-button */
+.pill-search-input::-webkit-search-cancel-button {
+  -webkit-appearance: none; appearance: none;
+  width: 12px; height: 12px; cursor: pointer;
+  background: currentColor; opacity: .35;
+  -webkit-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M18 6 6 18M6 6l12 12' stroke='%23000' stroke-width='2.4' fill='none' stroke-linecap='round'/%3E%3C/svg%3E") center/contain no-repeat;
+}
+.pill-search-input::-webkit-search-cancel-button:hover { opacity: .7; }
+
+/* ---------- 自建滚动条 ----------
+ * 原生滚动条会压在卡片上（Windows 上是 overlay 样式），
+ * 这里统一成细条 + 透明轨道，并给容器留出稳定槽位。 */
+* { scrollbar-width: thin; scrollbar-color: rgb(var(--mdui-color-outline) / .45) transparent; }
+::-webkit-scrollbar { width: 8px; height: 8px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb {
+  background: rgb(var(--mdui-color-outline) / .45);
+  border-radius: var(--r-full);
+  border: 2px solid transparent;
+  background-clip: padding-box;
+}
+::-webkit-scrollbar-thumb:hover { background: rgb(var(--mdui-color-outline) / .7); background-clip: padding-box; }
+::-webkit-scrollbar-corner { background: transparent; }
+
+/* 会滚的卡片列表：给滚动条留槽，卡片不再被压住 */
+.lora-list, .saved-list, .pill-list, .tag-list, .gallery-grid {
+  scrollbar-gutter: stable;
+  padding-right: var(--sp-2);
+}
+.lora-list { padding-left: var(--sp-1); }

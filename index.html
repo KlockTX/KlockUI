@@ -772,9 +772,7 @@
             <mdui-segmented-button value="positive"><span slot="icon" class="icon" data-icon="sparkles"></span>正向</mdui-segmented-button>
             <mdui-segmented-button value="negative"><span slot="icon" class="icon" data-icon="shield"></span>负面</mdui-segmented-button>
           </mdui-segmented-button-group>
-          <mdui-text-field id="presetSearch" variant="outlined" placeholder="搜索中文、英文或分类…" clearable>
-            <span slot="icon" class="icon" data-icon="search"></span>
-          </mdui-text-field>
+          <label class="pill-search"><span class="icon pill-search-icon" data-icon="search"></span><input type="search" id="presetSearch" class="pill-search-input" placeholder="搜索中文、英文或分类…" autocomplete="off" spellcheck="false"></label>
           <span class="target-count" id="tagTargetCount">正向 · 0 个标签</span>
         </div>
         <div class="library-nav-row">
@@ -811,9 +809,7 @@
             <mdui-segmented-button value="adult">成年角色</mdui-segmented-button>
             <mdui-segmented-button value="allages">全年龄</mdui-segmented-button>
           </mdui-segmented-button-group>
-          <mdui-text-field id="characterSearch" variant="outlined" placeholder="搜索角色、系列、发色或外观…" clearable>
-            <span slot="icon" class="icon" data-icon="search"></span>
-          </mdui-text-field>
+          <label class="pill-search"><span class="icon pill-search-icon" data-icon="search"></span><input type="search" id="characterSearch" class="pill-search-input" placeholder="搜索角色、系列、发色或外观…" autocomplete="off" spellcheck="false"></label>
           <span class="target-count" id="characterResultCount">396 个成年角色</span>
         </div>
         <div class="library-nav-row">
@@ -863,9 +859,7 @@
     <div class="library-main">
       <div class="library-toolbar">
         <div class="library-search-row">
-          <mdui-text-field id="artistSearch" variant="outlined" placeholder="搜索画师、风格或分类…" clearable>
-            <span slot="icon" class="icon" data-icon="search"></span>
-          </mdui-text-field>
+          <label class="pill-search"><span class="icon pill-search-icon" data-icon="search"></span><input type="search" id="artistSearch" class="pill-search-input" placeholder="搜索画师、风格或分类…" autocomplete="off" spellcheck="false"></label>
           <span class="target-count" id="artistResultCount"></span>
         </div>
         <div class="library-nav-row">
@@ -941,8 +935,7 @@
       <span id="loraDialogHint">读取中…</span>
       <mdui-button-icon id="refreshLorasBtn" aria-label="刷新 LoRA 列表" title="刷新 LoRA 列表"><span class="icon" data-icon="refresh"></span></mdui-button-icon>
     </div>
-    <mdui-text-field id="loraSearch" class="lora-search" variant="outlined" clearable
-                     placeholder="搜索名称、文件名、触发词或说明…" density="-4"></mdui-text-field>
+    <label class="pill-search pill-search-wide"><span class="icon pill-search-icon" data-icon="search"></span><input type="search" id="loraSearch" class="pill-search-input" placeholder="搜索名称、文件名、触发词或说明…" autocomplete="off" spellcheck="false"></label>
     <div class="lora-cats" id="loraCats" role="group" aria-label="LoRA 分类"></div>
     <div class="lora-list" id="loraList"></div>
     <div class="preset-empty" id="loraEmpty" hidden>还没有安装 LoRA。把 .safetensors 放进 D:\AI\models\loras 后点刷新。</div>
@@ -1136,8 +1129,8 @@
 <script src="/assets/artists.js?v=20261029m"></script>
 <script src="/assets/characters.js?v=20261031char9"></script>
 <script src="/assets/characters-normal.js?v=20261103normal4"></script>
-<script src="/assets/data.js?v=20261119visual3"></script>
-<script src="/assets/ui.js?v=20261119visual3"></script>
-<script src="/assets/app.js?v=20261119visual3"></script>
+<script src="/assets/data.js?v=20261119pill1"></script>
+<script src="/assets/ui.js?v=20261119pill1"></script>
+<script src="/assets/app.js?v=20261119pill1"></script>
 </body>
 </html>

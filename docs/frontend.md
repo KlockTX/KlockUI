@@ -187,3 +187,44 @@ const { MODEL_PROFILES, LORA_LIBRARY, TAG_GROUPS, ... } = window.KLOCK_DATA;
 - 不要用 `!important`（全文件只剩 14 处，都是和 mdui 内部样式对抗的历史遗留）
 - 不要给单个组件写 `transition: .15s`，用 `var(--dur-fast)`
 - 不要在组件里重画焦点环，全局规则已经覆盖
+
+## 十一、控件自建原则（2026-11-19）
+
+**能自己画的，不要用原生/mdui 默认外观。** 原因不是"好看"，是**尺寸与状态不可控**：
+
+| 组件 | 原方案 | 现在 | 为什么 |
+|---|---|---|---|
+| 搜索框 | `mdui-text-field` 描边框 | `.pill-search` 胶囊（原生 `input`） | 高度 48px 与胶囊按钮的 28px 对不上 |
+| 滚动条 | 系统 overlay 滚动条 | 自定义细条 + `scrollbar-gutter: stable` | overlay 会压在卡片上 |
+
+### 胶囊搜索框
+
+```html
+<label class="pill-search">
+  <span class="icon pill-search-icon" data-icon="search"></span>
+  <input type="search" class="pill-search-input" placeholder="…">
+</label>
+```
+
+- 高度固定 `var(--h-sm)`，和 chip / 分类条完全一致
+- 聚焦用 `:focus-within` 画环，不依赖组件内部状态
+- 清除按钮用 `::-webkit-search-cancel-button` + mask 自己画
+- JS 侧仍然是 `.value` + `input` 事件，**替换组件不需要改逻辑**
+
+### 滚动条
+
+```css
+* { scrollbar-width: thin; scrollbar-color: rgb(var(--mdui-color-outline) / .45) transparent; }
+::-webkit-scrollbar { width: 8px; }
+::-webkit-scrollbar-thumb { background: …; border: 2px solid transparent; background-clip: padding-box; }
+```
+
+配合滚动容器上的 `scrollbar-gutter: stable` + 右内边距，内容不再被压住。
+
+**注意**：`scrollbar-gutter` 会让容器始终留出槽位（即使不滚动），
+所以只给确实会滚的列表加（`.lora-list` / `.saved-list` / `.gallery-grid`），别全局加。
+
+### 还剩哪些原生控件
+
+`<input type="file">` 4 个（全部隐藏，只作触发）、`type="hidden"` 1 个。
+没有原生 `<select>`、`<input type="range">`、`<input type="number">` —— 这些都已用 mdui 组件或自建替代。
