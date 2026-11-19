@@ -4130,6 +4130,11 @@
     "krea2_char_genshin_cosplay",
     "zimage_char_miku",
     "zimage_char_sheet_helper",
+    "zimage_hands_xl",
+    "zimage_detailed_perfection",
+    "krea2_style_yarn",
+    "moss_style_anime_flat",
+    "moss_artist_afrobull",
     "zimage_hands",
     "zimage_detail_perfection",
     "zimage_skin_texture",
@@ -5149,6 +5154,32 @@
       title: "Krea 2 · 蔚蓝档案画风",
       weight: 0.85,
       desc: "3.2 万下载的 BArtstyle，Krea 2 分卷（895MB）。触发词：azure youth anime art style。干净明亮的日系手游立绘感。建议 0.8–1.0。"
+    },
+    // ---- 高下载量通用件（2026-11-19）
+    "zimage_hands_xl": {
+      title: "Z-Image · 手部修正 XL",
+      weight: 0.7,
+      desc: "31.5 万下载，Z-Image 生态里下载量最高的实用件。专治手指粘连与多指。触发词：hand, detailed。建议 0.6–0.8；画面本身手部没问题时别挂，会略微降低自然度。"
+    },
+    "zimage_detailed_perfection": {
+      title: "Z-Image · 细节强化（手/脚/脸）",
+      weight: 0.65,
+      desc: "14 万下载。触发词：ultra detailed, cinematic。同时强化手、脚、面部细节，代价是画面偏「精修感」。建议 0.6–0.75，和高步数别叠加过度。"
+    },
+    "krea2_style_yarn": {
+      title: "Krea 2 · YARN 风格集",
+      weight: 0.7,
+      desc: "4.7 万下载的风格合集。无触发词；偏综合画风增强，适合当主风格与画师件之间的过渡层。建议 0.6–0.8。"
+    },
+    "moss_style_anime_flat": {
+      title: "MOSS · 平涂二次元",
+      weight: 0.85,
+      desc: "4.36 万下载，MOSS Image 分卷。干净色块与番剧感，弥补 MOSS 偏写实/排版的短板。无触发词；建议 0.8–1.0。"
+    },
+    "moss_artist_afrobull": {
+      title: "MOSS · Afrobull 画风",
+      weight: 0.8,
+      desc: "2.3 万下载的画师件（MOSS 分卷）。触发词：zfr0。厚实人体与欧美动画质感。建议 0.7–0.9。"
     },
     // ---- 角色包（2026-11-19）
     "anima_char_miku": {
