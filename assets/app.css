@@ -1151,7 +1151,8 @@
   .result-actions mdui-button::part(button) { padding: 0 var(--sp-5); }
   .result-actions #favoriteCurrent .icon { transition: color var(--dur-fast) ease; }
   .result-actions #favoriteCurrent.is-favorite .icon { color: #D1A043; }
-  .result-actions .load-params { margin-left: auto; font-size: var(--fs-xs); }
+  /* 载入参数和收藏/下载是同一类「对这张图做什么」，不该被推到最右边另起一簇 */
+  .result-actions .load-params { font-size: var(--fs-xs); margin-left: var(--sp-2); }
   .history-head {
     display: flex; align-items: center; justify-content: space-between; gap: 10px;
     padding-top: 2px;
@@ -2002,6 +2003,8 @@
   /* ---------- gallery ---------- */
   .gallery-dialog::part(panel) {
     width: min(1120px, calc(100vw - 32px)); max-width: 1120px;
+    /* 固定高度 + 网格内部滚动：卡片不会被裁，翻页按钮也不会跑到视野外。
+       每页 60 张（默认）+ 5 列，足够填满，不再出现底部大片空白。 */
     height: min(88vh, 920px); max-height: 920px;
     border-radius: 26px;
   }
@@ -2027,7 +2030,7 @@
     display: grid; grid-template-columns: repeat(auto-fill, minmax(166px, 1fr));
     grid-auto-rows: max-content;
     gap: 10px; align-content: start;
-    min-height: 0; flex: 1; overflow-y: auto; overflow-x: hidden;
+    min-height: 0; flex: 1 1 auto; overflow-y: auto; overflow-x: hidden;
     padding: var(--sp-1) var(--sp-2) var(--sp-4) var(--sp-1); scrollbar-width: thin;
   }
   .gallery-card {
@@ -3795,3 +3798,12 @@ mdui-menu-item:not(:defined) {
   display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;
 }
 .prompt-history-meta { font-size: var(--fs-micro); color: rgb(var(--mdui-color-on-surface-variant)); opacity: .8; }
+
+/* 最近作品标题旁的「清空」：和历史绑定，不再和作品库并排 */
+.history-clear {
+  margin-left: var(--sp-3);
+  font-size: var(--fs-micro);
+  color: rgb(var(--mdui-color-on-surface-variant));
+  opacity: .75;
+}
+.history-clear:hover { opacity: 1; color: rgb(var(--mdui-color-error)); }

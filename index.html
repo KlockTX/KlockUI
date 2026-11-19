@@ -20,7 +20,7 @@
 <link rel="icon" href="/assets/favicon.svg" type="image/svg+xml">
 <link rel="alternate icon" href="/assets/klockui.ico" sizes="any">
 <link rel="stylesheet" href="/vendor/mdui.css">
-<link rel="stylesheet" href="/assets/app.css?v=20261119stop1">
+<link rel="stylesheet" href="/assets/app.css?v=20261120layout4">
 </head>
 <body data-mode="txt2img">
 <a class="skip-link" href="#promptCard">跳到画面描述</a>
@@ -713,11 +713,13 @@
     </div>
 
     <div class="history-head">
-      <span class="small-label">最近作品 <b id="historyCount">0</b></span>
+      <span class="small-label">
+        最近作品 <b id="historyCount">0</b>
+        <button type="button" class="text-link history-clear" id="clearHistory" title="清空这个列表（磁盘上的图不会被删）"><span class="icon" data-icon="trash"></span>清空</button>
+      </span>
       <div class="history-head-actions">
         <mdui-button id="openCompare" variant="text" title="并排对比最近两张"><span slot="icon" class="icon" data-icon="compare"></span>对比</mdui-button>
         <mdui-button id="openGallery" variant="text"><span slot="icon" class="icon" data-icon="gallery"></span>作品库</mdui-button>
-        <mdui-button-icon id="clearHistory" aria-label="清空最近作品" title="清空最近作品"><span class="icon" data-icon="trash"></span></mdui-button-icon>
       </div>
     </div>
     <div class="history-strip" id="history" aria-label="最近生成">
@@ -1126,7 +1128,9 @@
       </mdui-segmented-button-group>
       <div class="gallery-tools">
         <span class="gallery-count" id="galleryCount">读取中…</span>
-        <mdui-button-icon id="gallerySelect" aria-label="多选作品" title="多选"><span class="icon" data-icon="checks"></span></mdui-button-icon>
+        <mdui-button id="gallerySelect" variant="text" aria-label="多选作品" title="多选后可以批量收藏、导出、删除">
+          <span slot="icon" class="icon" data-icon="checks"></span><span id="gallerySelectLabel">多选</span>
+        </mdui-button>
         <mdui-button-icon id="galleryRefresh" aria-label="刷新作品库" title="刷新"><span class="icon" data-icon="refresh"></span></mdui-button-icon>
         <mdui-button-icon id="galleryOpenFolder" aria-label="打开出图目录" title="打开出图目录"><span class="icon" data-icon="folder"></span></mdui-button-icon>
       </div>
@@ -1163,11 +1167,11 @@
 </mdui-dialog>
 
 <script src="/vendor/mdui.global.js"></script>
-<script src="/assets/artists.js?v=20261119stop1"></script>
-<script src="/assets/characters.js?v=20261119stop1"></script>
-<script src="/assets/characters-normal.js?v=20261119stop1"></script>
-<script src="/assets/data.js?v=20261119stop1"></script>
-<script src="/assets/ui.js?v=20261119stop1"></script>
-<script src="/assets/app.js?v=20261119stop1"></script>
+<script src="/assets/artists.js?v=20261120layout4"></script>
+<script src="/assets/characters.js?v=20261120layout4"></script>
+<script src="/assets/characters-normal.js?v=20261120layout4"></script>
+<script src="/assets/data.js?v=20261120layout4"></script>
+<script src="/assets/ui.js?v=20261120layout4"></script>
+<script src="/assets/app.js?v=20261120layout4"></script>
 </body>
 </html>

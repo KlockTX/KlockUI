@@ -552,7 +552,7 @@
   };
 
   const galleryState = {
-    items: [], filter: "all", offset: 0, fetched: 0, limit: 48,
+    items: [], filter: "all", offset: 0, fetched: 0, limit: 60,
     total: 0, favoriteTotal: 0, hasMore: false,
     loading: false, requestId: 0,
     selecting: false, selected: new Set(), batchBusy: false
@@ -7923,7 +7923,9 @@
       }
     });
     el.gallerySelect.classList.toggle("is-on", galleryState.selecting);
-    el.gallerySelect.title = galleryState.selecting ? "退出多选" : "多选";
+    el.gallerySelect.title = galleryState.selecting ? "退出多选" : "多选后可以批量收藏、导出、删除";
+    const label = $("#gallerySelectLabel");
+    if (label) label.textContent = galleryState.selecting ? "退出多选" : "多选";
     el.gallerySelect.setAttribute("aria-label", el.gallerySelect.title);
     el.gallerySelect.setAttribute("aria-pressed", galleryState.selecting ? "true" : "false");
   }
