@@ -512,8 +512,29 @@ def current_arch():
         return _CURRENT_ARCH
 
 
+def resolve_model_file(name):
+    """把「模型名」规整成 ComfyUI 认的文件名。
+
+    调用方可能给不带扩展名的 stem（界面里的 activeModel 就是），
+    也可能给带 .safetensors 的完整名。ComfyUI 的 UNETLoader 只认清单里的
+    完整文件名，少个后缀就报 value_not_in_list。
+    """
+    raw = str(name or "").strip()
+    if not raw:
+        return raw
+    if raw.lower().endswith(".safetensors") and raw in _model_filenames():
+        return raw
+    stem = _stem(raw)
+    for filename in _model_filenames():
+        if _stem(filename) == stem:
+            return filename
+    # 清单里没有就原样返回，让 ComfyUI 自己报错，别静默换成别的模型
+    return raw
+
+
 def set_model(name):
     global _CURRENT_MODEL, _CURRENT_ARCH
+    name = resolve_model_file(name)
     path = _checkpoint_path(name)
     if not path:
         return None
@@ -1448,6 +1469,7 @@ def generate(endpoint, payload, timeout=None):
     start_progress_ws()
 
     model = (payload.get("override_settings") or {}).get("sd_model_checkpoint") or current_model()
+    model = resolve_model_file(model)
     arch = _arch_for(model)
     if arch == "unknown":
         arch = current_arch()

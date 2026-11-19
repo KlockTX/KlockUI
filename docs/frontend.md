@@ -341,3 +341,29 @@ performance.getEntriesByType('resource')
 
 用没有 PIL 的 Python 起服务时，`/local/gallery/thumb` 会退回发原图，
 首屏传输从 1.35MB 变成 9.1MB。**测性能前先确认用的是 ComfyUI 的 venv Python。**
+
+## 十六、冒烟自检（2026-11-19）
+
+```bash
+D://AI//ComfyUI//venv//Scripts//python.exe scripts\smoke.py
+```
+
+几秒跑完，检查三件事：模块能否导入、模型名规整是否正常、`presets/*.json` 是否合规。
+不需要起服务。
+
+**为什么加它**：给请求钉住底模那次改动，把不带扩展名的 stem 塞进了 `UNETLoader`，
+ComfyUI 返回 `value_not_in_list`，所有生成全挂 —— 但只有在浏览器里点生成才会暴露。
+把这类纯函数检查放进脚本，改完代码先跑一遍，比等用户报错快。
+
+### 模型名必须规整
+
+界面里的 `activeModel` 是 **不带扩展名的 stem**（`krea2_noct_v4_int8_convrot`），
+而 ComfyUI 的加载节点只认清单里的 **完整文件名**（`...safetensors`）。
+
+```python
+comfy_bridge.resolve_model_file("krea2_noct_v4_int8_convrot")
+# -> "krea2_noct_v4_int8_convrot.safetensors"
+```
+
+`generate()` 和 `set_model()` 都会先过这一层。历史记录的 `model` 字段也统一存完整名，
+否则按模型分组（对比、耗时统计）会把同一个模型分成两组。

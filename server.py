@@ -1527,7 +1527,9 @@ def _job_meta(endpoint, payload, model=""):
         "batch": max(1, int(payload.get("n_iter") or 1) * int(payload.get("batch_size") or 1)),
         "hires": bool(payload.get("enable_hr")),
         "denoise": payload.get("denoising_strength") if endpoint == "img2img" else None,
-        "model": str(model or "")[:200],
+        # 统一存完整文件名：界面里的 activeModel 是不带扩展名的 stem，
+        # 两种写法混在历史里会让按模型分组（对比、耗时统计）对不上。
+        "model": str(comfy_bridge.resolve_model_file(model) or "")[:200],
     }
 
 
