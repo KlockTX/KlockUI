@@ -331,6 +331,8 @@ models/loras/
 | 仓库配方 UI | `assets/app.js` → `loadRepoPresets()` / `renderRepoPresets()` / `importRepoPreset()` |
 | LoRA 搜索过滤 | `assets/app.js` → `loraMatchesQuery()` + `state.loraQuery` |
 | 画面对比 | `assets/app.js` → `openCompareDialog()` / `renderCompare()` / `compareFieldRows()` |
+| 排队任务锁定模型 | 前端 `buildRequest()` 写 `override_settings.sd_model_checkpoint`；服务端 `_generate_submit()` 兜底 |
+| 显存释放时机 | `comfy_bridge.set_model()`（RAM < 3GB 才卸载）、`server.py` 空闲 600s 卸载、NeverOOM 跑完卸载 |
 | 配方保存接口 | `server.py` → `_preset_save()`（`POST /local/preset/save`，文件名白名单 + 校验） |
 | 配方编辑器 | `assets/app.js` → `openPresetEditor()` / `savePresetEdit()` / `presetJsonError()` |
 | 前端公共件 | `assets/ui.js` → `h()` / `archLabel()` / `bindDialog()` / `debounce()` |

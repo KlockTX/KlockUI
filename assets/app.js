@@ -5681,7 +5681,10 @@
       ["调度器", a.scheduler, b.scheduler],
       ["种子", a.seed, b.seed],
       ["重绘幅度", a.denoise, b.denoise],
-      ["二采", a.hires ? `开 ×${a.hrScale || 1.25}` : "关", b.hires ? `开 ×${b.hrScale || 1.25}` : "关"]
+      ["二采", a.hires ? `开 ×${a.hrScale || 1.25}` : "关", b.hires ? `开 ×${b.hrScale || 1.25}` : "关"],
+      // 耗时放进来：加步数/开二采的代价一眼能看到，比只看画面更能量化
+      ["耗时", a.totalElapsed ? `${Number(a.totalElapsed).toFixed(1)}s` : "—",
+               b.totalElapsed ? `${Number(b.totalElapsed).toFixed(1)}s` : "—"]
     ];
     return rows
       .map(([key, va, vb]) => [key, norm(va), norm(vb)])
@@ -9141,6 +9144,9 @@
     const overrideSettings = {
       CLIP_stop_at_last_layers: flow ? 1 : normalizeClipSkip(cfg.clipSkip)
     };
+    // 把模型钉在请求里：任务在队列里排队期间用户可能切了底模，
+    // 不钉的话执行时取的是「当前模型」，会拿错架构的模型和 LoRA 去跑。
+    if (state.activeModel) overrideSettings.sd_model_checkpoint = state.activeModel;
     if (state.mode === "img2img") {
       // Forge 默认只跑 steps × 重绘幅度 的尾段（28 × 0.5 = 15 步）。
       // 打开 img2img_fix_steps 后，界面写多少步就实际采样多少步。

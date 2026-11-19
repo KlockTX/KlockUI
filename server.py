@@ -5914,6 +5914,15 @@ class Handler(BaseHTTPRequestHandler):
             return
         endpoint = str(data.get("endpoint") or "").strip().lower()
         payload = data.get("payload")
+        # 兜底：请求里带了 model 但 payload 没钉，补进 override_settings，
+        # 否则排队期间切换底模会让这个任务跑在别的模型上。
+        if isinstance(payload, dict) and data.get("model"):
+            override = payload.get("override_settings")
+            if not isinstance(override, dict):
+                override = {}
+            if not override.get("sd_model_checkpoint"):
+                override["sd_model_checkpoint"] = data["model"]
+                payload["override_settings"] = override
         if endpoint not in ("txt2img", "img2img") or not isinstance(payload, dict) or not payload:
             self._send(400, '{"detail":"endpoint 必须是 txt2img 或 img2img"}'.encode("utf-8"))
             return
