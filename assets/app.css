@@ -52,6 +52,11 @@
   --sp-7: 20px;
   --sp-8: 24px;
 
+  /* 控件横向内边距：按钮 / chip / 输入框统一走这三档，别再写 10px 11px 这种 */
+  --pad-ctl-1: 8px;
+  --pad-ctl-2: 10px;
+  --pad-ctl-3: 12px;
+
   /* 动效：三档时长，交互反馈统一用 fast，进出场用 base */
   --dur-fast: .12s;
   --dur-base: .2s;
@@ -364,7 +369,7 @@
 
   /* ---------- model picker (topbar) ---------- */
   .model-picker { position: relative; flex: none; min-width: 0; }
-  .model-chip { gap: var(--sp-3); padding: 0 10px 0 11px; }
+  .model-chip { gap: var(--sp-3); padding: 0 var(--pad-ctl-2); }
   .model-chip-kicker {
     flex: none; display: inline-flex; align-items: center; height: 18px; padding: 0 var(--sp-3);
     border-radius: var(--r-full); background: var(--app-primary-soft);
@@ -489,7 +494,7 @@
   /* ---------- theme picker ---------- */
   .theme-picker { position: relative; flex: none; }
   .theme-chip {
-    appearance: none; height: 36px; padding: 0 10px 0 11px;
+    appearance: none; height: 36px; padding: 0 var(--pad-ctl-2);
     border: 1px solid var(--app-outline); border-radius: var(--r-full);
     background: rgb(var(--mdui-color-surface-container-low));
     color: rgb(var(--mdui-color-on-surface-variant));
@@ -525,7 +530,7 @@
   }
   .theme-menu.open { opacity: 1; transform: none; pointer-events: auto; visibility: visible; }
   .theme-option {
-    appearance: none; width: 100%; height: 41px; padding: 0 10px;
+    appearance: none; width: 100%; height: 41px; padding: 0 var(--pad-ctl-2);
     border: 0; border-radius: var(--r-sm); background: transparent;
     color: rgb(var(--mdui-color-on-surface));
     display: flex; align-items: center; gap: 10px;
@@ -805,7 +810,7 @@
     font-size: var(--fs-xs); line-height: 1.45;
   }
   .model-profile-row mdui-button { flex: none; height: 28px; min-width: 0; font-size: var(--fs-xs); --shape-corner: 999px; }
-  .model-profile-row mdui-button::part(button) { padding: 0 10px; height: 28px; }
+  .model-profile-row mdui-button::part(button) { padding: 0 var(--pad-ctl-2); height: 28px; }
   .model-profile-row mdui-button[disabled] { opacity: .5; }
   .lora-block .helper { margin-top: 7px; }
   .lora-active-chips { display: flex; flex-wrap: wrap; gap: var(--sp-3); margin: 0 0 8px; }
@@ -829,7 +834,7 @@
     overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
   }
   .lora-row mdui-button { flex: none; height: 28px; min-width: 0; font-size: var(--fs-xs); --shape-corner: 999px; }
-  .lora-row mdui-button::part(button) { padding: 0 10px; height: 28px; }
+  .lora-row mdui-button::part(button) { padding: 0 var(--pad-ctl-2); height: 28px; }
   .lora-row mdui-button[disabled] { opacity: .5; }
   .setting-title {
     display: flex; align-items: center; justify-content: space-between; gap: 10px;
@@ -988,7 +993,7 @@
   .stage-head { display: flex; align-items: flex-start; justify-content: space-between; gap: var(--sp-5); }
   .stage-head-right { display: flex; align-items: center; gap: var(--sp-3); margin-top: -4px; }
   .mode-badge {
-    display: inline-flex; align-items: center; height: 28px; padding: 0 10px;
+    display: inline-flex; align-items: center; height: 28px; padding: 0 var(--pad-ctl-2);
     border-radius: var(--r-full); background: rgb(var(--mdui-color-secondary-container));
     color: rgb(var(--mdui-color-on-secondary-container));
     font-size: var(--fs-xs); font-weight: 650; white-space: nowrap;
@@ -1032,7 +1037,7 @@
   }
   .placeholder-ideas { margin-top: 13px; display: flex; flex-wrap: wrap; justify-content: center; gap: var(--sp-3); max-width: 430px; }
   .placeholder-idea {
-    appearance: none; height: 30px; padding: 0 11px 0 9px;
+    appearance: none; height: 30px; padding: 0 var(--pad-ctl-2);
     border-radius: var(--r-full); border: 1px solid var(--app-outline-soft);
     background: rgb(var(--mdui-color-surface-container-lowest) / .7);
     color: rgb(var(--mdui-color-on-surface-variant));
@@ -1078,7 +1083,7 @@
   .live-badge {
     position: absolute; left: 16px; bottom: 14px;
     display: inline-flex; align-items: center; gap: var(--sp-3);
-    height: 28px; padding: 0 11px; border-radius: var(--r-full);
+    height: 28px; padding: 0 var(--pad-ctl-3); border-radius: var(--r-full);
     background: rgb(var(--mdui-color-inverse-surface) / .86);
     color: rgb(var(--mdui-color-inverse-on-surface));
     font-size: var(--fs-xs); font-weight: 600; font-variant-numeric: tabular-nums;
@@ -1089,7 +1094,7 @@
     opacity: 0; transition: opacity var(--dur-fast) ease; pointer-events: none;
   }
   .overlay-hint {
-    display: inline-flex; align-items: center; height: 26px; padding: 0 10px; border-radius: var(--r-full);
+    display: inline-flex; align-items: center; height: 26px; padding: 0 var(--pad-ctl-2); border-radius: var(--r-full);
     background: rgb(var(--mdui-color-inverse-surface) / .82);
     color: rgb(var(--mdui-color-inverse-on-surface));
     font-size: var(--fs-micro); letter-spacing: .02em;
@@ -1099,7 +1104,7 @@
   .busy-overlay {
     position: absolute; left: 14px; top: 14px; z-index: 2;
     display: inline-flex; align-items: center; gap: var(--sp-3);
-    height: 30px; padding: 0 11px; border-radius: var(--r-full);
+    height: 30px; padding: 0 var(--pad-ctl-3); border-radius: var(--r-full);
     background: rgb(var(--mdui-color-inverse-surface) / .84);
     color: rgb(var(--mdui-color-inverse-on-surface));
     font-size: var(--fs-xs); font-weight: 600;
@@ -1130,7 +1135,7 @@
   .result-info { display: flex; flex-direction: column; gap: var(--sp-4); padding-top: 2px; }
   .meta-chips { display: flex; flex-wrap: wrap; gap: var(--sp-2); }
   .meta-chip {
-    display: inline-flex; align-items: center; gap: var(--sp-2); height: 26px; padding: 0 9px;
+    display: inline-flex; align-items: center; gap: var(--sp-2); height: 26px; padding: 0 var(--pad-ctl-1);
     border-radius: var(--r-full); background: rgb(var(--mdui-color-surface-container));
     color: rgb(var(--mdui-color-on-surface-variant));
     font-size: var(--fs-micro); font-variant-numeric: tabular-nums; white-space: nowrap;
@@ -1162,7 +1167,7 @@
   .history-head mdui-button-icon { color: rgb(var(--mdui-color-on-surface-variant)); }
   .history-head-actions { display: flex; align-items: center; gap: var(--sp-1); }
   .history-head-actions mdui-button { font-size: var(--fs-xs); --shape-corner: 999px; }
-  .history-head-actions mdui-button::part(button) { padding: 0 7px; }
+  .history-head-actions mdui-button::part(button) { padding: 0 var(--pad-ctl-1); }
   .history-strip {
     display: flex; gap: var(--sp-3); align-items: center;
     overflow-x: auto; overflow-y: hidden;
@@ -1306,7 +1311,7 @@
     /* MOSS 词库有 18 个分类，限制高度避免把标签区挤下去。 */
     max-height: 74px; overflow-y: auto; scrollbar-width: thin; }
   .tag-nav-pill {
-    appearance: none; flex: none; height: 28px; padding: 0 10px;
+    appearance: none; flex: none; height: 28px; padding: 0 var(--pad-ctl-2);
     border-radius: var(--r-full); border: 1px solid var(--app-outline-soft);
     background: rgb(var(--mdui-color-surface-container-low));
     color: rgb(var(--mdui-color-on-surface-variant));
@@ -1372,7 +1377,7 @@
   }
   .recipe-actions { margin-left: auto; flex: none; display: flex; align-items: center; gap: var(--sp-1); }
   .recipe-actions mdui-button { font-size: var(--fs-micro); height: 24px; display: inline-flex; --shape-corner: 999px; }
-  .recipe-actions mdui-button::part(button) { padding: 0 7px; height: 24px; min-height: 24px; }
+  .recipe-actions mdui-button::part(button) { padding: 0 var(--pad-ctl-1); height: 24px; min-height: 24px; }
   .recipe-actions mdui-button .icon { width: 13px; height: 13px; }
   .tag-groups { display: flex; flex-direction: column; gap: var(--sp-6); }
   .tag-group { scroll-margin-top: 12px; }
@@ -2127,7 +2132,7 @@
   .gallery-batch-actions { margin-left: auto; display: flex; align-items: center; gap: var(--sp-1); min-width: 0; }
   .gallery-batch-action {
     display: inline-flex; align-items: center; justify-content: center; gap: var(--sp-2);
-    height: 34px; padding: 0 10px; border: 0; border-radius: var(--r-full);
+    height: 34px; padding: 0 var(--pad-ctl-2); border: 0; border-radius: var(--r-full);
     background: transparent; color: rgb(var(--mdui-color-on-surface));
     font: inherit; font-size: var(--fs-xs); font-weight: 560; white-space: nowrap;
     cursor: pointer; transition: background var(--dur-fast) ease, color var(--dur-fast) ease;
@@ -2184,11 +2189,11 @@
     .brand-mark svg { width: 21px; height: 21px; }
     .brand-text strong { font-size: var(--fs-lg); }
     .brand-text small { display: none; }
-    .status-chip { height: 34px; padding: 0 10px; gap: var(--sp-3); }
+    .status-chip { height: 34px; padding: 0 var(--pad-ctl-2); gap: var(--sp-3); }
     .status-model { display: none; }
-    .model-chip { padding: 0 10px; }
+    .model-chip { padding: 0 var(--pad-ctl-2); }
     .model-menu { width: min(336px, calc(100vw - 24px)); }
-    .theme-chip { height: 34px; padding: 0 9px; gap: var(--sp-2); }
+    .theme-chip { height: 34px; padding: 0 var(--pad-ctl-1); gap: var(--sp-2); }
     .theme-label { display: none; }
     .theme-menu { width: 178px; }
     .rating-name, .rating-sep { display: none; }
@@ -2254,11 +2259,11 @@
     .lightbox-counter { margin-left: 8px; font-size: var(--fs-xs); }
   }
   @media (max-width: 430px) {
-    .appbar-inner { padding: 0 10px; gap: var(--sp-1); }
+    .appbar-inner { padding: 0 var(--pad-ctl-2); gap: var(--sp-1); }
     .brand { gap: var(--sp-4); }
     .brand-text strong { font-size: var(--fs-md); }
     .appbar-spacer { min-width: 0; }
-    .status-chip { padding: 0 9px; gap: var(--sp-3); }
+    .status-chip { padding: 0 var(--pad-ctl-1); gap: var(--sp-3); }
     .theme-chip { padding: 0 var(--sp-4); }
     .theme-menu { right: -4px; }
     .advanced-link { width: 36px; min-width: 36px; }
@@ -2329,7 +2334,7 @@
 .side-panel .prompt-card .card-title-wrap h2 { font-size: var(--fs-md); }
 .side-panel .card-tools { gap: var(--sp-3); margin: 0; }
 .rating-picker { margin: 0; }
-.side-panel .rating-chip { height: 30px; padding: 0 8px 0 9px; font-size: var(--fs-xs); }
+.side-panel .rating-chip { height: 30px; padding: 0 var(--pad-ctl-1); font-size: var(--fs-xs); }
 .side-panel .rating-chip .icon,
 .side-panel .rating-chip svg { width: 11px; height: 11px; }
 .tool-cluster {
@@ -2370,7 +2375,7 @@
 .prompt-chips.is-off { display: none; }
 .prompt-chip {
   display: inline-flex; align-items: center; gap: var(--sp-3);
-  max-width: 260px; padding: 3px 9px 3px 10px;
+  max-width: 260px; padding: 3px var(--pad-ctl-1) 3px var(--pad-ctl-2);
   border-radius: var(--r-full); border: 1px solid rgba(var(--mdui-color-outline-variant-rgb, 196, 199, 197), .9);
   background: rgba(var(--mdui-color-secondary-container-rgb, 228, 226, 236), .55);
   color: rgb(var(--mdui-color-on-surface-variant));
@@ -2651,7 +2656,7 @@ mdui-select::part(menu) mdui-menu-item { white-space: nowrap; }
 }
 .model-profile-note { flex: 1; min-width: 0; font-size: var(--fs-micro); line-height: 1.4; }
 .model-profile-row mdui-button { flex: none; height: 26px; min-width: 0; --shape-corner: 999px; font-size: var(--fs-xs); }
-.model-profile-row mdui-button::part(button) { height: 26px; padding: 0 9px; }
+.model-profile-row mdui-button::part(button) { height: 26px; padding: 0 var(--pad-ctl-1); }
 .sub-block {
   margin-top: 12px; padding-top: 9px;
   border-top: 1px solid var(--app-outline-soft);
@@ -2693,11 +2698,11 @@ mdui-select::part(menu) mdui-menu-item { white-space: nowrap; }
 /* ---------- LoRA ---------- */
 .enhance-card .side-card-head { margin-bottom: 8px; }
 .lora-active-chips { gap: var(--sp-2); margin: 0 0 7px; }
-.lora-chip { height: 26px; padding: 0 9px; font-size: var(--fs-xs); }
+.lora-chip { height: 26px; padding: 0 var(--pad-ctl-1); font-size: var(--fs-xs); }
 .lora-row { gap: var(--sp-3); }
 .lora-note { font-size: var(--fs-micro); }
 .lora-row mdui-button { height: 28px; min-width: 0; --shape-corner: 999px; font-size: var(--fs-xs); }
-.lora-row mdui-button::part(button) { height: 28px; padding: 0 10px; }
+.lora-row mdui-button::part(button) { height: 28px; padding: 0 var(--pad-ctl-2); }
 #loraHelper { margin-top: 6px; font-size: var(--fs-micro); line-height: 1.5; }
 #loraHelper.warn {
   padding: 7px 9px; border-radius: var(--r-xs);
@@ -3014,7 +3019,7 @@ mdui-select::part(menu) mdui-menu-item { white-space: nowrap; }
   .placeholder .placeholder-kbd { display: none; }
   #placeholderHint { display: none; }
   #placeholderHintMobile { display: inline; }
-  button.meta-chip { min-height: 38px; padding: 0 11px; }
+  button.meta-chip { min-height: 38px; padding: 0 var(--pad-ctl-3); }
   .sampler-preset { height: auto; min-height: 40px; }
   .thumb { width: 64px; height: 64px; }
 
@@ -3063,7 +3068,7 @@ mdui-select::part(menu) mdui-menu-item { white-space: nowrap; }
   .gallery-info { padding: 7px 8px 8px; }
   .gallery-fav { width: 38px; height: 38px; top: 6px; right: 6px; }
   .gallery-grid { padding: 2px 2px 10px 0; }
-  .gallery-dialog[fullscreen]::part(body) { padding: 0 10px; }
+  .gallery-dialog[fullscreen]::part(body) { padding: 0 var(--pad-ctl-2); }
   .gallery-mode { top: 6px; left: 6px; }
   .gallery-check { top: 6px; right: 6px; width: 28px; height: 28px; }
   .gallery-selectbar { padding: 4px 4px 4px 9px; gap: var(--sp-2); }
@@ -3171,7 +3176,7 @@ mdui-select::part(menu) mdui-menu-item { white-space: nowrap; }
   font-variant-numeric: tabular-nums;
 }
 .queue-badge {
-  display: inline-flex; align-items: center; height: 18px; padding: 0 7px;
+  display: inline-flex; align-items: center; height: 18px; padding: 0 var(--pad-ctl-1);
   border-radius: var(--r-full); font-size: var(--fs-micro); font-weight: 650; letter-spacing: .02em;
   background: rgb(var(--mdui-color-surface-container-high));
   color: rgb(var(--mdui-color-on-surface-variant));
@@ -3182,7 +3187,7 @@ mdui-select::part(menu) mdui-menu-item { white-space: nowrap; }
 .queue-badge.is-error { background: rgb(var(--mdui-color-error-container)); color: rgb(var(--mdui-color-on-error-container)); }
 .queue-badge.is-cancelled { opacity: .75; }
 .queue-item-btn {
-  flex: none; height: 28px; padding: 0 11px; border-radius: var(--r-full);
+  flex: none; height: 28px; padding: 0 var(--pad-ctl-3); border-radius: var(--r-full);
   border: 1px solid var(--app-outline-soft); background: transparent;
   color: rgb(var(--mdui-color-on-surface-variant)); font-size: var(--fs-xs); cursor: pointer;
   transition: background var(--dur-fast) ease, color var(--dur-fast) ease, border-color var(--dur-fast) ease;
@@ -3445,7 +3450,7 @@ mdui-select::part(menu) mdui-menu-item { white-space: nowrap; }
 /* 转写开关：28px 胶囊，开＝主色描边，关＝灰。替掉原来那块占满行的 switch */
 .translate-chip {
   display: inline-flex; align-items: center; gap: var(--sp-2);
-  height: var(--h-sm); padding: 0 9px 0 8px;
+  height: var(--h-sm); padding: 0 var(--pad-ctl-1);
   border-radius: var(--r-full); border: 1px solid var(--app-outline-soft);
   background: transparent; cursor: pointer;
   font-size: var(--fs-xs); font-weight: 600;
@@ -3530,7 +3535,7 @@ mdui-menu-item:not(:defined) {
 }
 .lora-cats::-webkit-scrollbar { display: none; }
 .lora-cat {
-  flex: none; height: var(--h-sm); padding: 0 11px;
+  flex: none; height: var(--h-sm); padding: 0 var(--pad-ctl-3);
   border-radius: var(--r-full); border: 1px solid var(--app-outline-soft);
   background: transparent; cursor: pointer;
   font-size: var(--fs-xs); font-weight: 600;
