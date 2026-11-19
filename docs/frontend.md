@@ -597,3 +597,36 @@ TypeError: Cannot read properties of null (reading 'addEventListener')
         selectCount=893  clear=938  done=964
 批量条 Y=253 < 网格 Y=313                  ← 在网格上方
 ```
+
+## 二十三、发行包（2026-11-20）
+
+### 产物
+
+| 项 | 值 |
+|---|---|
+| Release | `v1.0.0` · https://github.com/KlockTX/KlockUI/releases/tag/v1.0.0 |
+| 包 | `KlockUI-1.0.0.zip` · 1,394,134 bytes |
+| 生成 | `python scripts/make_release.py v1.0.0` → `dist/` |
+| 内容 | 68 个文件（67 个 git 受控 + `AGENT-INSTALL.md`） |
+
+### 设计取舍
+
+1. **只打 `git ls-files`**：缓存、个人笔记、备份、模型权重天然不在受控列表里，
+   不用维护一份"排除清单"——清单迟早会漏。
+2. **包内放 `AGENT-INSTALL.md`**：agent 拿到 zip 会先找引导文件，
+   明确告诉它"这不是 git 仓库，但 install.md 的触发条件已满足，从第 1 节开始"。
+3. **README 两种安装方式并列**：
+   - A 仓库链接（agent 自己 clone）
+   - B 下载 zip 发给 agent（**不需要它访问 GitHub**）
+   
+   两者安装步骤完全一致，都从 `install.md` 第 1 节走；模型权重两种方式都要自己下。
+
+### 端到端验证
+
+```
+从 GitHub Release 下载 1,394,134 bytes
+解压 68 个文件
+在解压目录跑 scripts/smoke.py → 通过 29 / 失败 0
+```
+
+以后发新版：`python scripts/make_release.py vX.Y.Z`，然后用 GitHub API 建 release 传 zip。
