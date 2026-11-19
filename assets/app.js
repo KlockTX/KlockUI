@@ -7914,12 +7914,15 @@
       toggleGallerySelection(item);
       if (!galleryState.selected.size) setGallerySelecting(false);
     });
+    // 选中的多张时，卡片上的「导出 / 删除」直接作用于选中集合，
+    // 不用再跑到弹窗底部找批量条。
+    const bulk = () => galleryState.selected.size > 1;
     actions.append(
       pick,
       action("查看参数", "sliders", () => openGalleryInfo(item)),
       action("送去图生图", "send", () => sendGalleryToImg2img(item)),
-      action("导出原图", "download", () => exportGalleryItem(item)),
-      action("删除作品", "trash", () => deleteGalleryItem(item), true)
+      action("导出原图", "download", () => (bulk() ? batchExportGallery() : exportGalleryItem(item))),
+      action("删除作品", "trash", () => (bulk() ? batchDeleteGallery() : deleteGalleryItem(item)), true)
     );
 
     card.append(thumbWrap, info, actions);

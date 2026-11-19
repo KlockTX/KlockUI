@@ -2016,7 +2016,7 @@
   .gallery-body { display: flex; flex-direction: column; gap: var(--sp-5); min-height: 0; flex: 1; }
   .gallery-toolbar { display: flex; align-items: center; justify-content: space-between; gap: 10px; flex-wrap: wrap; }
   .gallery-toolbar mdui-segmented-button-group { font-size: var(--fs-xs); --shape-corner: 999px; }
-  .gallery-tools { display: flex; align-items: center; gap: var(--sp-1); }
+  .gallery-tools { display: flex; align-items: center; gap: var(--sp-1); margin-left: auto; }
   .gallery-count {
     margin-right: 4px; color: rgb(var(--mdui-color-on-surface-variant));
     font-size: var(--fs-xs); font-variant-numeric: tabular-nums; white-space: nowrap;
@@ -2103,8 +2103,8 @@
   /* 常驻选择圈已经在操作行，缩略图角标就不再重复出现 */
   .gallery-dialog.is-selecting .gallery-check { display: none; }
   .gallery-dialog.is-selecting .gallery-fav,
-  /* 选择态只收起点选后的操作图标，保留常驻选择圈本身 */
-  .gallery-dialog.is-selecting .gallery-actions .gallery-action { display: none; }
+  /* 选择态保留卡片上的操作图标：选多张后「导出 / 删除」直接作用于选中集合，
+     藏起来反而让人找不到入口。尺寸稳定靠 flex 布局，不靠隐藏。 */
   .gallery-dialog.is-selecting .gallery-thumb { cursor: pointer; }
 
   /* 常驻选择圈：贴在操作行最左，点它就是选中，不依赖「多选」模式 */
@@ -2127,7 +2127,8 @@
 
   .gallery-card.is-selected {
     border-color: rgb(var(--mdui-color-primary) / .62);
-    box-shadow: 0 0 0 1.5px rgb(var(--mdui-color-primary) / .5);
+    /* inset：描边画在卡片内侧，不向外扩，选中前后尺寸完全一致 */
+    box-shadow: inset 0 0 0 1.5px rgb(var(--mdui-color-primary) / .5);
   }
   .gallery-card.is-selected .gallery-check {
     background: rgb(var(--mdui-color-primary));
