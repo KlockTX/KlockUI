@@ -5571,6 +5571,9 @@ class Handler(BaseHTTPRequestHandler):
         if path == "/local/gallery/info":
             self._gallery_info()
             return
+        if path == "/local/progress/stream":
+            self._progress_stream()
+            return
         if path == "/local/generate/status":
             self._generate_status()
             return
@@ -6029,6 +6032,57 @@ class Handler(BaseHTTPRequestHandler):
         log.info("generation job %s queued (%s, position %s)", job_id, endpoint, position)
         body = json.dumps({"id": job_id, "status": "queued", "position": position}, ensure_ascii=False)
         self._send(202, body.encode("utf-8"))
+
+    def _progress_stream(self):
+        """SSE：把桥接层收到的步预览即时推给浏览器。
+
+        轮询模式的延迟来自「间隔 + 一次性取走」：650ms 轮询在看 5.8s/步时还行，
+        但帧会被取走，晚一拍就丢；改成推送后延迟压到十几毫秒，且不重复传图。
+        """
+        self.send_response(200)
+        self.send_header("Content-Type", "text/event-stream; charset=utf-8")
+        self.send_header("Cache-Control", "no-store")
+        self.send_header("Connection", "close")
+        self.send_header("X-Accel-Buffering", "no")
+        self.end_headers()
+        self.close_connection = True
+        last_seq = -1
+        last_step = -1
+        idle = 0
+        try:
+            while True:
+                body = comfy_bridge.progress(consume_preview=False)
+                state = body.get("state") or {}
+                step = int(state.get("sampling_step") or 0)
+                steps = int(state.get("sampling_steps") or 0)
+                seq = int(body.get("preview_seq") or 0)
+                image = body.get("current_image") or ""
+                running = steps > 0 and not state.get("interrupted")
+                if running and (seq != last_seq or step != last_step):
+                    payload = {"step": step, "steps": steps,
+                               "progress": body.get("progress"), "eta": body.get("eta_relative")}
+                    if image and seq != last_seq:
+                        payload["image"] = image
+                    chunk = "data: " + json.dumps(payload, ensure_ascii=False) + "\n\n"
+                    self.wfile.write(chunk.encode("utf-8"))
+                    self.wfile.flush()
+                    last_seq = seq
+                    last_step = step
+                    idle = 0
+                else:
+                    idle += 1
+                    if idle % 20 == 0:
+                        self.wfile.write(b": keep-alive\n\n")
+                        self.wfile.flush()
+                # 任务结束后再空转 1.5s 收尾，避免最后一帧被截断
+                if not running:
+                    if idle > 15:
+                        self.wfile.write(b"event: end\ndata: {}\n\n")
+                        self.wfile.flush()
+                        return
+                time.sleep(0.12)
+        except (BrokenPipeError, ConnectionResetError, OSError):
+            return
 
     def _generate_status(self):
         query = parse_qs(urlparse(self.path).query)

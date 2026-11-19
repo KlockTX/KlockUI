@@ -205,7 +205,7 @@ class _ProgressWS(threading.Thread):
         self._buf = b""
         self._progress_state = {"value": 0, "max": 0, "base": 0, "prompt_id": None,
                        "executing": False, "node": None, "connected": False,
-                       "preview": ""}
+                       "preview": "", "preview_seq": 0}
 
     def stop(self):
         self._stop_event.set()
@@ -224,11 +224,21 @@ class _ProgressWS(threading.Thread):
             self._progress_state.update(kw)
 
     def take_preview(self):
-        """取走最新预览图（base64），取一次即清空，避免每轮重复传输同一张。"""
+        """取走最新预览图（base64），取一次即清空。
+
+        保留给旧调用方；新代码用 peek_preview()：预览改为粘性后，
+        轮询晚到不会丢帧，前端用序号去重即可。
+        """
         with self._state_lock:
             value = self._progress_state.get("preview") or ""
             self._progress_state["preview"] = ""
         return value
+
+    def peek_preview(self):
+        """读取最新预览图与序号，不清空。序号每次新帧 +1，供前端去重。"""
+        with self._state_lock:
+            return (self._progress_state.get("preview") or "",
+                    int(self._progress_state.get("preview_seq") or 0))
 
     def _on_binary(self, payload):
         """ComfyUI 每步预览走二进制帧。
@@ -258,7 +268,8 @@ class _ProgressWS(threading.Thread):
         else:
             return
         if image:
-            self._set(preview=base64.b64encode(image).decode("ascii"))
+            seq = int(self._progress_state.get("preview_seq") or 0) + 1
+            self._set(preview=base64.b64encode(image).decode("ascii"), preview_seq=seq)
 
     def _recv_exact(self, n):
         while len(self._buf) < n:
@@ -1665,12 +1676,20 @@ def _available_gb():
         return None
 
 
-def progress():
-    """A1111 progress 方言：优先用 WebSocket 真实步数，断线时回退时间估算。"""
+def progress(consume_preview=True):
+    """A1111 progress 方言：优先用 WebSocket 真实步数，断线时回退时间估算。
+
+    consume_preview=False 时预览不清空（SSE 用），并在返回体里带 preview_seq。
+    """
     snap = _WS.snapshot()
     running = busy()
     # 每步预览：ComfyUI 通过 WebSocket 二进制帧推送，这里取一次即清空。
-    preview = _WS.take_preview()
+    preview = None
+    preview_seq = 0
+    if consume_preview:
+        preview = _WS.take_preview()
+    else:
+        preview, preview_seq = _WS.peek_preview()
     with _STATE_LOCK:
         job_index, job_count = _JOB_INDEX, _JOB_COUNT
     if running and snap.get("max"):
@@ -1699,6 +1718,8 @@ def progress():
                           "sampling_steps": 0, "interrupted": False, "textinfo": ""}}
     if preview:
         body["current_image"] = preview
+        if not consume_preview:
+            body["preview_seq"] = preview_seq
     return body
 
 

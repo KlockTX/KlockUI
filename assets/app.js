@@ -511,6 +511,8 @@
     startedAt: 0,
     lastPreview: "",
     previewStep: "",
+    previewStream: null,
+    sseActive: false,
     lightboxItem: null,
     lightboxNavBusy: false,
     current: null,
@@ -9357,11 +9359,51 @@
     el.liveStep.textContent = "实时预览";
   }
 
+  function stopPreviewStream() {
+    if (state.previewStream) {
+      try { state.previewStream.close(); } catch { /* 已关闭 */ }
+      state.previewStream = null;
+    }
+    state.sseActive = false;
+  }
+
+  // 步预览走 SSE：桥接层每收到一帧就推过来，延迟从「轮询间隔」降到十几毫秒。
+  // 连不上就退回轮询（state.sseActive=false 时轮询会带图）。
+  function startPreviewStream() {
+    stopPreviewStream();
+    if (typeof EventSource === "undefined") return;
+    try {
+      const stream = new EventSource("/local/progress/stream");
+      state.previewStream = stream;
+      stream.onopen = () => { state.sseActive = true; };
+      stream.onmessage = (event) => {
+        let data;
+        try { data = JSON.parse(event.data); } catch { return; }
+        if (data.step) {
+          el.liveStep.textContent = data.steps ? `第 ${data.step}/${data.steps} 步` : "实时预览";
+        }
+        if (typeof data.image === "string" && data.image && data.image !== state.lastPreview) {
+          state.lastPreview = data.image;
+          el.livePreview.src = previewDataUrl(data.image);
+          el.liveStage.hidden = false;
+        }
+      };
+      stream.addEventListener("end", stopPreviewStream);
+      stream.onerror = () => {
+        // EventSource 会自己重连；这里只标记回退，让轮询带图，避免两端都空
+        state.sseActive = false;
+      };
+    } catch {
+      stopPreviewStream();
+    }
+  }
+
   function startPolling(batch = 1) {
     // 标签页不可见时不轮询：预览是给人看的，后台跑纯烧电。
     // 可见性变化时由 loop 自己恢复（下一轮直接取最新状态）。
     const paused = () => document.visibilityState === "hidden";
     stopPolling();
+    startPreviewStream();
     const total = clamp(Number(batch) || 1, 1, 12);
     let inFlight = false;
     el.progressBar.value = 0;
@@ -9374,7 +9416,8 @@
       if (paused()) return;   // 后台页签不轮询，切回来下一轮自动追上
       inFlight = true;
       try {
-        const res = await fetch("/api/sdapi/v1/progress?skip_current_image=false", { cache: "no-store" });
+        const skip = state.sseActive ? "true" : "false";
+        const res = await fetch(`/api/sdapi/v1/progress?skip_current_image=${skip}`, { cache: "no-store" });
         if (!res.ok) return;
         const data = await res.json();
         if (!state.busy) return;
@@ -9434,6 +9477,7 @@
   function stopPolling() {
     if (state.pollTimer) clearInterval(state.pollTimer);
     state.pollTimer = null;
+    stopPreviewStream();
   }
 
   class QueueCancelledError extends Error {
