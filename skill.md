@@ -91,6 +91,12 @@ cd KlockUI
 | `KLOCK_DIFFUSION_DIR` | `<root>/diffusion_models` | DiT 系底模 |
 | `KLOCK_VAE_DIR` | `<root>/vae` | VAE |
 | `KLOCK_IDLE_UNLOAD_SECONDS` | `600` | 空闲多久释放模型 |
+| `KLOCK_OUTPUT_DIR` | 自动探测 | 出图根目录：env → 同级 `outputs/` → 仓库内 `outputs/` |
+| `KLOCK_CACHE_DIR` | `<repo>/.cache` | 历史、缩略图、导出 |
+
+**输出目录有个坑**：仓库放在 `D:/AI/KlockUI`、图在 `D:/AI/outputs` 这种布局下，
+如果只认仓库内 `outputs/`，历史记录和缩略图会全部 404（文件没丢，只是找错了地方）。
+所以探测顺序里带了「同级 outputs」这一级，且只在它确实有图时才用。
 
 最小配置（Linux / macOS 示例）：
 

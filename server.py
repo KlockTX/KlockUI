@@ -52,7 +52,26 @@ MODELS_ROOT = comfy_bridge.MODELS_ROOT
 # 所有 /sdapi/v1/* 由 comfy_bridge.dispatch 翻译成 ComfyUI 工作流。
 ENGINE = os.environ.get("KLOCK_COMFY_URL", "http://127.0.0.1:8188")
 FORGE = ENGINE
-OUTPUT_ROOT = os.environ.get("KLOCK_OUTPUT_DIR") or os.path.join(os.path.dirname(os.path.abspath(__file__)), "outputs")
+# 出图根目录：环境变量 → 同级 outputs（老布局）→ 仓库内 outputs。
+# 加同级探测是为了兼容「仓库放在 D:/AI/KlockUI、图在 D:/AI/outputs」这种历史用法：
+# 只看仓库内目录的话，老历史和缩略图会全部 404。
+def _detect_output_root():
+    env = os.environ.get("KLOCK_OUTPUT_DIR")
+    if env:
+        return os.path.abspath(os.path.expanduser(env))
+    local = os.path.join(ROOT, "outputs")
+    legacy = os.path.join(os.path.dirname(ROOT), "outputs")
+    legacy_images = os.path.join(legacy, "txt2img-images")
+    if os.path.isdir(legacy_images):
+        try:
+            if any(True for _root, _dirs, files in os.walk(legacy_images) for _ in files):
+                return legacy
+        except OSError:
+            pass
+    return local
+
+
+OUTPUT_ROOT = _detect_output_root()
 PORT = int(os.environ.get("KLOCKUI_PORT", "7861"))
 MAX_JSON_BYTES = 1024 * 1024
 MAX_PROXY_BYTES = 64 * 1024 * 1024
