@@ -1336,12 +1336,23 @@ def _run_generation_job(job_id, endpoint, payload):
                     interrupted=bool(job.get("interrupt_requested")),
                     finished=time.time(),
                 )
+    except comfy_bridge.JobInterrupted:
+        # 用户自己点的停止：不是失败，别弹「生成失败」
+        log.info("generation job %s interrupted by user", job_id)
+        with JOBS_LOCK:
+            job = JOBS.get(job_id)
+            if job:
+                job.update(status="cancelled", detail="已停止", finished=time.time())
     except comfy_bridge.EngineError as exc:
         log.warning("generation job %s failed: %s", job_id, exc)
         with JOBS_LOCK:
             job = JOBS.get(job_id)
             if job:
-                job.update(status="error", detail=str(exc), finished=time.time())
+                # 兜底：已经点过停止的，其它形态的引擎报错也按「已停止」处理
+                if job.get("interrupt_requested"):
+                    job.update(status="cancelled", detail="已停止", finished=time.time())
+                else:
+                    job.update(status="error", detail=str(exc), finished=time.time())
     except Exception as exc:  # noqa: BLE001
         log.warning("generation job %s failed: %s", job_id, exc)
         with JOBS_LOCK:

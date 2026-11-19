@@ -454,3 +454,44 @@ SSE 事件：t=1.16s step=0 / t=2.69s step=1 / ... 步进即时到达
 引擎侧前几步常常没有预览帧（实测 10s 后才开始有），这是 ComfyUI
 对 int8 大模型的预览生成策略，不是前端延迟。前端能做到的是"来一帧显示一帧"，
 不能凭空造帧。
+
+## 十九、用户停止 ≠ 生成失败（2026-11-19）
+
+### 现象
+
+点停止后弹「生成失败：ComfyUI 执行失败：[["execution_start",...],["execution_interrupted",...]]」。
+
+原因：ComfyUI 把中断也报成 `status_str: "error"`，只是在 messages 里带了
+`execution_interrupted`。桥接层一视同仁地抛了 EngineError。
+
+### 修法
+
+```python
+class JobInterrupted(EngineError): ...
+
+if any(msg[0] == "execution_interrupted" for msg in messages):
+    raise JobInterrupted("已停止")
+```
+
+服务端单独接这个异常 → `status="cancelled"`；另外加一层兜底：
+只要任务被标记过 `interrupt_requested`，其它形态的引擎报错也按「已停止」处理。
+
+前端区分两种终止：
+
+| 阶段 | 进度文案 | 提示 |
+|---|---|---|
+| 排队中被取消 | 已取消 | 已取消排队任务 |
+| 跑到一半被停止 | **已停止** | 已停止生成 |
+
+### 实测
+
+```
+停止前：第 6/8 步 · 生成中 76%
+停止后：已停止        提示：已停止生成        进度面板已收起
+历史记录：0 条新增（中断不落盘）
+```
+
+### 原则
+
+**用户主动做的操作不该显示成错误。** 中断、取消、超时（如果是用户触发）都该
+走"完成但没结果"的路径，只有引擎真的坏了才弹红色错误。

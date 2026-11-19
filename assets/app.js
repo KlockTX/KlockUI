@@ -9851,9 +9851,10 @@
       el.mobileProgressBar.value = 0;
       el.etaText.textContent = "";
       if (cancelled) {
-        el.progressText.textContent = "已取消";
+        const wasRunning = state.stoppedRunning;
+        el.progressText.textContent = wasRunning ? "已停止" : "已取消";
         el.batchText.textContent = "";
-        snack("已取消排队任务");
+        snack(wasRunning ? "已停止生成" : "已取消排队任务");
       } else {
         el.progressText.textContent = "失败";
         snack("生成失败：" + (err?.message || "未知错误"), { bad: true });
@@ -9865,6 +9866,7 @@
         stopPolling();
         setBusy(false);
         state.stopping = false;
+        state.stoppedRunning = false;
         state.jobPhase = "idle";
         state.queuePosition = 0;
         state.activeJobId = "";
@@ -9889,6 +9891,8 @@
       return;
     }
     state.stopping = true;
+    // 区分「排队中取消」与「跑到一半停止」：两者的文案不一样
+    state.stoppedRunning = state.jobPhase === "running";
     try {
       const res = await fetch("/local/generate/cancel", {
         method: "POST",

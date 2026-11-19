@@ -1327,6 +1327,14 @@ def _upload_image(data_b64, filename="klock_init.png"):
     return name
 
 
+class JobInterrupted(EngineError):
+    """用户主动停止（ComfyUI 的 execution_interrupted）。
+
+    和真正的失败分开：中断是预期行为，前端要显示「已停止」，
+    不能弹「生成失败」还带一坨 JSON。
+    """
+
+
 def _submit_and_collect(graph, timeout=900, expected_steps=20):
     global _JOB_START, _JOB_STEPS
     with _STATE_LOCK:
@@ -1359,6 +1367,9 @@ def _submit_and_collect(graph, timeout=900, expected_steps=20):
             status = entry.get("status") or {}
             if status.get("status_str") == "error":
                 messages = status.get("messages") or []
+                if any(isinstance(msg, (list, tuple)) and msg and msg[0] == "execution_interrupted"
+                       for msg in messages):
+                    raise JobInterrupted("已停止")
                 raise EngineError("ComfyUI 执行失败：%s" % json.dumps(messages, ensure_ascii=False)[:800])
             images = []
             for node_out in (entry.get("outputs") or {}).values():
