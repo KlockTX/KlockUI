@@ -3530,10 +3530,10 @@ mdui-menu-item:not(:defined) {
 
 /* LoRA 分类条：一行横向滚动，不换行挤压列表 */
 .lora-cats {
-  display: flex; align-items: center; gap: var(--sp-3);
-  padding: var(--sp-1) 0 var(--sp-4); overflow-x: auto; scrollbar-width: none;
+  display: flex; align-items: center; flex-wrap: wrap; gap: var(--sp-3);
+  padding: var(--sp-1) 0 var(--sp-4);
+  /* 换行而不是横向滚动：溢出时最后一颗会被裁掉，而且滚动条被隐藏了没人看得出能滚 */
 }
-.lora-cats::-webkit-scrollbar { display: none; }
 .lora-cat {
   flex: none; height: var(--h-sm); padding: 0 var(--pad-ctl-3);
   border-radius: var(--r-full); border: 1px solid var(--app-outline-soft);
@@ -3651,9 +3651,9 @@ mdui-menu-item:not(:defined) {
  * 原来用 mdui-text-field，高度和胶囊按钮对不上，描边也重。
  * 现在自己拼：图标 + 原生 input，尺寸完全跟 --h-sm 走。 */
 .pill-search {
-  display: inline-flex; align-items: center; gap: var(--sp-3);
-  height: var(--h-sm); min-height: var(--h-sm);
-  padding: 0 var(--pad-ctl-2);
+  display: inline-flex; align-items: center; gap: var(--sp-4);
+  height: var(--h-md); min-height: var(--h-md);
+  padding: 0 var(--sp-5);
   border-radius: var(--r-full);
   background: rgb(var(--mdui-color-surface-container));
   border: 1px solid var(--app-outline-soft);
@@ -3665,18 +3665,18 @@ mdui-menu-item:not(:defined) {
   background: rgb(var(--mdui-color-surface-container-high));
   outline: var(--focus-ring); outline-offset: 0;
 }
-.pill-search-wide { display: flex; width: 100%; }
+.pill-search-wide { display: flex; width: 100%; margin: var(--sp-2) 0 var(--sp-2); }
 .pill-search-icon {
-  width: 13px; height: 13px; flex: none;
+  width: 15px; height: 15px; flex: none;
   color: rgb(var(--mdui-color-on-surface-variant)); opacity: .75;
 }
-.pill-search-icon svg { width: 13px; height: 13px; }
+.pill-search-icon svg { width: 15px; height: 15px; }
 .pill-search-input {
   flex: 1 1 auto; min-width: 0;
   height: 100%; padding: 0; margin: 0;
   border: 0; background: transparent; outline: none;
   color: rgb(var(--mdui-color-on-surface));
-  font-size: var(--fs-xs); font-family: inherit;
+  font-size: var(--fs-sm); font-family: inherit;
 }
 .pill-search-input::placeholder { color: rgb(var(--mdui-color-on-surface-variant)); opacity: .72; }
 /* 原生搜索框的清除按钮：Chrome/Edge 用 ::-webkit-search-cancel-button */
