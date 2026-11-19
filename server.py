@@ -3,6 +3,7 @@
 """KlockUI 本地服务：静态页 + ComfyUI 引擎适配（Forge/A1111 API 兼容层）。"""
 import base64
 import getpass
+import gzip
 import hashlib
 import hmac
 import html
@@ -1531,6 +1532,7 @@ def _job_meta(endpoint, payload, model=""):
 
 
 def _record_history(job):
+    _invalidate_scan()
     response = job.get("response")
     if not isinstance(response, dict):
         return []
@@ -1753,7 +1755,22 @@ def save_favorites(favorites):
     os.replace(tmp, FAVORITES_FILE)
 
 
-def scan_images():
+# 图片目录扫描缓存：3000 张图 os.walk + os.stat 约 180ms，
+# 而作品库翻页每页都要扫一次 —— 缓存 30 秒复用；生成/删除/收藏等写操作会显式失效。
+_GZIP_CACHE = {}
+_SCAN_CACHE = {"at": 0.0, "items": None}
+_SCAN_TTL = 30.0
+
+
+def _invalidate_scan():
+    _SCAN_CACHE["items"] = None
+
+
+def scan_images(force=False):
+    now = time.time()
+    if not force and _SCAN_CACHE["items"] is not None and now - _SCAN_CACHE["at"] < _SCAN_TTL:
+        # 浅拷贝：调用方会往 item 里塞 favorite / mode，别污染缓存
+        return [dict(item) for item in _SCAN_CACHE["items"]]
     items = []
     for folder in IMAGE_DIRS:
         base = os.path.join(OUTPUT_ROOT, folder)
@@ -1784,7 +1801,9 @@ def scan_images():
                     "seed": tail if tail.isdigit() else "",
                 })
     items.sort(key=lambda item: (item["mtime"], item["path"]), reverse=True)
-    return items
+    _SCAN_CACHE["at"] = now
+    _SCAN_CACHE["items"] = items
+    return [dict(item) for item in items]
 
 
 def safe_image_path(rel):
@@ -5452,6 +5471,53 @@ class Handler(BaseHTTPRequestHandler):
         finally:
             handle.close()
 
+    GZIP_TYPES = {".js", ".css", ".html", ".json", ".svg"}
+
+    def _send_static_gzip(self, full):
+        """文本类静态资源按需 gzip。开发机上肉眼看不出差别，但跨设备/局域网访问差 4 倍。"""
+        ext = os.path.splitext(full)[1].lower()
+        accepts = "gzip" in (self.headers.get("Accept-Encoding") or "")
+        if not accepts or ext not in self.GZIP_TYPES or not os.path.isfile(full):
+            return False
+        try:
+            st = os.stat(full)
+        except OSError:
+            return False
+        etag = 'W/"gz-%x-%x"' % (int(st.st_mtime), st.st_size)
+        if self.headers.get("If-None-Match") == etag:
+            self.send_response(304)
+            self.send_header("ETag", etag)
+            self.send_header("Cache-Control", "no-cache")
+            self.end_headers()
+            return True
+        key = (full, st.st_mtime_ns, st.st_size)
+        blob = _GZIP_CACHE.get(key)
+        if blob is None:
+            try:
+                with open(full, "rb") as handle:
+                    raw = handle.read()
+                blob = gzip.compress(raw, 6)
+            except OSError:
+                return False
+            if len(_GZIP_CACHE) > 32:
+                _GZIP_CACHE.clear()
+            _GZIP_CACHE[key] = blob
+        self.send_response(200)
+        self.send_header("Content-Type", MIME.get(ext, "application/octet-stream"))
+        self.send_header("Content-Length", str(len(blob)))
+        self.send_header("Content-Encoding", "gzip")
+        self.send_header("Cache-Control", "no-cache")
+        self.send_header("ETag", etag)
+        self.send_header("Vary", "Accept-Encoding")
+        self.send_header("X-Content-Type-Options", "nosniff")
+        self.end_headers()
+        if self.command != "HEAD":
+            try:
+                self.wfile.write(blob)
+            except (BrokenPipeError, ConnectionResetError):
+                pass
+        return True
+
     def _serve_static(self, path):
         rel = path.lstrip("/")
         top = rel.split("/", 1)[0]
@@ -5464,6 +5530,8 @@ class Handler(BaseHTTPRequestHandler):
             self._send(404, b'{"detail":"Not Found"}')
             return
         # no-cache：允许缓存但每次校验（ETag 命中回 304），避免静态资源"改了不生效"
+        if self._send_static_gzip(full):
+            return
         self._send_file(full, "no-cache")
 
     def do_GET(self):
@@ -5476,7 +5544,9 @@ class Handler(BaseHTTPRequestHandler):
             self._engine_catalog()
             return
         if path in ("/", "/index.html"):
-            self._send_file(os.path.join(ROOT, "index.html"))
+            index_file = os.path.join(ROOT, "index.html")
+            if not self._send_static_gzip(index_file):
+                self._send_file(index_file, "no-cache")
             return
         if path == "/favicon.ico":
             self._send(204, b"")
@@ -6141,6 +6211,7 @@ class Handler(BaseHTTPRequestHandler):
         self._send(200, body.encode("utf-8"))
 
     def _postprocess(self):
+        _invalidate_scan()
         try:
             length = int(self.headers.get("Content-Length") or 0)
         except ValueError:
@@ -6639,6 +6710,7 @@ class Handler(BaseHTTPRequestHandler):
         self._send(200, json.dumps(payload, ensure_ascii=False).encode("utf-8"))
 
     def _gallery_favorite(self):
+        _invalidate_scan()
         if not self._origin_ok():
             self._send(403, b'{"detail":"Forbidden"}')
             return
@@ -6679,6 +6751,7 @@ class Handler(BaseHTTPRequestHandler):
         self._send(200, body.encode("utf-8"))
 
     def _gallery_delete(self):
+        _invalidate_scan()
         if not self._origin_ok():
             self._send(403, b'{"detail":"Forbidden"}')
             return

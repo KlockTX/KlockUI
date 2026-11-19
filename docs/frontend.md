@@ -297,3 +297,47 @@ const { MODEL_PROFILES, LORA_LIBRARY, TAG_GROUPS, ... } = window.KLOCK_DATA;
 **注意**：如果运行环境没有装 PIL（`Image is None`），接口会退回发原图。
 所以「改了却看不出快」时，先确认用的是不是带 PIL 的 venv Python。
 KlockUI 的 `start.bat` 用的是 ComfyUI 的 venv，正常都有。
+
+## 十五、性能：实测数据与优化（2026-11-19）
+
+测试环境：真实数据（图片 3083 张、LoRA 180 支、历史 60 条），本机 localhost。
+
+| 指标 | 优化前 | 优化后 |
+|---|---|---|
+| 作品库列表接口（每翻一页） | 187 ms | **15–20 ms** |
+| 首屏传输总量 | 9.1 MB | **1.35 MB** |
+| 静态资源（html/css/js）传输 | 946 KB | **261 KB** |
+| DOMContentLoaded | — | 489 ms |
+
+### 三个动作
+
+**1. 目录扫描加缓存（服务端）**
+
+`scan_images()` 每次 `os.walk` + 3000 次 `os.stat` 约 180ms，
+而作品库翻页**每页都调一次**。加 30 秒 TTL 缓存，并在写操作
+（生成完成 / 删除 / 收藏 / 后处理）显式失效。
+
+返回时做浅拷贝 `[dict(item) for item in items]` —— 调用方会往 item 里塞
+`favorite`、`mode`，直接返回缓存里的字典会被污染。
+
+**2. 静态资源 gzip**
+
+`index.html / app.js / data.js / app.css / *.svg` 走 gzip(6)，带 ETag 与 304。
+压缩结果按 (路径, mtime, 大小) 缓存在内存，最多 32 份。
+
+**3. 历史条用 480px 缩略图**（见第十四节）
+
+### 怎么验的
+
+```js
+// 浏览器里读真实传输量
+performance.getEntriesByType('resource')
+  .reduce((a, b) => a + (b.transferSize || 0), 0) / 1024
+```
+
+分项看最大的几个资源，才能发现"缩略图其实是原图"这种问题。
+
+### 坑：PIL 缺失时缩略图退化成原图
+
+用没有 PIL 的 Python 起服务时，`/local/gallery/thumb` 会退回发原图，
+首屏传输从 1.35MB 变成 9.1MB。**测性能前先确认用的是 ComfyUI 的 venv Python。**
