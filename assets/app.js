@@ -4121,6 +4121,15 @@
     "anima_flatline",
     "anima_90s_melancholy",
     "krea2_blue_archive_style",
+    "anima_char_miku",
+    "anima_char_marin",
+    "anima_char_kallen",
+    "anima_char_pekomama",
+    "krea2_char_zyloo_bundle",
+    "krea2_char_anna_yamada",
+    "krea2_char_genshin_cosplay",
+    "zimage_char_miku",
+    "zimage_char_sheet_helper",
     "zimage_hands",
     "zimage_detail_perfection",
     "zimage_skin_texture",
@@ -5141,6 +5150,52 @@
       weight: 0.85,
       desc: "3.2 万下载的 BArtstyle，Krea 2 分卷（895MB）。触发词：azure youth anime art style。干净明亮的日系手游立绘感。建议 0.8–1.0。"
     },
+    // ---- 角色包（2026-11-19）
+    "anima_char_miku": {
+      title: "Anima · 初音未来",
+      weight: 0.85,
+      desc: "1.7 万下载，仅 11MB。触发词：hatsune miku（再加发型/服装标签更稳）。建议 0.8–0.9。Anima 分卷，和 krea2 的初音不是同一个文件。"
+    },
+    "anima_char_marin": {
+      title: "Anima · 喜多川海梦",
+      weight: 0.85,
+      desc: "1.7 万下载。触发词：Marin Kitagawa。内置多套服装标签（校服/泳装/大衣），可直接拼在提示词后换装。建议 0.8–0.9。"
+    },
+    "anima_char_kallen": {
+      title: "Anima · 卡莲（Code Geass）",
+      weight: 0.8,
+      desc: "1.75 万下载的角色合集分卷，触发词：euphem1a（加 1girl + 发色瞳孔标签）。建议 0.75–0.85。"
+    },
+    "anima_char_pekomama": {
+      title: "Anima · 兔田妈妈",
+      weight: 0.8,
+      desc: "Hololive 同人角色，含三套服装。触发靠外观标签（rabbit ears / 双色头发）；建议 0.75–0.85。成人向内容较多，注意使用场景。"
+    },
+    "krea2_char_zyloo_bundle": {
+      title: "Krea 2 · ZyloO 角色合集",
+      weight: 0.85,
+      desc: "7.9 万下载的多角色包（218MB），一个文件里塞了多个原创角色，靠触发词切换。示例：zy_kerrigan。建议 0.8–0.9，别叠画师件。"
+    },
+    "krea2_char_anna_yamada": {
+      title: "Krea 2 · 山田杏奈",
+      weight: 0.85,
+      desc: "1.26 万下载，《我心里危险的东西》。触发词：&nn&y&m&d&（另有 gym outfit / bear hoodie 服装词）。建议 0.8–0.9。"
+    },
+    "krea2_char_genshin_cosplay": {
+      title: "Krea 2 · 原神 cos 合集",
+      weight: 0.85,
+      desc: "原神角色服装合集（218MB），触发词以 WYNS_cos 开头，后面跟具体角色外观描述。建议 0.8–0.9。"
+    },
+    "zimage_char_miku": {
+      title: "Z-Image · 初音未来",
+      weight: 0.85,
+      desc: "触发词：zitmiku（后面建议跟 hatsune miku 与服装标签）。样本少、下载量低，效果不如 Anima 那支稳，但 Z-Image 的字形与手部更准。建议 0.8–0.9。"
+    },
+    "zimage_char_sheet_helper": {
+      title: "Z-Image · 角色设定表",
+      weight: 0.85,
+      desc: "10.3 万下载的工具件：一次出三视图 + 表情 + 服装分解的设定表。触发词：CharacterDesignIZT。做角色设定图用，不建议用于单张插画。"
+    },
     // ---- 文字渲染（2026-11-18）
     "sdxl_harrlogos_text": {
       title: "SDXL · Harrlogos 文字生成",
@@ -5537,6 +5592,7 @@
   const LORA_CATEGORIES = [
     { id: "all", label: "全部" },
     { id: "style", label: "画风" },
+    { id: "character", label: "角色" },
     { id: "artist", label: "画师" },
     { id: "scene", label: "场景" },
     { id: "view", label: "构图视角" },
@@ -5548,6 +5604,8 @@
 
   const LORA_CAT_RULES = [
     ["adult", /nsfw|adult|herpov|dbx|aio|hentai|cum|bdsm|spank|porn|nipple|penis|breast|areola|pubic|modest|skimpy|body_weight|fitbutt/],
+    // 角色包统一用 _char_ 命名，判据简单可靠；再兜几个常见角色名
+    ["character", /_char_|hatsune|miku|marin_kitagawa|pekomama|zyloo|anna_yamada|kallen/],
     ["beast", /centaur|taur|spider|hexapod|limbless|minotaur|chimaera|chimera/],
     ["view", /composition|tilt|zoom|first_person|perspective|camera|angle|fisheye|dutch/],
     ["body", /weight_slider|height|age_slider|detail_slider|slider_body|muscle|skin_tone|hair_volume|hair_length|monolid|ethnicity/],
