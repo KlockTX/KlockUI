@@ -295,7 +295,7 @@
     loraActiveChips: $("#loraActiveChips"), manageLorasBtn: $("#manageLorasBtn"),
     loraDialog: $("#loraDialog"), loraList: $("#loraList"), loraCats: $("#loraCats"), loraEmpty: $("#loraEmpty"),
     loraDialogHint: $("#loraDialogHint"), refreshLorasBtn: $("#refreshLorasBtn"), closeLoraDialog: $("#closeLoraDialog"),
-    loraSearch: $("#loraSearch"),
+    loraSearch: $("#loraSearch"), loraOnlyActive: $("#loraOnlyActive"),
     advanced: $("#advanced"),
     sampler: $("#sampler"), scheduler: $("#scheduler"), steps: $("#steps"), stepsOut: $("#stepsOut"),
     samplerPresets: $("#samplerPresets"), samplerPresetHint: $("#samplerPresetHint"),
@@ -492,6 +492,7 @@
     translateEnabled: true,
     loraCategory: "all",
     loraQuery: "",
+    loraOnlyActive: false,
     promptConfirmPending: false,
     engineOptionsLoaded: false,
     engineOptionsLoading: false,
@@ -2669,11 +2670,19 @@
     const catList = state.loraCategory === "all"
       ? archList
       : archList.filter((entry) => loraCategoryOf(entry.name) === state.loraCategory);
-    const list = query ? catList.filter((entry) => loraMatchesQuery(entry, query)) : catList;
-    const hidden = all.length - list.length;
+    let list = query ? catList.filter((entry) => loraMatchesQuery(entry, query)) : catList;
+    if (state.loraOnlyActive) {
+      list = list.filter((entry) => Boolean(findActiveLora(entry.name)));
+    }
+    // 已启用的排前面：调权重时不用回滚列表找
+    list = [...list].sort((a, b) => Number(Boolean(findActiveLora(b.name))) - Number(Boolean(findActiveLora(a.name))));
+    // 隐藏数只算「别的架构」，别把当前过滤条件也算进去（否则 3 条时会显示隐藏 177 条）
+    const hidden = all.length - archList.length;
     el.loraList.replaceChildren();
     el.loraEmpty.hidden = list.length > 0;
-    if (!list.length && query) {
+    if (!list.length && state.loraOnlyActive) {
+      el.loraEmpty.textContent = "当前架构下还没有启用任何 LoRA。";
+    } else if (!list.length && query) {
       el.loraEmpty.textContent = `没有匹配「${query}」的 LoRA。`;
     } else if (!list.length && archList.length) {
       const cat = LORA_CATEGORIES.find((c) => c.id === state.loraCategory);
@@ -2685,7 +2694,9 @@
       const base = state.lorasLoading
         ? "读取中…"
         : state.lorasLoaded
-          ? `${list.length} 个适配当前模型 · ${state.activeLoras.length} 个启用`
+          ? (state.loraOnlyActive
+              ? `${list.length} 个已启用 · 共 ${archList.length} 个适配当前模型`
+              : `${archList.length} 个适配当前模型 · ${state.activeLoras.length} 个启用`)
           : (state.online ? "读取失败，点刷新重试" : "引擎未启动");
       el.loraDialogHint.textContent = (!state.lorasLoading && hidden > 0)
         ? `${base}（另有 ${hidden} 个属于其它架构，已隐藏）`
@@ -9907,6 +9918,12 @@
     el.manageLorasBtn.addEventListener("click", openLoraDialog);
     bindDialog(el.loraDialog, el.closeLoraDialog);
     el.refreshLorasBtn.addEventListener("click", refreshLoras);
+    if (el.loraOnlyActive) {
+      el.loraOnlyActive.addEventListener("change", () => {
+        state.loraOnlyActive = Boolean(el.loraOnlyActive.checked);
+        renderLoraDialog();
+      });
+    }
     if (el.loraSearch) {
       const paintList = debounce(renderLoraDialog, 120);
       const onLoraSearch = () => {
@@ -9915,6 +9932,8 @@
       };
       el.loraSearch.addEventListener("input", onLoraSearch);
       el.loraSearch.addEventListener("change", onLoraSearch);
+      // 原生 <input type="search"> 的清除按钮会发 search 事件
+      el.loraSearch.addEventListener("search", onLoraSearch);
     }
 
     el.modeGroup.addEventListener("change", () => {
@@ -9991,6 +10010,7 @@
     el.artistClearBtn.addEventListener("click", clearArtistPicks);
     el.applyArtistsBtn.addEventListener("click", applyArtistPicks);
     el.closeArtistDialog.addEventListener("click", () => { el.artistDialog.open = false; });
+    el.artistSearch.addEventListener("search", () => applyArtistFilter());
     el.artistSearch.addEventListener("input", (event) => {
       artistState.query = event.target.value;
       applyArtistFilter();
@@ -10021,6 +10041,7 @@
         }
       });
     });
+    el.presetSearch.addEventListener("search", (event) => applyPresetFilter(event.target.value));
     el.presetSearch.addEventListener("input", (event) => applyPresetFilter(event.target.value));
     el.tagTargetSwitch.addEventListener("change", () => {
       const next = el.tagTargetSwitch.value;

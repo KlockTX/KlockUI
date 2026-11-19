@@ -20,7 +20,7 @@
 <link rel="icon" href="/assets/favicon.svg" type="image/svg+xml">
 <link rel="alternate icon" href="/assets/klockui.ico" sizes="any">
 <link rel="stylesheet" href="/vendor/mdui.css">
-<link rel="stylesheet" href="/assets/app.css?v=20261119pill4">
+<link rel="stylesheet" href="/assets/app.css?v=20261119ux3">
 </head>
 <body data-mode="txt2img">
 <a class="skip-link" href="#promptCard">跳到画面描述</a>
@@ -933,6 +933,10 @@
   <div class="lora-dialog-body">
     <div class="lora-dialog-head">
       <span id="loraDialogHint">读取中…</span>
+      <label class="lora-only-active" title="只显示已启用的 LoRA">
+        <mdui-switch id="loraOnlyActive" aria-label="只显示已启用的 LoRA"></mdui-switch>
+        <span id="loraOnlyActiveLabel">已启用</span>
+      </label>
       <mdui-button-icon id="refreshLorasBtn" aria-label="刷新 LoRA 列表" title="刷新 LoRA 列表"><span class="icon" data-icon="refresh"></span></mdui-button-icon>
     </div>
     <label class="pill-search pill-search-wide"><span class="icon pill-search-icon" data-icon="search"></span><input type="search" id="loraSearch" class="pill-search-input" placeholder="搜索名称、文件名、触发词或说明…" autocomplete="off" spellcheck="false"></label>
@@ -1126,11 +1130,11 @@
 </mdui-dialog>
 
 <script src="/vendor/mdui.global.js"></script>
-<script src="/assets/artists.js?v=20261119pill4"></script>
-<script src="/assets/characters.js?v=20261119pill4"></script>
-<script src="/assets/characters-normal.js?v=20261119pill4"></script>
-<script src="/assets/data.js?v=20261119pill4"></script>
-<script src="/assets/ui.js?v=20261119pill4"></script>
-<script src="/assets/app.js?v=20261119pill4"></script>
+<script src="/assets/artists.js?v=20261119ux3"></script>
+<script src="/assets/characters.js?v=20261119ux3"></script>
+<script src="/assets/characters-normal.js?v=20261119ux3"></script>
+<script src="/assets/data.js?v=20261119ux3"></script>
+<script src="/assets/ui.js?v=20261119ux3"></script>
+<script src="/assets/app.js?v=20261119ux3"></script>
 </body>
 </html>
