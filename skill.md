@@ -321,6 +321,9 @@ models/loras/
 | 局部重绘（蒙版） | `comfy_bridge.py` → `_apply_inpaint_mask()` |
 | 高清二采 | `comfy_bridge.py` → `_hires_pixel_chain()` / `_hr_mode()` |
 | JSON 预设导入 | `assets/app.js` → `applyPresetJson()` |
+| 仓库配方列表 / 单个读取 | `server.py` → `_presets_list()` / `_preset_one()`（`/local/presets`、`/local/preset?file=`） |
+| 仓库配方 UI | `assets/app.js` → `loadRepoPresets()` / `renderRepoPresets()` / `importRepoPreset()` |
+| LoRA 搜索过滤 | `assets/app.js` → `loraMatchesQuery()` + `state.loraQuery` |
 | JSON 预设导出 | `assets/app.js` → `exportPresetJson()` / `downloadPresetJson()` |
 | 拖拽文件进界面 | `assets/app.js` → `bindPresetDrop()` |
 | 设置持久化 | `assets/app.js` → `currentConfig()` / `applyConfig()` |

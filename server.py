@@ -5472,6 +5472,12 @@ class Handler(BaseHTTPRequestHandler):
         if path == "/local/history":
             self._history_list()
             return
+        if path == "/local/presets":
+            self._presets_list()
+            return
+        if path == "/local/preset":
+            self._preset_one()
+            return
         if path == "/api/status":
             self._status()
             return
@@ -5972,6 +5978,57 @@ class Handler(BaseHTTPRequestHandler):
             "interrupted": interrupted,
         }, ensure_ascii=False)
         self._send(200, body.encode("utf-8"))
+
+    # 仓库自带的示例配方：让用户不必去文件管理器里翻 presets/ 目录。
+    PRESET_DIRS = (os.path.join(ROOT, "presets"),)
+
+    def _preset_files(self):
+        found = []
+        for base in self.PRESET_DIRS:
+            if not os.path.isdir(base):
+                continue
+            for name in sorted(os.listdir(base)):
+                if not name.lower().endswith(".json"):
+                    continue
+                full = os.path.join(base, name)
+                if not os.path.isfile(full):
+                    continue
+                found.append((name, full))
+        return found
+
+    def _presets_list(self):
+        items = []
+        for name, full in self._preset_files():
+            try:
+                with open(full, "r", encoding="utf-8") as handle:
+                    data = json.load(handle)
+            except Exception:
+                continue
+            items.append({
+                "file": name,
+                "name": str(data.get("name") or name[:-5]),
+                "arch": data.get("arch") or "",
+                "model": data.get("model") or "",
+                "steps": data.get("steps"),
+                "loras": len(data.get("loras") or []),
+            })
+        self._send(200, json.dumps({"items": items, "total": len(items)}, ensure_ascii=False).encode("utf-8"))
+
+    def _preset_one(self):
+        query = parse_qs(urlparse(self.path).query)
+        want = (query.get("file") or [""])[0]
+        # 只允许 presets 目录里的文件：basename 对比，挡掉 ../ 之类
+        for name, full in self._preset_files():
+            if name == want:
+                try:
+                    with open(full, "r", encoding="utf-8") as handle:
+                        body = handle.read()
+                except OSError as exc:
+                    self._send(500, json.dumps({"detail": str(exc)}, ensure_ascii=False).encode("utf-8"))
+                    return
+                self._send(200, body.encode("utf-8"))
+                return
+        self._send(404, b'{"detail":"preset not found"}')
 
     def _history_list(self):
         query = parse_qs(urlparse(self.path).query)

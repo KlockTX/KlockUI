@@ -3551,3 +3551,28 @@ mdui-menu-item:not(:defined) {
   pointer-events: none;
 }
 .prompt-card, .param-card { position: relative; }
+
+/* 预设弹窗：仓库自带示例配方 */
+.repo-preset-head {
+  display: flex; align-items: baseline; gap: 8px;
+  margin: 4px 2px 6px;
+  font-size: var(--fs-micro); font-weight: 600;
+  color: rgb(var(--mdui-color-on-surface-variant));
+}
+.repo-preset-count { font-weight: 500; opacity: .7; }
+.repo-presets { display: flex; flex-direction: column; gap: 6px; margin-bottom: 12px; }
+.repo-preset {
+  display: flex; align-items: center; gap: 10px;
+  padding: 8px 10px; border-radius: 10px;
+  background: rgb(var(--mdui-color-surface-container-low));
+  border: 1px solid rgb(var(--mdui-color-outline-variant) / .5);
+}
+.repo-preset-main { min-width: 0; flex: 1; }
+.repo-preset-name {
+  font-size: var(--fs-small); font-weight: 600;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.repo-preset-meta {
+  margin-top: 2px; font-size: var(--fs-micro); opacity: .68;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}

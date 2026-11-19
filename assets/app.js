@@ -2089,6 +2089,7 @@
     loraActiveChips: $("#loraActiveChips"), manageLorasBtn: $("#manageLorasBtn"),
     loraDialog: $("#loraDialog"), loraList: $("#loraList"), loraCats: $("#loraCats"), loraEmpty: $("#loraEmpty"),
     loraDialogHint: $("#loraDialogHint"), refreshLorasBtn: $("#refreshLorasBtn"), closeLoraDialog: $("#closeLoraDialog"),
+    loraSearch: $("#loraSearch"),
     advanced: $("#advanced"),
     sampler: $("#sampler"), scheduler: $("#scheduler"), steps: $("#steps"), stepsOut: $("#stepsOut"),
     samplerPresets: $("#samplerPresets"), samplerPresetHint: $("#samplerPresetHint"),
@@ -2185,6 +2186,7 @@
     promptCard: $("#promptCard"), paramCard: $("#paramCard"),
     presetFileInput: $("#presetFileInput"), importPresetFile: $("#importPresetFile"),
     exportPresetFile: $("#exportPresetFile"),
+    repoPresets: $("#repoPresets"), repoPresetCount: $("#repoPresetCount"),
     helpDialog: $("#helpDialog"), closeHelp: $("#closeHelp"),
     lightboxDialog: $("#lightboxDialog"), lightboxImg: $("#lightboxImg"), lightboxBody: $(".lightbox-body"), lightboxDownload: $("#lightboxDownload"),
     lightboxInfo: $("#lightboxInfo"), closeLightbox: $("#closeLightbox"),
@@ -2279,6 +2281,7 @@
     interrogating: false,
     translateEnabled: true,
     loraCategory: "all",
+    loraQuery: "",
     promptConfirmPending: false,
     engineOptionsLoaded: false,
     engineOptionsLoading: false,
@@ -5355,6 +5358,19 @@
       (item.alias && loraKey(item.alias) === key)) || null;
   }
 
+  // 180 支 LoRA 时光靠分类翻太慢，加一个即时过滤：名称 / 文件名 / 触发词 / 说明都参与匹配。
+  function loraMatchesQuery(entry, query) {
+    if (!query) return true;
+    const info = loraInfo(entry.name);
+    const hay = [
+      entry.name,
+      info?.title || "",
+      info?.triggers || "",
+      info?.desc || ""
+    ].join(" ").toLowerCase();
+    return query.toLowerCase().split(/\s+/).filter(Boolean).every((token) => hay.includes(token));
+  }
+
   function sortedLoras() {
     return [...state.loras].sort((a, b) => {
       const ai = LORA_ORDER.indexOf(loraKey(a.name));
@@ -5689,13 +5705,17 @@
     const all = sortedLoras();
     const archList = all.filter((entry) => loraMatchesArch(entry.name));
     renderLoraCats(archList);
-    const list = state.loraCategory === "all"
+    const query = String(state.loraQuery || "").trim();
+    const catList = state.loraCategory === "all"
       ? archList
       : archList.filter((entry) => loraCategoryOf(entry.name) === state.loraCategory);
+    const list = query ? catList.filter((entry) => loraMatchesQuery(entry, query)) : catList;
     const hidden = all.length - list.length;
     el.loraList.replaceChildren();
     el.loraEmpty.hidden = list.length > 0;
-    if (!list.length && archList.length) {
+    if (!list.length && query) {
+      el.loraEmpty.textContent = `没有匹配「${query}」的 LoRA。`;
+    } else if (!list.length && archList.length) {
       const cat = LORA_CATEGORIES.find((c) => c.id === state.loraCategory);
       el.loraEmpty.textContent = `当前模型下没有「${cat ? cat.label : ""}」分类的 LoRA。`;
     } else if (!list.length) {
@@ -5862,6 +5882,11 @@
   function openLoraDialog() {
     if (!el.loraDialog) return;
     dismissSnacks();
+    // 每次打开都重置搜索：否则上次的过滤词会让人以为 LoRA 没了
+    if (state.loraQuery) {
+      state.loraQuery = "";
+      if (el.loraSearch) el.loraSearch.value = "";
+    }
     const reveal = () => {
       el.loraDialog.fullscreen = window.innerWidth <= 720;
       renderLoraDialog();
@@ -8695,6 +8720,64 @@
     if (save) scheduleSave();
   }
 
+  // 仓库自带的 presets/*.json：直接从服务端读，省得用户去文件管理器翻目录
+  let repoPresetCache = null;
+
+  async function loadRepoPresets(force = false) {
+    if (!el.repoPresets) return;
+    if (repoPresetCache && !force) {
+      renderRepoPresets(repoPresetCache);
+      return;
+    }
+    try {
+      const res = await fetch("/local/presets", { cache: "no-store" });
+      const data = await res.json().catch(() => ({}));
+      repoPresetCache = Array.isArray(data.items) ? data.items : [];
+    } catch {
+      repoPresetCache = [];
+    }
+    renderRepoPresets(repoPresetCache);
+  }
+
+  function renderRepoPresets(items) {
+    if (!el.repoPresets) return;
+    el.repoPresets.replaceChildren();
+    el.repoPresets.hidden = !items.length;
+    if (el.repoPresetCount) el.repoPresetCount.textContent = items.length ? `${items.length} 个` : "";
+    items.forEach((item) => {
+      const row = document.createElement("div");
+      row.className = "repo-preset";
+      const main = document.createElement("div");
+      main.className = "repo-preset-main";
+      const name = document.createElement("div");
+      name.className = "repo-preset-name";
+      name.textContent = item.name;
+      const meta = document.createElement("div");
+      meta.className = "repo-preset-meta";
+      const archLabel = { krea: "Krea 2", zimage: "Z-Image", anima: "Anima", moss: "MOSS", sdxl: "SDXL" }[item.arch] || item.arch || "—";
+      meta.textContent = `${archLabel} · ${item.steps || "?"} 步${item.loras ? ` · ${item.loras} 支 LoRA` : ""}`;
+      main.append(name, meta);
+      const btn = document.createElement("mdui-button");
+      btn.setAttribute("variant", "text");
+      btn.textContent = "导入";
+      btn.addEventListener("click", () => importRepoPreset(item));
+      row.append(main, btn);
+      el.repoPresets.appendChild(row);
+    });
+  }
+
+  async function importRepoPreset(item) {
+    try {
+      const res = await fetch(`/local/preset?file=${encodeURIComponent(item.file)}`, { cache: "no-store" });
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      await applyPresetJson(await res.text());
+      el.savedDialog.open = false;
+      loadRepoPresets();
+    } catch (err) {
+      snack(`导入失败：${err.message}`, { bad: true });
+    }
+  }
+
   function updateSavedList() {
     const list = getSavedPresets();
     el.savedList.innerHTML = "";
@@ -8779,6 +8862,7 @@
   function openSavedPresets() {
     dismissSnacks();
     updateSavedList();
+    loadRepoPresets();
     el.savedDialog.fullscreen = window.innerWidth <= 720;
     el.savedDialog.open = true;
   }
@@ -12833,6 +12917,17 @@
     el.manageLorasBtn.addEventListener("click", openLoraDialog);
     el.closeLoraDialog.addEventListener("click", () => { el.loraDialog.open = false; });
     el.refreshLorasBtn.addEventListener("click", refreshLoras);
+    if (el.loraSearch) {
+      let loraSearchTimer = 0;
+      const onLoraSearch = () => {
+        state.loraQuery = el.loraSearch.value || "";
+        // 输入法逐字触发时不必每键重排，180 条 DOM 重建有成本
+        clearTimeout(loraSearchTimer);
+        loraSearchTimer = setTimeout(renderLoraDialog, 120);
+      };
+      el.loraSearch.addEventListener("input", onLoraSearch);
+      el.loraSearch.addEventListener("change", onLoraSearch);
+    }
 
     el.modeGroup.addEventListener("change", () => {
       if (el.modeGroup.value) setMode(el.modeGroup.value);

@@ -20,7 +20,7 @@
 <link rel="icon" href="/assets/favicon.svg" type="image/svg+xml">
 <link rel="alternate icon" href="/assets/klockui.ico" sizes="any">
 <link rel="stylesheet" href="/vendor/mdui.css">
-<link rel="stylesheet" href="/assets/app.css?v=20261119char2">
+<link rel="stylesheet" href="/assets/app.css?v=20261119deep1">
 </head>
 <body data-mode="txt2img">
 <a class="skip-link" href="#promptCard">跳到画面描述</a>
@@ -894,6 +894,11 @@
 <mdui-dialog id="savedDialog" class="medium-dialog" close-on-esc>
   <span slot="headline">我的预设</span>
   <span slot="description">预设会记录描述、尺寸、画质、采样参数和当时使用的模型；载入时按需切换模型。也可以把 .json 预设直接拖到描述框上。</span>
+  <div class="repo-preset-head">
+    <span>仓库示例配方</span>
+    <span class="repo-preset-count" id="repoPresetCount"></span>
+  </div>
+  <div class="repo-presets" id="repoPresets" hidden></div>
   <div class="saved-list" id="savedList"></div>
   <div class="preset-empty" id="savedEmpty" hidden>还没有保存的预设。调整好参数后，点左侧「预设」→「存当前为预设」。</div>
   <mdui-button slot="action" variant="tonal" id="saveCurrentFromList">存当前为预设</mdui-button>
@@ -919,6 +924,8 @@
       <span id="loraDialogHint">读取中…</span>
       <mdui-button-icon id="refreshLorasBtn" aria-label="刷新 LoRA 列表" title="刷新 LoRA 列表"><span class="icon" data-icon="refresh"></span></mdui-button-icon>
     </div>
+    <mdui-text-field id="loraSearch" class="lora-search" variant="outlined" clearable
+                     placeholder="搜索名称、文件名、触发词或说明…" density="-4"></mdui-text-field>
     <div class="lora-cats" id="loraCats" role="group" aria-label="LoRA 分类"></div>
     <div class="lora-list" id="loraList"></div>
     <div class="preset-empty" id="loraEmpty" hidden>还没有安装 LoRA。把 .safetensors 放进 D:\AI\models\loras 后点刷新。</div>
@@ -1112,6 +1119,6 @@
 <script src="/assets/artists.js?v=20261029m"></script>
 <script src="/assets/characters.js?v=20261031char9"></script>
 <script src="/assets/characters-normal.js?v=20261103normal4"></script>
-<script src="/assets/app.js?v=20261119char2"></script>
+<script src="/assets/app.js?v=20261119deep1"></script>
 </body>
 </html>
