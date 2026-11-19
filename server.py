@@ -5510,6 +5510,9 @@ class Handler(BaseHTTPRequestHandler):
         if path == "/local/postprocess":
             self._postprocess()
             return
+        if path == "/local/preset/save":
+            self._preset_save()
+            return
         if path == "/local/open-output":
             self._open_output()
             return
@@ -6013,6 +6016,40 @@ class Handler(BaseHTTPRequestHandler):
                 "loras": len(data.get("loras") or []),
             })
         self._send(200, json.dumps({"items": items, "total": len(items)}, ensure_ascii=False).encode("utf-8"))
+
+    def _preset_save(self):
+        """把前端编辑的配方写回 presets/。
+
+        安全边界：文件名只允许 [A-Za-z0-9._-] 且必须以 .json 结尾，
+        内容必须是能解析的 JSON 对象——不做这两条就等于开了个任意写接口。
+        """
+        data = self._read_json()
+        name = str(data.get("file") or "").strip()
+        body = data.get("json")
+        if not name or not name.lower().endswith(".json"):
+            self._send(400, b'{"detail":"file must end with .json"}')
+            return
+        if not re.fullmatch(r"[A-Za-z0-9._-]{1,80}", name):
+            self._send(400, b'{"detail":"invalid file name"}')
+            return
+        if not isinstance(body, dict):
+            self._send(400, b'{"detail":"json must be an object"}')
+            return
+        pretty = json.dumps(body, ensure_ascii=False, indent=2) + "\n"
+        base = self.PRESET_DIRS[0]
+        os.makedirs(base, exist_ok=True)
+        target = os.path.join(base, name)
+        # 覆盖前留一份 .bak，误保存还能捞回来
+        if os.path.isfile(target):
+            try:
+                shutil.copy2(target, target + ".bak")
+            except OSError:
+                pass
+        tmp = target + ".tmp"
+        with open(tmp, "w", encoding="utf-8", newline="\n") as handle:
+            handle.write(pretty)
+        os.replace(tmp, target)
+        self._send(200, json.dumps({"ok": True, "file": name}, ensure_ascii=False).encode("utf-8"))
 
     def _preset_one(self):
         query = parse_qs(urlparse(self.path).query)

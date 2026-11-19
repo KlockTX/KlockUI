@@ -891,12 +891,29 @@
   <mdui-button slot="action" variant="filled" id="confirmSavePreset">保存</mdui-button>
 </mdui-dialog>
 
+<mdui-dialog id="presetEditDialog" class="medium-dialog preset-edit-dialog" close-on-esc>
+  <span slot="headline">编辑配方</span>
+  <span slot="description">直接改 JSON，保存会写回 presets/ 目录；覆盖前自动留一份 .bak。</span>
+  <div class="preset-edit-body">
+    <div class="preset-edit-bar">
+      <span class="preset-edit-file" id="presetEditFile">—</span>
+      <span class="preset-edit-status" id="presetEditStatus"></span>
+    </div>
+    <textarea id="presetEditText" class="preset-edit-text" spellcheck="false"
+              placeholder="粘贴或编辑配方 JSON…"></textarea>
+  </div>
+  <mdui-button slot="action" variant="text" id="formatPresetEdit">格式化</mdui-button>
+  <mdui-button slot="action" variant="text" id="cancelPresetEdit">取消</mdui-button>
+  <mdui-button slot="action" variant="filled" id="savePresetEdit">保存</mdui-button>
+</mdui-dialog>
+
 <mdui-dialog id="savedDialog" class="medium-dialog" close-on-esc>
   <span slot="headline">我的预设</span>
   <span slot="description">预设会记录描述、尺寸、画质、采样参数和当时使用的模型；载入时按需切换模型。也可以把 .json 预设直接拖到描述框上。</span>
   <div class="repo-preset-head">
     <span>仓库示例配方</span>
     <span class="repo-preset-count" id="repoPresetCount"></span>
+    <button type="button" class="repo-preset-new" id="repoPresetNew">新建配方</button>
   </div>
   <div class="repo-presets" id="repoPresets" hidden></div>
   <div class="saved-list" id="savedList"></div>
@@ -1119,6 +1136,7 @@
 <script src="/assets/artists.js?v=20261029m"></script>
 <script src="/assets/characters.js?v=20261031char9"></script>
 <script src="/assets/characters-normal.js?v=20261103normal4"></script>
-<script src="/assets/app.js?v=20261119deep1"></script>
+<script src="/assets/ui.js?v=20261119refactor2"></script>
+<script src="/assets/app.js?v=20261119refactor2"></script>
 </body>
 </html>

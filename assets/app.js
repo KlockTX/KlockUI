@@ -1,6 +1,9 @@
 (() => {
   "use strict";
 
+  // 公共件集中在 assets/ui.js：建元素、架构名、绑定关弹窗、防抖。
+  const { h, archLabel, bindDialog, debounce } = window.KUI || {};
+
   // 登录页与远程访问都已移除（2026-11-15）：本机直接打开即可，不再有 401 跳转，
   // 也不再需要按 hostname 判断「是不是从外网进来的」。
 
@@ -2187,6 +2190,10 @@
     presetFileInput: $("#presetFileInput"), importPresetFile: $("#importPresetFile"),
     exportPresetFile: $("#exportPresetFile"),
     repoPresets: $("#repoPresets"), repoPresetCount: $("#repoPresetCount"),
+    presetEditDialog: $("#presetEditDialog"), presetEditFile: $("#presetEditFile"),
+    presetEditText: $("#presetEditText"), presetEditStatus: $("#presetEditStatus"),
+    formatPresetEdit: $("#formatPresetEdit"), cancelPresetEdit: $("#cancelPresetEdit"),
+    savePresetEdit: $("#savePresetEdit"), repoPresetNew: $("#repoPresetNew"),
     helpDialog: $("#helpDialog"), closeHelp: $("#closeHelp"),
     lightboxDialog: $("#lightboxDialog"), lightboxImg: $("#lightboxImg"), lightboxBody: $(".lightbox-body"), lightboxDownload: $("#lightboxDownload"),
     lightboxInfo: $("#lightboxInfo"), closeLightbox: $("#closeLightbox"),
@@ -8739,31 +8746,125 @@
     renderRepoPresets(repoPresetCache);
   }
 
+  // 用 h() 重写：原来 30 行 createElement/append 的堆叠，现在是一棵结构清晰的树。
   function renderRepoPresets(items) {
     if (!el.repoPresets) return;
     el.repoPresets.replaceChildren();
     el.repoPresets.hidden = !items.length;
     if (el.repoPresetCount) el.repoPresetCount.textContent = items.length ? `${items.length} 个` : "";
+
     items.forEach((item) => {
-      const row = document.createElement("div");
-      row.className = "repo-preset";
-      const main = document.createElement("div");
-      main.className = "repo-preset-main";
-      const name = document.createElement("div");
-      name.className = "repo-preset-name";
-      name.textContent = item.name;
-      const meta = document.createElement("div");
-      meta.className = "repo-preset-meta";
-      const archLabel = { krea: "Krea 2", zimage: "Z-Image", anima: "Anima", moss: "MOSS", sdxl: "SDXL" }[item.arch] || item.arch || "—";
-      meta.textContent = `${archLabel} · ${item.steps || "?"} 步${item.loras ? ` · ${item.loras} 支 LoRA` : ""}`;
-      main.append(name, meta);
-      const btn = document.createElement("mdui-button");
-      btn.setAttribute("variant", "text");
-      btn.textContent = "导入";
-      btn.addEventListener("click", () => importRepoPreset(item));
-      row.append(main, btn);
-      el.repoPresets.appendChild(row);
+      const meta = [
+        archLabel(item.arch),
+        item.steps ? `${item.steps} 步` : "",
+        item.loras ? `${item.loras} 支 LoRA` : ""
+      ].filter(Boolean).join(" · ");
+
+      el.repoPresets.appendChild(
+        h("div", { class: "repo-preset" },
+          h("div", { class: "repo-preset-main" },
+            h("div", { class: "repo-preset-name", text: item.name }),
+            h("div", { class: "repo-preset-meta", text: meta })
+          ),
+          h("div", { class: "repo-preset-actions" },
+            h("mdui-button", { variant: "text", text: "导入", on: { click: () => importRepoPreset(item) } }),
+            h("mdui-button", { variant: "text", text: "编辑", on: { click: () => openPresetEditor(item.file) } })
+          )
+        )
+      );
     });
+  }
+
+  /* ------------------------------------------------------- 配方编辑器 */
+  function presetJsonError(text) {
+    try {
+      const data = JSON.parse(text);
+      if (!data || typeof data !== "object" || Array.isArray(data)) return "顶层必须是一个对象（不是数组或值）";
+      if (!data.prompt && !data.name) return "至少要有 name 或 prompt";
+      return "";
+    } catch (err) {
+      // V8 的报错是英文的，前面加中文标签，至少知道是哪一类问题
+      const raw = String(err.message || "无法解析");
+      const hint = /Unexpected end/i.test(raw) ? "内容不完整，可能少了一个右括号"
+        : /Expected property name/i.test(raw) ? "属性名要用双引号包起来"
+        : /Unexpected token/i.test(raw) ? "有多余或缺失的符号"
+        : /Unexpected non-whitespace/i.test(raw) ? "对象结束后还有多余内容"
+        : raw;
+      return `JSON 语法错误：${hint}`;
+    }
+  }
+
+  function setPresetEditStatus(message, ok) {
+    if (!el.presetEditStatus) return;
+    el.presetEditStatus.textContent = message || "";
+    el.presetEditStatus.classList.toggle("is-ok", Boolean(ok && message));
+    el.presetEditStatus.classList.toggle("is-bad", Boolean(!ok && message));
+  }
+
+  async function openPresetEditor(file, presetText) {
+    if (!el.presetEditDialog) return;
+    el.presetEditFile.textContent = file || "新配方.json";
+    el.presetEditFile.dataset.file = file || "";
+    let text = presetText;
+    if (!text && file) {
+      try {
+        const res = await fetch(`/local/preset?file=${encodeURIComponent(file)}`, { cache: "no-store" });
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        text = await res.text();
+      } catch (err) {
+        snack(`读取失败：${err.message}`, { bad: true });
+        return;
+      }
+    }
+    if (!text) {
+      const cfg = currentConfig();
+      text = JSON.stringify({
+        klockui: 1, name: "新配方", model: cfg.model, arch: activeProfile()?.arch || "krea",
+        prompt: cfg.prompt, negative: cfg.negative, quality: cfg.quality,
+        size: { ratio: cfg.ratioKey, width: cfg.width, height: cfg.height },
+        steps: cfg.steps, cfg: cfg.cfg, sampler: cfg.sampler, scheduler: cfg.scheduler,
+        loras: cfg.loras
+      }, null, 2);
+    }
+    el.presetEditText.value = text;
+    const err = presetJsonError(text);
+    setPresetEditStatus(err || "格式有效", !err);
+    el.presetEditDialog.open = true;
+  }
+
+  async function savePresetEdit() {
+    const file = el.presetEditFile.dataset.file || `preset-${Date.now()}.json`;
+    const text = el.presetEditText.value;
+    const err = presetJsonError(text);
+    if (err) {
+      setPresetEditStatus(err, false);
+      snack("JSON 还有问题，先修一下", { bad: true });
+      return;
+    }
+    let body;
+    try {
+      body = JSON.parse(text);
+    } catch {
+      return;
+    }
+    el.savePresetEdit.disabled = true;
+    try {
+      const res = await fetch("/local/preset/save", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ file, json: body })
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) throw new Error(data.detail || `HTTP ${res.status}`);
+      el.presetEditDialog.open = false;
+      repoPresetCache = null;
+      await loadRepoPresets(true);
+      snack(`已保存 ${file}`);
+    } catch (error) {
+      snack(`保存失败：${error.message}`, { bad: true });
+    } finally {
+      el.savePresetEdit.disabled = false;
+    }
   }
 
   async function importRepoPreset(item) {
@@ -12884,7 +12985,7 @@
       options[(index + step + options.length) % options.length]?.focus();
     });
     el.helpBtn.addEventListener("click", () => { dismissSnacks(); el.helpDialog.fullscreen = window.innerWidth <= 720; el.helpDialog.open = true; });
-    el.closeHelp.addEventListener("click", () => { el.helpDialog.open = false; });
+    bindDialog(el.helpDialog, el.closeHelp);
     el.status.addEventListener("click", (event) => {
       event.stopPropagation();
       const willOpen = !el.modelMenu.classList.contains("open");
@@ -12915,15 +13016,13 @@
     });
     el.applyModelProfile.addEventListener("click", applyRecommendedProfile);
     el.manageLorasBtn.addEventListener("click", openLoraDialog);
-    el.closeLoraDialog.addEventListener("click", () => { el.loraDialog.open = false; });
+    bindDialog(el.loraDialog, el.closeLoraDialog);
     el.refreshLorasBtn.addEventListener("click", refreshLoras);
     if (el.loraSearch) {
-      let loraSearchTimer = 0;
+      const paintList = debounce(renderLoraDialog, 120);
       const onLoraSearch = () => {
         state.loraQuery = el.loraSearch.value || "";
-        // 输入法逐字触发时不必每键重排，180 条 DOM 重建有成本
-        clearTimeout(loraSearchTimer);
-        loraSearchTimer = setTimeout(renderLoraDialog, 120);
+        paintList();
       };
       el.loraSearch.addEventListener("input", onLoraSearch);
       el.loraSearch.addEventListener("change", onLoraSearch);
@@ -13525,7 +13624,7 @@
       sendGalleryToImg2img(item);
     });
 
-    el.cancelSavePreset.addEventListener("click", () => { el.savePresetDialog.open = false; });
+    bindDialog(el.savePresetDialog, el.cancelSavePreset);
     el.confirmSavePreset.addEventListener("click", confirmSavePreset);
     el.presetName.addEventListener("keydown", (event) => {
       if (event.key === "Enter") {
@@ -13534,7 +13633,7 @@
       }
     });
     el.saveCurrentFromList.addEventListener("click", () => { el.savedDialog.open = false; openSavePresetDialog(); });
-    el.closeSaved.addEventListener("click", () => { el.savedDialog.open = false; });
+    bindDialog(el.savedDialog, el.closeSaved);
     if (el.importPresetFile && el.presetFileInput) {
       el.importPresetFile.addEventListener("click", () => el.presetFileInput.click());
       el.presetFileInput.addEventListener("change", async () => {
@@ -13552,6 +13651,24 @@
       });
     }
     if (el.exportPresetFile) el.exportPresetFile.addEventListener("click", exportPresetJson);
+    if (el.presetEditDialog) {
+      bindDialog(el.presetEditDialog, el.cancelPresetEdit);
+      el.savePresetEdit.addEventListener("click", savePresetEdit);
+      el.formatPresetEdit.addEventListener("click", () => {
+        const text = el.presetEditText.value;
+        const err = presetJsonError(text);
+        if (err) { setPresetEditStatus(err, false); return; }
+        el.presetEditText.value = JSON.stringify(JSON.parse(text), null, 2);
+        setPresetEditStatus("格式有效", true);
+      });
+      el.presetEditText.addEventListener("input", debounce(() => {
+        const err = presetJsonError(el.presetEditText.value);
+        setPresetEditStatus(err || "格式有效", !err);
+      }, 200));
+    }
+    if (el.repoPresetNew) {
+      el.repoPresetNew.addEventListener("click", () => openPresetEditor("", ""));
+    }
     bindPresetDrop();
     el.refinePresetsBtn.addEventListener("click", openRefineDialog);
     el.closeRefineDialog.addEventListener("click", () => { el.refineDialog.open = false; });

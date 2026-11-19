@@ -66,3 +66,7 @@ anima-research-*.md
 *.bak-*
 plan.md
 assets/*.bak-*
+
+# 配方编辑器的临时/备份文件
+presets/*.bak
+presets/*.tmp
