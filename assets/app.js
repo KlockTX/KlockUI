@@ -9358,6 +9358,9 @@
   }
 
   function startPolling(batch = 1) {
+    // 标签页不可见时不轮询：预览是给人看的，后台跑纯烧电。
+    // 可见性变化时由 loop 自己恢复（下一轮直接取最新状态）。
+    const paused = () => document.visibilityState === "hidden";
     stopPolling();
     const total = clamp(Number(batch) || 1, 1, 12);
     let inFlight = false;
@@ -9368,6 +9371,7 @@
     el.batchText.textContent = total > 1 ? `本批 ${total} 张 · 顺序生成` : "";
     state.pollTimer = setInterval(async () => {
       if (inFlight) return;
+      if (paused()) return;   // 后台页签不轮询，切回来下一轮自动追上
       inFlight = true;
       try {
         const res = await fetch("/api/sdapi/v1/progress?skip_current_image=false", { cache: "no-store" });
@@ -9413,6 +9417,8 @@
         if (typeof data.current_image === "string" && data.current_image) {
           if (data.current_image !== state.lastPreview) {
             state.lastPreview = data.current_image;
+            // 直接设 src：预加载再替换的写法在这里反而会让预览整段不出现
+            // （onload 依赖消息时序，漏一次就再也不显示），保持简单可靠。
             el.livePreview.src = previewDataUrl(data.current_image);
             el.liveStage.hidden = false;
           }
