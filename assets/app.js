@@ -7945,8 +7945,9 @@
     });
     const count = galleryState.selected.size;
     const selecting = count > 0;
-    // 一条工具栏：没选中显示总数，选中后同一位置换成「已选 N 张 清空 完成」
-    if (el.galleryCount) el.galleryCount.hidden = selecting;
+    // 总数是常驻的；「已选 N 张 清空 完成」额外出现在工具栏右侧，仅选中时显示。
+    // 不要再互相替换 —— 用户要的是两块同时看得见。
+    if (el.galleryCount) el.galleryCount.hidden = false;
     if (el.gallerySelectCount) {
       el.gallerySelectCount.hidden = !selecting;
       el.gallerySelectCount.textContent = `已选 ${count} 张`;
@@ -10733,8 +10734,9 @@
     el.galleryRefresh.addEventListener("click", () => loadGallery({ reset: true }));
     el.galleryOpenFolder.addEventListener("click", openGalleryFolder);
     el.galleryMore.addEventListener("click", () => loadGallery());
-    el.gallerySelect.addEventListener("click", () => setGallerySelecting(!galleryState.selecting));
-    /* 全选本页已移除：常驻选择圈下没有「先选一批」的场景 */
+    /* 顶部「多选」按钮已移除：常驻选择圈就是入口。
+       注意：这行如果还留着 el.gallerySelect.addEventListener，会因节点不存在抛错，
+       导致 bindEvents 后面的灯箱 / 键盘绑定全部失效 —— 踩过一次。 */
     el.gallerySelectClear.addEventListener("click", () => {
       if (galleryState.batchBusy) return;
       galleryState.selected.clear();
