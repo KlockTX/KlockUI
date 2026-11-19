@@ -20,7 +20,7 @@
 <link rel="icon" href="/assets/favicon.svg" type="image/svg+xml">
 <link rel="alternate icon" href="/assets/klockui.ico" sizes="any">
 <link rel="stylesheet" href="/vendor/mdui.css">
-<link rel="stylesheet" href="/assets/app.css?v=20261119ux3">
+<link rel="stylesheet" href="/assets/app.css?v=20261119cmp1">
 </head>
 <body data-mode="txt2img">
 <a class="skip-link" href="#promptCard">跳到画面描述</a>
@@ -714,6 +714,7 @@
     <div class="history-head">
       <span class="small-label">最近作品 <b id="historyCount">0</b></span>
       <div class="history-head-actions">
+        <mdui-button id="openCompare" variant="text" title="并排对比最近两张"><span slot="icon" class="icon" data-icon="compare"></span>对比</mdui-button>
         <mdui-button id="openGallery" variant="text"><span slot="icon" class="icon" data-icon="gallery"></span>作品库</mdui-button>
         <mdui-button-icon id="clearHistory" aria-label="清空最近作品" title="清空最近作品"><span class="icon" data-icon="trash"></span></mdui-button-icon>
       </div>
@@ -927,6 +928,28 @@
   <mdui-button slot="action" variant="text" id="closeRefineDialog">关闭</mdui-button>
 </mdui-dialog>
 
+<mdui-dialog id="compareDialog" class="large-dialog compare-dialog" close-on-esc>
+  <span slot="headline">画面对比</span>
+  <span slot="description">滚轮同步缩放、拖动同步平移；下方只列参数不同的项。</span>
+  <div class="compare-body">
+    <div class="compare-panes">
+      <figure class="compare-pane" data-side="a">
+        <div class="compare-frame"><img id="compareA" alt="对比图 A"></div>
+        <figcaption id="compareMetaA" class="compare-meta">—</figcaption>
+      </figure>
+      <figure class="compare-pane" data-side="b">
+        <div class="compare-frame"><img id="compareB" alt="对比图 B"></div>
+        <figcaption id="compareMetaB" class="compare-meta">—</figcaption>
+      </figure>
+    </div>
+    <div class="compare-diff" id="compareDiff"></div>
+  </div>
+  <mdui-button slot="action" variant="text" id="compareSwap">交换 A/B</mdui-button>
+  <mdui-button slot="action" variant="text" id="comparePrev">更早</mdui-button>
+  <mdui-button slot="action" variant="text" id="compareNext">更新的</mdui-button>
+  <mdui-button slot="action" variant="filled" id="compareClose">关闭</mdui-button>
+</mdui-dialog>
+
 <mdui-dialog id="loraDialog" class="medium-dialog lora-dialog" close-on-esc close-on-overlay-click>
   <span slot="headline">LoRA 增强</span>
   <span slot="description">只列出已安装的 LoRA。官方增强 0.5–0.8，画风 0.6–0.9，滑块一次只调一个。</span>
@@ -1130,11 +1153,11 @@
 </mdui-dialog>
 
 <script src="/vendor/mdui.global.js"></script>
-<script src="/assets/artists.js?v=20261119ux3"></script>
-<script src="/assets/characters.js?v=20261119ux3"></script>
-<script src="/assets/characters-normal.js?v=20261119ux3"></script>
-<script src="/assets/data.js?v=20261119ux3"></script>
-<script src="/assets/ui.js?v=20261119ux3"></script>
-<script src="/assets/app.js?v=20261119ux3"></script>
+<script src="/assets/artists.js?v=20261119cmp1"></script>
+<script src="/assets/characters.js?v=20261119cmp1"></script>
+<script src="/assets/characters-normal.js?v=20261119cmp1"></script>
+<script src="/assets/data.js?v=20261119cmp1"></script>
+<script src="/assets/ui.js?v=20261119cmp1"></script>
+<script src="/assets/app.js?v=20261119cmp1"></script>
 </body>
 </html>

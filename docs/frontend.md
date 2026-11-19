@@ -259,3 +259,21 @@ const { MODEL_PROFILES, LORA_LIBRARY, TAG_GROUPS, ... } = window.KLOCK_DATA;
 1. `curl -s http://127.0.0.1:7861/assets/app.css | grep 你的选择器` —— 服务器上到底有没有
 2. 浏览器 DevTools → Network → 该 CSS 的 status（200 还是 304 / from cache）
 3. `index.html` 里各资源 `?v=` 是否一致
+
+## 十三、画面对比（2026-11-19）
+
+调参最缺的是反馈闭环：改一个参数，前后两张到底差在哪。
+
+实现要点：
+
+| 关注点 | 做法 |
+|---|---|
+| 同步缩放/平移 | 只维护一份 `compareState{scale,x,y}`，一次赋值给两张图的 `transform` |
+| 参数差异 | `compareFieldRows()` 逐项比对，**只渲染不同的行**；相同的字段不占版面 |
+| 数据来源 | 历史记录里的 `prompt/negative/model/steps/cfg/sampler/seed`，服务端一直在存，前端之前没接出来 |
+| 不改状态 | 对比是纯浏览，不动当前设置、不写文件 |
+
+交互：滚轮缩放（0.6–4 倍）、拖动平移、`交换 A/B`、`更早 / 更新的` 整组前后挪一张。
+
+**已知取舍**：两张图各自等比适配，不强制同尺寸对齐——不同采样器的出图尺寸可能不同，
+强行对齐反而会让其中一张变形。

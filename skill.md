@@ -330,6 +330,7 @@ models/loras/
 | 仓库配方列表 / 单个读取 | `server.py` → `_presets_list()` / `_preset_one()`（`/local/presets`、`/local/preset?file=`） |
 | 仓库配方 UI | `assets/app.js` → `loadRepoPresets()` / `renderRepoPresets()` / `importRepoPreset()` |
 | LoRA 搜索过滤 | `assets/app.js` → `loraMatchesQuery()` + `state.loraQuery` |
+| 画面对比 | `assets/app.js` → `openCompareDialog()` / `renderCompare()` / `compareFieldRows()` |
 | 配方保存接口 | `server.py` → `_preset_save()`（`POST /local/preset/save`，文件名白名单 + 校验） |
 | 配方编辑器 | `assets/app.js` → `openPresetEditor()` / `savePresetEdit()` / `presetJsonError()` |
 | 前端公共件 | `assets/ui.js` → `h()` / `archLabel()` / `bindDialog()` / `debounce()` |

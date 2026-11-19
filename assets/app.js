@@ -393,6 +393,10 @@
     presetFileInput: $("#presetFileInput"), importPresetFile: $("#importPresetFile"),
     exportPresetFile: $("#exportPresetFile"),
     repoPresets: $("#repoPresets"), repoPresetCount: $("#repoPresetCount"),
+    openCompare: $("#openCompare"), compareDialog: $("#compareDialog"), compareA: $("#compareA"),
+    compareB: $("#compareB"), compareMetaA: $("#compareMetaA"), compareMetaB: $("#compareMetaB"),
+    compareDiff: $("#compareDiff"), compareSwap: $("#compareSwap"), comparePrev: $("#comparePrev"),
+    compareNext: $("#compareNext"), compareClose: $("#compareClose"),
     presetEditDialog: $("#presetEditDialog"), presetEditFile: $("#presetEditFile"),
     presetEditText: $("#presetEditText"), presetEditStatus: $("#presetEditStatus"),
     formatPresetEdit: $("#formatPresetEdit"), cancelPresetEdit: $("#cancelPresetEdit"),
@@ -5646,6 +5650,158 @@
     renderRepoPresets(repoPresetCache);
   }
 
+  /* ------------------------------------------------------- 画面对比 */
+  // 只做「看」的事：不写文件、不改状态，A/B 只是历史里的两个索引。
+  const compareState = { a: 0, b: 1, scale: 1, x: 0, y: 0 };
+
+  function compareableHistory() {
+    return state.history.filter((item) => item && item.url);
+  }
+
+  function fmtCompareMeta(item) {
+    if (!item) return "—";
+    const bits = [`${item.finalWidth}×${item.finalHeight}`];
+    if (item.steps) bits.push(`${item.steps} 步`);
+    if (item.cfg !== undefined && item.cfg !== "—") bits.push(`CFG ${item.cfg}`);
+    if (item.sampler) bits.push(`${item.sampler}${item.scheduler ? " · " + item.scheduler : ""}`);
+    if (item.seed !== null && item.seed !== undefined) bits.push(`seed ${item.seed}`);
+    return bits.join(" · ");
+  }
+
+  function compareFieldRows(a, b) {
+    const norm = (v) => (v === null || v === undefined || v === "" ? "—" : String(v));
+    const rows = [
+      ["提示词", a.prompt, b.prompt],
+      ["负面词", a.negative, b.negative],
+      ["模型", a.model, b.model],
+      ["尺寸", `${a.finalWidth}×${a.finalHeight}`, `${b.finalWidth}×${b.finalHeight}`],
+      ["步数", a.steps, b.steps],
+      ["CFG", a.cfg, b.cfg],
+      ["采样器", a.sampler, b.sampler],
+      ["调度器", a.scheduler, b.scheduler],
+      ["种子", a.seed, b.seed],
+      ["重绘幅度", a.denoise, b.denoise],
+      ["二采", a.hires ? `开 ×${a.hrScale || 1.25}` : "关", b.hires ? `开 ×${b.hrScale || 1.25}` : "关"]
+    ];
+    return rows
+      .map(([key, va, vb]) => [key, norm(va), norm(vb)])
+      .filter(([, va, vb]) => va !== vb);
+  }
+
+  function applyCompareTransform() {
+    const t = `translate(${compareState.x}px, ${compareState.y}px) scale(${compareState.scale})`;
+    [el.compareA, el.compareB].forEach((img) => {
+      if (img) img.style.transform = t;
+    });
+  }
+
+  function renderCompare() {
+    const items = compareableHistory();
+    if (!items.length) {
+      if (el.compareEmpty) el.compareEmpty.hidden = false;
+      return;
+    }
+    compareState.a = Math.min(compareState.a, items.length - 1);
+    compareState.b = Math.min(compareState.b, items.length - 1);
+    const a = items[compareState.a];
+    const b = items[compareState.b];
+    if (el.compareA) el.compareA.src = a.url;
+    if (el.compareB) el.compareB.src = b.url;
+    if (el.compareMetaA) el.compareMetaA.textContent = `A · ${fmtCompareMeta(a)}`;
+    if (el.compareMetaB) el.compareMetaB.textContent = `B · ${fmtCompareMeta(b)}`;
+    if (!el.compareDiff) return;
+    el.compareDiff.replaceChildren();
+    const rows = compareFieldRows(a, b);
+    if (!rows.length) {
+      el.compareDiff.appendChild(h("div", { class: "compare-empty", text: "两张图的参数完全一致（只有画面内容不同）。" }));
+      return;
+    }
+    rows.forEach(([key, va, vb]) => {
+      el.compareDiff.appendChild(
+        h("div", { class: "compare-row" },
+          h("span", { class: "k", text: key }),
+          h("span", { class: "v is-diff", text: va }),
+          h("span", { class: "v is-diff", text: vb })
+        )
+      );
+    });
+    applyCompareTransform();
+  }
+
+  function openCompareDialog() {
+    const items = compareableHistory();
+    if (items.length < 2) {
+      snack("至少要有两张作品才能对比", { bad: true });
+      return;
+    }
+    compareState.a = 0;
+    compareState.b = 1;
+    compareState.scale = 1;
+    compareState.x = 0;
+    compareState.y = 0;
+    renderCompare();
+    el.compareDialog.open = true;
+  }
+
+  function bindCompareInteractions() {
+    if (!el.compareDialog) return;
+    const panes = el.compareDialog.querySelectorAll(".compare-frame");
+    panes.forEach((frame) => {
+      frame.addEventListener("wheel", (event) => {
+        event.preventDefault();
+        const next = compareState.scale * (event.deltaY > 0 ? 0.92 : 1.08);
+        compareState.scale = Math.min(4, Math.max(0.6, next));
+        applyCompareTransform();
+      }, { passive: false });
+
+      let dragging = false;
+      let startX = 0;
+      let startY = 0;
+      let baseX = 0;
+      let baseY = 0;
+      frame.addEventListener("pointerdown", (event) => {
+        dragging = true;
+        startX = event.clientX;
+        startY = event.clientY;
+        baseX = compareState.x;
+        baseY = compareState.y;
+        frame.setPointerCapture(event.pointerId);
+      });
+      frame.addEventListener("pointermove", (event) => {
+        if (!dragging) return;
+        compareState.x = baseX + (event.clientX - startX);
+        compareState.y = baseY + (event.clientY - startY);
+        applyCompareTransform();
+      });
+      const stop = (event) => {
+        dragging = false;
+        try { frame.releasePointerCapture(event.pointerId); } catch { /* 已释放 */ }
+      };
+      frame.addEventListener("pointerup", stop);
+      frame.addEventListener("pointercancel", stop);
+    });
+
+    bindDialog(el.compareDialog, el.compareClose);
+    if (el.compareSwap) {
+      el.compareSwap.addEventListener("click", () => {
+        [compareState.a, compareState.b] = [compareState.b, compareState.a];
+        renderCompare();
+      });
+    }
+    // 更早 / 更新的：整组往后或往前挪一张
+    const shift = (delta) => {
+      const total = compareableHistory().length;
+      const nextA = compareState.a + delta;
+      const nextB = compareState.b + delta;
+      if (nextA < 0 || nextB < 0 || nextA >= total || nextB >= total) return;
+      compareState.a = nextA;
+      compareState.b = nextB;
+      renderCompare();
+    };
+    if (el.comparePrev) el.comparePrev.addEventListener("click", () => shift(1));
+    if (el.compareNext) el.compareNext.addEventListener("click", () => shift(-1));
+  }
+
   // 用 h() 重写：原来 30 行 createElement/append 的堆叠，现在是一棵结构清晰的树。
   function renderRepoPresets(items) {
     if (!el.repoPresets) return;
@@ -7354,6 +7510,10 @@
       mode: record.mode === "img2img" ? "img2img" : "txt2img",
       kind: record.kind === "postprocess" ? "postprocess" : "generate",
       seed: record.seed ?? null,
+      // 对比视图要用的三项：服务端一直在存，前端之前没接出来
+      prompt: record.prompt || "",
+      negative: record.negative || "",
+      model: record.model || "",
       finalWidth: Number(record.width) || 0,
       finalHeight: Number(record.height) || 0,
       steps: Number(record.steps) || 0,
@@ -9916,6 +10076,8 @@
     });
     el.applyModelProfile.addEventListener("click", applyRecommendedProfile);
     el.manageLorasBtn.addEventListener("click", openLoraDialog);
+    if (el.openCompare) el.openCompare.addEventListener("click", openCompareDialog);
+    bindCompareInteractions();
     bindDialog(el.loraDialog, el.closeLoraDialog);
     el.refreshLorasBtn.addEventListener("click", refreshLoras);
     if (el.loraOnlyActive) {

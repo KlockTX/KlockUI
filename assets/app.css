@@ -3735,3 +3735,44 @@ mdui-menu-item:not(:defined) {
   cursor: pointer; user-select: none;
 }
 .lora-only-active mdui-switch { --mdui-comp-switch-height: 20px; }
+
+/* ---------- 画面对比 ---------- */
+.compare-dialog { --compare-h: min(46vh, 460px); }
+.compare-body { display: flex; flex-direction: column; gap: var(--sp-5); padding-top: var(--sp-2); }
+.compare-panes { display: grid; grid-template-columns: 1fr 1fr; gap: var(--sp-4); }
+.compare-pane { margin: 0; display: flex; flex-direction: column; gap: var(--sp-3); min-width: 0; }
+.compare-frame {
+  position: relative; height: var(--compare-h);
+  border-radius: var(--r-md); overflow: hidden;
+  background: rgb(var(--mdui-color-surface-container));
+  border: 1px solid var(--app-outline-soft);
+  display: flex; align-items: center; justify-content: center;
+  cursor: grab; touch-action: none;
+}
+.compare-frame:active { cursor: grabbing; }
+.compare-frame img {
+  max-width: 100%; max-height: 100%; display: block;
+  transform-origin: center center;
+  will-change: transform;
+  user-select: none; -webkit-user-drag: none;
+}
+.compare-meta {
+  font-size: var(--fs-micro); line-height: 1.5;
+  color: rgb(var(--mdui-color-on-surface-variant));
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.compare-diff { display: flex; flex-direction: column; gap: 1px; }
+.compare-row {
+  display: grid; grid-template-columns: 72px 1fr 1fr; gap: var(--sp-4);
+  padding: 6px var(--sp-3); border-radius: var(--r-xs);
+  font-size: var(--fs-micro); line-height: 1.55;
+}
+.compare-row:nth-child(odd) { background: rgb(var(--mdui-color-surface-container) / .55); }
+.compare-row .k { color: rgb(var(--mdui-color-on-surface-variant)); font-weight: 600; }
+.compare-row .v { word-break: break-word; }
+.compare-row .v.is-diff { color: rgb(var(--mdui-color-primary)); }
+.compare-empty { font-size: var(--fs-xs); color: rgb(var(--mdui-color-on-surface-variant)); padding: var(--sp-3) 0; }
+@media (max-width: 720px) {
+  .compare-panes { grid-template-columns: 1fr; }
+  .compare-dialog { --compare-h: min(32vh, 320px); }
+}
