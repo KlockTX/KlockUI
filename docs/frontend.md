@@ -228,3 +228,34 @@ const { MODEL_PROFILES, LORA_LIBRARY, TAG_GROUPS, ... } = window.KLOCK_DATA;
 
 `<input type="file">` 4 个（全部隐藏，只作触发）、`type="hidden"` 1 个。
 没有原生 `<select>`、`<input type="range">`、`<input type="number">` —— 这些都已用 mdui 组件或自建替代。
+
+## 十二、静态资源版本与缓存（踩过的坑）
+
+**症状**：HTML 换了结构，页面却还是旧样式——搜索框变成一个带白底描边的原生输入框。
+
+**原因**：`index.html` 里四个资源各带一个 `?v=` 参数，我只改了 JS 的，CSS 还是旧版本号；
+而 `server.py` 对静态资源发的是 `Cache-Control: public, max-age=3600`，
+浏览器直接用了缓存里的旧 CSS，新 HTML + 旧 CSS 拼出一个"半个新界面"。
+
+**现在两道保险**：
+
+1. **服务器加 ETag + `no-cache`**
+   ```python
+   etag = 'W/"%x-%x"' % (int(st.st_mtime), st.st_size)
+   # 命中 If-None-Match 直接 304，不再有 max-age 窗口期
+   ```
+   改完文件刷新就生效，未改动时回 304，不额外传输。
+
+2. **版本号一次性全改**
+   ```bash
+   sed -i 's/?v=[0-9]\{8\}[A-Za-z0-9]*/?v=<新版本>/g' index.html
+   ```
+   只改某一个资源的版本号 = 制造半截状态，比重构本身更容易出事故。
+
+### 排查口诀
+
+样式"没生效"时先看这三条，再怀疑 CSS 写错：
+
+1. `curl -s http://127.0.0.1:7861/assets/app.css | grep 你的选择器` —— 服务器上到底有没有
+2. 浏览器 DevTools → Network → 该 CSS 的 status（200 还是 304 / from cache）
+3. `index.html` 里各资源 `?v=` 是否一致

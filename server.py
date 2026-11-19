@@ -5413,6 +5413,22 @@ class Handler(BaseHTTPRequestHandler):
             self._send(500, str(exc).encode("utf-8"), "text/plain; charset=utf-8")
             return
         headers = {"X-Content-Type-Options": "nosniff"}
+        # ETag：用 修改时间+大小 生成弱校验，配合 no-cache 让浏览器每次回源校验。
+        # 这样改完 CSS/JS 不会因为 max-age 缓存而"改了不生效"（踩过）。
+        try:
+            st = os.stat(path)
+            etag = 'W/"%x-%x"' % (int(st.st_mtime), st.st_size)
+        except OSError:
+            etag = None
+        if etag:
+            headers["ETag"] = etag
+            if self.headers.get("If-None-Match") == etag:
+                self.send_response(304)
+                self.send_header("ETag", etag)
+                self.send_header("Cache-Control", cache)
+                self.end_headers()
+                handle.close()
+                return
         if ext == ".html":
             headers.update(HTML_FRAME_HEADERS)
         if download:
@@ -5447,7 +5463,8 @@ class Handler(BaseHTTPRequestHandler):
         if not (full == base or full.startswith(base + os.sep)) or not os.path.isfile(full):
             self._send(404, b'{"detail":"Not Found"}')
             return
-        self._send_file(full, "public, max-age=3600")
+        # no-cache：允许缓存但每次校验（ETag 命中回 304），避免静态资源"改了不生效"
+        self._send_file(full, "no-cache")
 
     def do_GET(self):
         if not self._request_guard():
