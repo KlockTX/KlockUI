@@ -20,7 +20,7 @@
 <link rel="icon" href="/assets/favicon.svg" type="image/svg+xml">
 <link rel="alternate icon" href="/assets/klockui.ico" sizes="any">
 <link rel="stylesheet" href="/vendor/mdui.css">
-<link rel="stylesheet" href="/assets/app.css?v=20261120layout4">
+<link rel="stylesheet" href="/assets/app.css?v=20261120pick5">
 </head>
 <body data-mode="txt2img">
 <a class="skip-link" href="#promptCard">跳到画面描述</a>
@@ -597,6 +597,12 @@
         <h2>画面</h2>
       </div>
       <div class="stage-head-right">
+        <button type="button" class="stage-head-action" id="loadParams" title="把这张图的参数填回左侧">
+          <span class="icon" data-icon="rotate"></span>载入参数
+        </button>
+        <button type="button" class="stage-head-action" id="zoomCurrent" title="放大查看（也可以直接点图）" hidden>
+          <span class="icon" data-icon="expand"></span>放大
+        </button>
         <span id="modeBadge" class="mode-badge">文生图</span>
         <mdui-button-icon id="openOutput" aria-label="打开出图文件夹" title="打开出图文件夹"><span class="icon" data-icon="folder"></span></mdui-button-icon>
       </div>
@@ -708,7 +714,6 @@
         <mdui-button variant="tonal" id="toImg2img"><span slot="icon" class="icon" data-icon="send"></span>送去重绘</mdui-button>
         <mdui-button variant="tonal" id="favoriteCurrent" aria-pressed="false"><span slot="icon" class="icon" id="favoriteIcon" data-icon="star"></span><span id="favoriteLabel">收藏</span></mdui-button>
         <mdui-button variant="tonal" id="download"><span slot="icon" class="icon" data-icon="download"></span>下载</mdui-button>
-        <mdui-button variant="text" id="loadParams" class="load-params"><span slot="icon" class="icon" data-icon="rotate"></span>载入参数</mdui-button>
       </div>
     </div>
 
@@ -1167,11 +1172,11 @@
 </mdui-dialog>
 
 <script src="/vendor/mdui.global.js"></script>
-<script src="/assets/artists.js?v=20261120layout4"></script>
-<script src="/assets/characters.js?v=20261120layout4"></script>
-<script src="/assets/characters-normal.js?v=20261120layout4"></script>
-<script src="/assets/data.js?v=20261120layout4"></script>
-<script src="/assets/ui.js?v=20261120layout4"></script>
-<script src="/assets/app.js?v=20261120layout4"></script>
+<script src="/assets/artists.js?v=20261120pick5"></script>
+<script src="/assets/characters.js?v=20261120pick5"></script>
+<script src="/assets/characters-normal.js?v=20261120pick5"></script>
+<script src="/assets/data.js?v=20261120pick5"></script>
+<script src="/assets/ui.js?v=20261120pick5"></script>
+<script src="/assets/app.js?v=20261120pick5"></script>
 </body>
 </html>

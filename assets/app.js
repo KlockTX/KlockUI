@@ -340,6 +340,7 @@
     resultInfo: $("#resultInfo"), metaChips: $("#metaChips"), download: $("#download"),
     favoriteCurrent: $("#favoriteCurrent"), favoriteIcon: $("#favoriteIcon"), favoriteLabel: $("#favoriteLabel"),
     sameSeed: $("#sameSeed"), again: $("#again"), toImg2img: $("#toImg2img"), loadParams: $("#loadParams"),
+    zoomCurrent: $("#zoomCurrent"),
     history: $("#history"), historyCount: $("#historyCount"), historyEmpty: $("#historyEmpty"), clearHistory: $("#clearHistory"),
     openGallery: $("#openGallery"), galleryDialog: $("#galleryDialog"), galleryFilter: $("#galleryFilter"),
     galleryGrid: $("#galleryGrid"), galleryStatus: $("#galleryStatus"), galleryCount: $("#galleryCount"),
@@ -7536,6 +7537,7 @@
     el.canvasFrame.hidden = false;
     el.placeholder.hidden = true;
     el.resultInfo.hidden = false;
+    if (el.zoomCurrent) el.zoomCurrent.hidden = false;
     makeMetaChips(item);
     updateFavoriteButton();
     renderHistory();
@@ -7716,6 +7718,7 @@
         el.canvasFrame.hidden = true;
         el.placeholder.hidden = false;
         el.resultInfo.hidden = true;
+        if (el.zoomCurrent) el.zoomCurrent.hidden = true;
         el.metaChips.innerHTML = "";
         updateFavoriteButton();
         if (el.lightboxDialog.open) el.lightboxDialog.open = false;
@@ -7875,7 +7878,20 @@
       });
       return button;
     };
+    // 常驻选择圈：不用先进「多选」模式，点圈就是选中
+    const pick = document.createElement("button");
+    pick.type = "button";
+    pick.className = "gallery-pick";
+    pick.setAttribute("aria-label", "选择这张作品");
+    pick.innerHTML = icon("check", 14);
+    pick.addEventListener("click", (event) => {
+      event.stopPropagation();
+      if (!galleryState.selecting) setGallerySelecting(true);
+      toggleGallerySelection(item);
+      if (!galleryState.selected.size) setGallerySelecting(false);
+    });
     actions.append(
+      pick,
       action("查看参数", "sliders", () => openGalleryInfo(item)),
       action("送去图生图", "send", () => sendGalleryToImg2img(item)),
       action("导出原图", "download", () => exportGalleryItem(item)),
@@ -7892,6 +7908,14 @@
   }
 
   function updateGallerySelectionUI() {
+    // 常驻圈跟着选中状态亮起来
+    $$(".gallery-pick", el.galleryDialog).forEach((node) => {
+      const card = node.closest(".gallery-card");
+      const path = card?.dataset.path || "";
+      const on = galleryState.selected.has(path);
+      node.classList.toggle("is-on", on);
+      node.setAttribute("aria-pressed", on ? "true" : "false");
+    });
     if (!el.gallerySelectBar) return;
     const count = galleryState.selected.size;
     const pageSelected = galleryState.items.filter((item) => galleryState.selected.has(item.path)).length;
@@ -10671,6 +10695,7 @@
     el.again.addEventListener("click", again);
     el.toImg2img.addEventListener("click", sendCurrentToImg2img);
     el.loadParams.addEventListener("click", loadCurrentParams);
+    if (el.zoomCurrent) el.zoomCurrent.addEventListener("click", openLightbox);
     el.clearHistory.addEventListener("click", clearHistory);
     el.galleryBtn.addEventListener("click", openGallery);
     el.openGallery.addEventListener("click", openGallery);
