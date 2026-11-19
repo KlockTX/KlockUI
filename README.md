@@ -118,12 +118,25 @@ zimage: {
 
 ## 快速开始
 
+**方式 A · 仓库链接**（agent 自己 clone）
+
 把下面这句话发给你的 agent（Claude Code / Cursor / WorkBuddy 等都可以）：
 
 > 安装 https://github.com/KlockTX/KlockUI ，按仓库里的 `install.md` 执行。
 
-它会 clone 代码、建 Python 环境、按你的显卡选量化档、**问你要装哪些模型**、
+**方式 B · 安装包（推荐 · 不用 git）**
+
+从 [Releases](https://github.com/KlockTX/KlockUI/releases) 下载 `KlockUI-x.y.z.zip`，
+把**压缩包文件本身**发给 agent，并说：
+
+> 安装这个压缩包：`<拖入 KlockUI-x.y.z.zip>`，按包里的 `install.md` 执行安装配置。
+
+包里自带 `AGENT-INSTALL.md`，agent 解压后会按同一套流程装。**不需要 agent 会 git clone**，
+也不需要它访问 GitHub。
+
+两种方式都会：建 Python 环境、按显卡选量化档、**问你要装哪些模型**、
 逐个文件校验下载、把 `skill.md` 装成 agent 技能，最后跑一张测试图确认可用。
+区别只在代码怎么拿到手；**模型权重两种方式都要下载**，仓库和包里都不含权重。
 
 手动装也可以，[`install.md`](install.md) 里每一步都带断言，照着走即可。
 
@@ -271,6 +284,9 @@ KlockUI/
 ├─ presets/             # 26 个示例配方
 ├─ docs/                # 架构图 · 二次元配方 · 前端约定
 ├─ install.md           # 安装说明（写给 agent）
+├─ AGENT-INSTALL.md     # 仅发行包内有：告诉 agent「这是压缩包，照 install.md 装」
+├─ scripts/
+│  └─ make_release.py   # 生成发行包（只打 git 受控文件）
 ├─ skill.md             # 配置知识与排错（写给 agent）
 └─ models.manifest.json # 模型清单
 ```
