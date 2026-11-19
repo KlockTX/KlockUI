@@ -16,7 +16,8 @@
 | 项 | 约定 |
 |---|---|
 | 允许 | 建目录、装 Python 包、下载模型、写配置、启动本地进程 |
-| 禁止 | 改系统 Python、覆盖已装 torch、改 ComfyUI 源码、删除用户已有模型 |
+| 禁止 | 改系统 Python、覆盖已装 torch、改 ComfyUI 源码、删除用户已有模型、在已有引擎时另起一个抢 8188 |
+| 顺序 | **P0 先探测本机 ComfyUI / 8188，命中就复用，只有全未命中才 clone** |
 | 结构 | KlockUI 与 ComfyUI **同级**放在同一父目录（路径探测依赖这个结构） |
 | 结束必须交付 | 两个端口可访问、一张测试图、环境报告（第 7 节） |
 
@@ -90,7 +91,38 @@ Windows 注意：路径不要含中文或空格；用 `venv\Scripts\python.exe`�
 
 ---
 
-## 3. P0 · 装 ComfyUI（由你下载，不随仓库分发）
+## 3. P0 · ComfyUI：先探测本机，再决定要不要装
+
+**不要一上来就 clone。** 先花一分钟探测，命中就跳过整个 P0：
+
+```bash
+# A. 端口是否已有引擎在跑（最优先，命中就直接进 P1）
+curl -fsS http://127.0.0.1:8188/system_stats && echo "ENGINE_READY"
+
+# B. 本机是否已有 ComfyUI 目录（按优先级找，找到第一个就停）
+ls -d ../ComfyUI ../ComfyUI_windows_portable ~/ComfyUI /d/AI/ComfyUI 2>/dev/null
+
+# C. 找到后确认它是能用的，而不是空壳
+<找到的目录>/venv/bin/python -c "import torch; print(torch.__version__, torch.cuda.is_available())" \
+  || <找到的目录>/venv/Scripts/python -c "import torch; print(torch.__version__, torch.cuda.is_available())"
+test -f <找到的目录>/main.py && echo "COMFY_USABLE"
+```
+
+**探测结果怎么处理**
+
+| 结果 | 你要做的 |
+|---|---|
+| A 命中（`ENGINE_READY`） | **整个 P0 跳过**，直接进第 4 节。别另起一个引擎抢 8188 端口 |
+| A 未命中、B/C 命中 | **复用这个目录**：不要 clone、不要新建 venv、不要覆盖已装的 torch；直接启动它（见 6.1），确认 8188 通了再进 P1 |
+| 全未命中 | 才走下面的全新安装 |
+
+> **KlockUI 不要求 ComfyUI 一定和它同级。** 桥接层只连 `127.0.0.1:8188`；
+> 同级目录只是 `start.bat` 的默认探测路径，实际路径可以用 `KLOCK_COMFY_DIR` 覆盖。
+> 所以本机已有 ComfyUI 时，**优先复用**，不要为了凑目录结构去搬动或复制它。
+
+---
+
+### 全新安装（仅当上面全未命中）
 
 ```bash
 cd <父目录>
