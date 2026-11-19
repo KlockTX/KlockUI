@@ -183,7 +183,8 @@ JSON 里再写 `steps` 则以显式值为准。
 
 `presets/` 里有 26 个可直接使用的例子，字段说明见 [`presets/README.md`](presets/README.md)。
 
-二次元向的画师 LoRA 串、触发词与提示词模板整理在 [`docs/anime-recipes.md`](docs/anime-recipes.md)。
+二次元向的画师 LoRA 串、触发词与提示词模板整理在 [`docs/anime-recipes.md`](docs/anime-recipes.md)；
+生成耗时的实测拆解见 [`docs/performance.md`](docs/performance.md)。
 
 ---
 

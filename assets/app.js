@@ -6375,6 +6375,14 @@
     return true;
   }
 
+  // 耗时预估：只用「同尺寸」的历史样本，不做跨尺寸外推。
+  // 曾按 秒/(步数·百万像素) 归一，结果 512 图的开销（模型加载/TE）被摊到每像素上，
+  // 估出来的大图时间只有实际的三分之一 —— 宁可显示「—」，也别给错数。
+  function medianOf(list) {
+    const sorted = [...list].sort((a, b) => a - b);
+    return sorted[Math.floor(sorted.length / 2)];
+  }
+
   function updateQualityHint() {
     updateGachaAvailability();
     updateGachaHint();
