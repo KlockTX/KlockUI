@@ -2080,7 +2080,7 @@
     color: rgb(var(--mdui-color-on-surface-variant));
   }
   .gallery-seed { font-family: var(--app-mono); font-size: var(--fs-micro); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-  .gallery-actions { display: flex; align-items: center; justify-content: flex-end; gap: var(--sp-1); padding: 0 4px 5px; }
+  .gallery-actions { display: flex; align-items: center; justify-content: flex-end; gap: var(--sp-1); padding: 0 var(--sp-4) var(--sp-3) var(--sp-5); }
   .gallery-actions .gallery-pick { margin-right: auto; }
   .gallery-action {
     width: 31px; height: 31px; padding: 0; border: 0; border-radius: var(--r-full);
@@ -3850,3 +3850,11 @@ mdui-menu-item:not(:defined) {
 
 /* 常驻选择圈之后，「多选」按钮是重复入口，隐藏以免误导 */
 .gallery-tools #gallerySelect { display: none; }
+
+/* 最近作品横向条：滚轮左右滑，滚动条藏起来（它会压住缩略图） */
+.history-strip {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+  overscroll-behavior-x: contain;
+}
+.history-strip::-webkit-scrollbar { width: 0; height: 0; display: none; }

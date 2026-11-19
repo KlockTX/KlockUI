@@ -347,10 +347,10 @@
     galleryEmpty: $("#galleryEmpty"), galleryEmptyTitle: $("#galleryEmptyTitle"), galleryEmptyHint: $("#galleryEmptyHint"),
     galleryMore: $("#galleryMore"), galleryMoreWrap: $("#galleryMoreWrap"), closeGallery: $("#closeGallery"),
     galleryRefresh: $("#galleryRefresh"), galleryOpenFolder: $("#galleryOpenFolder"),
-    gallerySelect: $("#gallerySelect"), gallerySelectBar: $("#gallerySelectBar"),
-    gallerySelectCount: $("#gallerySelectCount"), gallerySelectAll: $("#gallerySelectAll"),
+    gallerySelect: $("#gallerySelect"),
+    gallerySelectCount: $("#gallerySelectCount"),
     gallerySelectClear: $("#gallerySelectClear"), gallerySelectDone: $("#gallerySelectDone"),
-    galleryBatchBar: $("#galleryBatchBar"), galleryBatchCount: $("#galleryBatchCount"),
+    galleryBatchBar: $("#galleryBatchBar"),
     galleryBatchFavorite: $("#galleryBatchFavorite"), galleryBatchFavoriteLabel: $("#galleryBatchFavoriteLabel"),
     galleryBatchExport: $("#galleryBatchExport"), galleryBatchSend: $("#galleryBatchSend"),
     galleryBatchDelete: $("#galleryBatchDelete"),
@@ -7553,7 +7553,31 @@
     });
   }
 
+
+  // 最近作品条：鼠标滚轮上下 → 横向滚动（触控板横向手势也能用）
+  // 最近作品条：滚轮上下 → 横向滚动。挂在 document 上做委托，
+  // 这样缩略图反复重渲染也不用重新绑定。
+  function bindHistoryWheel() {
+    if (document.body.dataset.historyWheel === "1") return;
+    document.body.dataset.historyWheel = "1";
+    document.addEventListener("wheel", (event) => {
+      const strip = event.target instanceof Element ? event.target.closest(".history-strip") : null;
+      if (!strip || event.shiftKey) return;         // Shift+滚轮 保留原生纵向行为
+      const deltaX = event.deltaX;
+      const deltaY = event.deltaY;
+      const delta = Math.abs(deltaX) > Math.abs(deltaY) ? deltaX : deltaY;
+      if (!delta) return;
+      const max = strip.scrollWidth - strip.clientWidth;
+      if (max <= 0) return;
+      const next = Math.min(max, Math.max(0, strip.scrollLeft + delta));
+      if (next === strip.scrollLeft) return;
+      event.preventDefault();
+      strip.scrollLeft = next;
+    }, { passive: false });
+  }
+
   function renderHistory() {
+    bindHistoryWheel();
     // remove existing thumbs but keep the empty hint node
     $$(".thumb", el.history).forEach((node) => node.remove());
     el.historyCount.textContent = String(state.history.length);
@@ -7916,16 +7940,20 @@
       node.classList.toggle("is-on", on);
       node.setAttribute("aria-pressed", on ? "true" : "false");
     });
-    if (!el.gallerySelectBar) return;
     const count = galleryState.selected.size;
-    const pageSelected = galleryState.items.filter((item) => galleryState.selected.has(item.path)).length;
-    const pageAll = galleryState.items.length > 0 && pageSelected === galleryState.items.length;
-    el.gallerySelectCount.textContent = `已选 ${count} 张`;
-    el.galleryBatchCount.textContent = `已选 ${count} 张`;
-    el.gallerySelectAll.textContent = pageAll ? "取消本页" : "全选本页";
-    el.gallerySelectAll.disabled = galleryState.items.length === 0 || galleryState.batchBusy;
-    el.gallerySelectClear.disabled = count === 0 || galleryState.batchBusy;
-    el.gallerySelectDone.disabled = galleryState.batchBusy;
+    const selecting = count > 0;
+    // 一条工具栏：没选中显示总数，选中后同一位置换成「已选 N 张 清空 完成」
+    if (el.galleryCount) el.galleryCount.hidden = selecting;
+    if (el.gallerySelectCount) {
+      el.gallerySelectCount.hidden = !selecting;
+      el.gallerySelectCount.textContent = `已选 ${count} 张`;
+    }
+    [
+      ["#gallerySelectClear", el.gallerySelectClear],
+      ["#gallerySelectDone", el.gallerySelectDone]
+    ].forEach(([, node]) => { if (node) node.hidden = !selecting; });
+    if (el.gallerySelectClear) el.gallerySelectClear.disabled = count === 0 || galleryState.batchBusy;
+    if (el.gallerySelectDone) el.gallerySelectDone.disabled = galleryState.batchBusy;
     const busy = galleryState.batchBusy;
     const any = count > 0 && !busy;
     el.galleryBatchFavorite.disabled = !any;
@@ -7946,12 +7974,7 @@
         thumb.setAttribute("aria-label", galleryState.selecting ? "选择这张作品" : "查看大图");
       }
     });
-    el.gallerySelect.classList.toggle("is-on", galleryState.selecting);
-    el.gallerySelect.title = galleryState.selecting ? "退出多选" : "多选后可以批量收藏、导出、删除";
-    const label = $("#gallerySelectLabel");
-    if (label) label.textContent = galleryState.selecting ? "退出多选" : "多选";
-    el.gallerySelect.setAttribute("aria-label", el.gallerySelect.title);
-    el.gallerySelect.setAttribute("aria-pressed", galleryState.selecting ? "true" : "false");
+    if (el.gallerySelect) el.gallerySelect.setAttribute("aria-pressed", galleryState.selecting ? "true" : "false");
   }
 
   function setGallerySelecting(on) {
@@ -7959,8 +7982,7 @@
     galleryState.selecting = next;
     if (!next) galleryState.selected.clear();
     el.galleryDialog.classList.toggle("is-selecting", next);
-    el.gallerySelectBar.hidden = !next;
-    el.galleryBatchBar.hidden = !next;
+    if (el.galleryBatchBar) el.galleryBatchBar.hidden = !next;
     updateGallerySelectionUI();
   }
 
@@ -10697,6 +10719,8 @@
     el.loadParams.addEventListener("click", loadCurrentParams);
     if (el.zoomCurrent) el.zoomCurrent.addEventListener("click", openLightbox);
     el.clearHistory.addEventListener("click", clearHistory);
+    bindHistoryWheel();   // 委托绑定一次，历史为空时也要生效
+    bindHistoryWheel();   // 委托绑定一次，历史为空时也要生效
     el.galleryBtn.addEventListener("click", openGallery);
     el.openGallery.addEventListener("click", openGallery);
     el.closeGallery.addEventListener("click", () => { el.galleryDialog.open = false; });
@@ -10707,7 +10731,7 @@
     el.galleryOpenFolder.addEventListener("click", openGalleryFolder);
     el.galleryMore.addEventListener("click", () => loadGallery());
     el.gallerySelect.addEventListener("click", () => setGallerySelecting(!galleryState.selecting));
-    el.gallerySelectAll.addEventListener("click", toggleGallerySelectAllPage);
+    /* 全选本页已移除：常驻选择圈下没有「先选一批」的场景 */
     el.gallerySelectClear.addEventListener("click", () => {
       if (galleryState.batchBusy) return;
       galleryState.selected.clear();

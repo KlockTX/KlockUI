@@ -20,7 +20,7 @@
 <link rel="icon" href="/assets/favicon.svg" type="image/svg+xml">
 <link rel="alternate icon" href="/assets/klockui.ico" sizes="any">
 <link rel="stylesheet" href="/vendor/mdui.css">
-<link rel="stylesheet" href="/assets/app.css?v=20261120pick5">
+<link rel="stylesheet" href="/assets/app.css?v=20261120merge3">
 </head>
 <body data-mode="txt2img">
 <a class="skip-link" href="#promptCard">跳到画面描述</a>
@@ -1133,19 +1133,11 @@
       </mdui-segmented-button-group>
       <div class="gallery-tools">
         <span class="gallery-count" id="galleryCount">读取中…</span>
-        <mdui-button id="gallerySelect" variant="text" aria-label="多选作品" title="多选后可以批量收藏、导出、删除">
-          <span slot="icon" class="icon" data-icon="checks"></span><span id="gallerySelectLabel">多选</span>
-        </mdui-button>
+        <span class="gallery-select-count" id="gallerySelectCount" hidden>已选 0 张</span>
+        <button class="text-link gallery-sel-action" id="gallerySelectClear" type="button" hidden>清空</button>
+        <button class="text-link gallery-sel-action" id="gallerySelectDone" type="button" hidden>完成</button>
         <mdui-button-icon id="galleryRefresh" aria-label="刷新作品库" title="刷新"><span class="icon" data-icon="refresh"></span></mdui-button-icon>
         <mdui-button-icon id="galleryOpenFolder" aria-label="打开出图目录" title="打开出图目录"><span class="icon" data-icon="folder"></span></mdui-button-icon>
-      </div>
-    </div>
-    <div class="gallery-selectbar" id="gallerySelectBar" hidden>
-      <span class="gallery-select-count" id="gallerySelectCount">已选 0 张</span>
-      <div class="gallery-select-tools">
-        <button class="text-link" id="gallerySelectAll" type="button">全选本页</button>
-        <button class="text-link" id="gallerySelectClear" type="button">清空</button>
-        <button class="text-link" id="gallerySelectDone" type="button">完成</button>
       </div>
     </div>
     <div class="gallery-status" id="galleryStatus" hidden></div>
@@ -1159,7 +1151,6 @@
       <mdui-button id="galleryMore" variant="tonal">加载更多</mdui-button>
     </div>
     <div class="gallery-batchbar" id="galleryBatchBar" hidden>
-      <span class="gallery-batch-count" id="galleryBatchCount">已选 0 张</span>
       <div class="gallery-batch-actions">
         <button class="gallery-batch-action" id="galleryBatchFavorite" type="button"><span class="icon" data-icon="star"></span><span id="galleryBatchFavoriteLabel">收藏</span></button>
         <button class="gallery-batch-action" id="galleryBatchExport" type="button"><span class="icon" data-icon="download"></span><span>导出</span></button>
@@ -1172,11 +1163,11 @@
 </mdui-dialog>
 
 <script src="/vendor/mdui.global.js"></script>
-<script src="/assets/artists.js?v=20261120pick5"></script>
-<script src="/assets/characters.js?v=20261120pick5"></script>
-<script src="/assets/characters-normal.js?v=20261120pick5"></script>
-<script src="/assets/data.js?v=20261120pick5"></script>
-<script src="/assets/ui.js?v=20261120pick5"></script>
-<script src="/assets/app.js?v=20261120pick5"></script>
+<script src="/assets/artists.js?v=20261120merge3"></script>
+<script src="/assets/characters.js?v=20261120merge3"></script>
+<script src="/assets/characters-normal.js?v=20261120merge3"></script>
+<script src="/assets/data.js?v=20261120merge3"></script>
+<script src="/assets/ui.js?v=20261120merge3"></script>
+<script src="/assets/app.js?v=20261120merge3"></script>
 </body>
 </html>
