@@ -3703,9 +3703,25 @@ mdui-menu-item:not(:defined) {
 ::-webkit-scrollbar-thumb:hover { background: rgb(var(--mdui-color-outline) / .7); background-clip: padding-box; }
 ::-webkit-scrollbar-corner { background: transparent; }
 
-/* 会滚的卡片列表：给滚动条留槽，卡片不再被压住 */
+/* 会滚的卡片列表：用内边距给滚动条让位，不用 scrollbar-gutter。
+ * scrollbar-gutter: stable 会永久留出一条浅色空槽，看起来像一道竖线贴在卡片边，
+ * 比原生滚动条更难看。改成不预留、靠 padding 让内容自然避开。 */
 .lora-list, .saved-list, .pill-list, .tag-list, .gallery-grid {
-  scrollbar-gutter: stable;
-  padding-right: var(--sp-2);
+  padding-right: var(--sp-5);
 }
 .lora-list { padding-left: var(--sp-1); }
+
+/* 滚动条只在滚动时明显，静止时几乎看不见 */
+.lora-list::-webkit-scrollbar, .saved-list::-webkit-scrollbar,
+.gallery-grid::-webkit-scrollbar { width: 6px; }
+.lora-list::-webkit-scrollbar-thumb, .saved-list::-webkit-scrollbar-thumb,
+.gallery-grid::-webkit-scrollbar-thumb {
+  background: rgb(var(--mdui-color-outline) / .28);
+  border: 0;
+  background-clip: border-box;
+}
+.lora-list:hover::-webkit-scrollbar-thumb,
+.saved-list:hover::-webkit-scrollbar-thumb,
+.gallery-grid:hover::-webkit-scrollbar-thumb {
+  background: rgb(var(--mdui-color-outline) / .55);
+}
