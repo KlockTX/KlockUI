@@ -10999,7 +10999,9 @@
     el.again.addEventListener("click", again);
     el.toImg2img.addEventListener("click", sendCurrentToImg2img);
     el.loadParams.addEventListener("click", loadCurrentParams);
-    if (el.zoomCurrent) el.zoomCurrent.addEventListener("click", openLightbox);
+    // 画布顶部的「放大」：直接进无损放大工作台（不再绕道灯箱）。
+    // openUpscale 无参会自动取画布当前作品。
+    if (el.zoomCurrent) el.zoomCurrent.addEventListener("click", () => openUpscale());
     el.clearHistory.addEventListener("click", clearHistory);
     bindHistoryWheel();   // 委托绑定一次，历史为空时也要生效
     bindHistoryWheel();   // 委托绑定一次，历史为空时也要生效
