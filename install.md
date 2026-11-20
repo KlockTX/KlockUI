@@ -309,7 +309,7 @@ anima_*          → anima     zimage_* / z_image_* → zimage
 
 用这个话术（**基于实测，不要凭空问**）：
 
-> 我在 `D://AI//ComfyUI//models` 扫到了：Krea 2 全套（底模 + 编码器 + VAE）、
+> 我在 `<用户给的 ComfyUI 路径>/models` 扫到了：Krea 2 全套（底模 + 编码器 + VAE）、
 > Anima 底模但缺编码器、12 支 LoRA（8 支 Krea / 4 支 Anima）、
 > 2 个超分模型（UltraSharp 4x / Anime6B 4x）。
 > 要我补装缺的 Anima 编码器吗？还是只用 Krea？超分够用还是要加写实基线？

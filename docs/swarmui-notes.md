@@ -178,5 +178,5 @@ KlockUI 是单后端写死 `127.0.0.1:8188`。
 ## 附：一手资料
 
 - README：https://github.com/mcmonkeyprojects/SwarmUI
-- 设计动机：`docs/Motivations.md`（为什么 C#、为什么选 ComfyUI、为什么自研前端）
-- 使用文档：`docs/Basic Usage.md`（安装向导、参数分组、Grid Generator、多后端）
+- 设计动机（SwarmUI 仓库内的 `docs/Motivations.md`）：为什么 C#、为什么选 ComfyUI、为什么自研前端
+- 使用文档（SwarmUI 仓库内的 `docs/Basic Usage.md`）：安装向导、参数分组、Grid Generator、多后端
