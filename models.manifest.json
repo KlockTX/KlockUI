@@ -269,6 +269,28 @@
       "sha256": "f872d837d3c90ed2e05227bed711af5671a6fd1c9f7d7e91c911a61f155e99da",
       "license": "BSD-3-Clause",
       "note": "官方动漫超分，4x，只有 17MB 最省显存。线条偏干净但锐度不如 AnimeSharp。path 是完整 URL（GitHub 官方 release），HF 上无同款。"
+    },
+    {
+      "id": "upscale-seedvr2-dit3b",
+      "arch": "diffusion-upscaler",
+      "file": "seedvr2_ema_3b-Q4_K_M.gguf",
+      "dir": "../ComfyUI/models/SEEDVR2",
+      "path": "cmeka/SeedVR2-GGUF/resolve/main/seedvr2_ema_3b-Q4_K_M.gguf",
+      "size": 1995344224,
+      "sha256": "e665e3909de1a8c88a69c609bca9d43ff5a134647face2ce4497640cc3597f0e",
+      "license": "Apache-2.0",
+      "note": "SeedVR2 3B 一步扩散超分，GGUF Q4 量化。8GB 显存实测：BlockSwap 32 + VAE tiling 下 1024x1536→2048x3072 约 37 秒，需配 ema_vae_fp16.safetensors。"
+    },
+    {
+      "id": "upscale-seedvr2-vae",
+      "arch": "diffusion-upscaler",
+      "file": "ema_vae_fp16.safetensors",
+      "dir": "../ComfyUI/models/SEEDVR2",
+      "path": "numz/SeedVR2_comfyUI/resolve/main/ema_vae_fp16.safetensors",
+      "size": 501324814,
+      "sha256": "20678548f420d98d26f11442d3528f8b8c94e57ee046ef93dbb7633da8612ca1",
+      "license": "Apache-2.0",
+      "note": "SeedVR2 配套 VAE，必须先装自定义节点 ComfyUI-SeedVR2_VideoUpscaler 才有对应节点。"
     }
   ],
   "arch_requires": {

@@ -46,6 +46,7 @@ DEV_ONLY = {
     ".gitattributes",
     "docs/frontend.md",       # 前端改动记录，纯开发过程
     "docs/swarmui-notes.md",  # 竞品调研
+    "docs/seedvr2-research.md",  # 低显存扩散超分调研
 }
 # 整个目录排除：scripts/ 里是打包工具和开发自检，运行时一个都用不到。
 DEV_ONLY_DIRS = ("scripts/",)

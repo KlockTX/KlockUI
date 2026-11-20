@@ -482,8 +482,19 @@ anima_*          → anima     zimage_* / z_image_* → zimage
 四个的区别只在锐度倾向——超分模型不造新细节，只放大和锐化；
 要真补纹理得靠 Hires 二采的低噪重绘，模型只是像素那一环。
 
-不建议上 HAT / SwinIR / SUPIR 这类：transformer 与扩散方案在 8GB 卡上太慢，
-而 UltraSharp / AnimeSharp 的差距肉眼看不出值得那个时间。
+**关于扩散超分（会真补细节，不只是锐化）**：
+
+8GB 卡**可以跑**，用 SeedVR2 3B 的 GGUF Q4 量化版（1.86GB）。实测本机
+1024×1536 → 2048×3072 只要 36.7 秒，靠 BlockSwap 32 + VAE 分块把权重卸到 CPU，
+不改 torch。它保特征（缩回原图平均差 3.54/255），细节比插值多 24%，
+适合"出完图要放大但人物不能变"的场景。
+
+但要装 ComfyUI 自定义节点 `numz/ComfyUI-SeedVR2_VideoUpscaler` 和 2.3GB 模型，
+不是零成本。若只是想让图更大，上面的 ESRGAN 够用；要补细节且不改人物，才上 SeedVR2。
+安装与参数见 [`docs/seedvr2-research.md`](docs/seedvr2-research.md)。
+
+不推荐 HAT / SwinIR（非扩散且慢）和 SUPIR 全精度 FP16（要 24GB）——
+但注意 SUPIR 的 fp8 + 分块采样在 8GB 也能跑，只是远慢于 SeedVR2，别一概而论。
 
 用户的选择决定 P2 下载清单：**已存在且校验通过的文件直接跳过**，只下缺的。
 
