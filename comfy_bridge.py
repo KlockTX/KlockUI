@@ -83,6 +83,26 @@ ANIMA_DIR = DIFF_DIR   # 兼容旧引用
 SDXL_DIR = CKPT_DIR    # 兼容旧引用
 LORA_DIR = os.environ.get("KLOCK_LORA_DIR") or os.path.join(MODELS_ROOT, "loras")
 UPSCALE_DIR = os.environ.get("KLOCK_UPSCALE_DIR") or os.path.join(MODELS_ROOT, "upscale_models")
+
+# SeedVR2 一步扩散超分：与 UpscaleModelLoader 不同，它有自己的 DiT + VAE 节点，
+# 放在 ComfyUI 的 models/SEEDVR2/ 下。低显存靠 BlockSwap 32 把权重卸到 CPU。
+def _detect_seedvr2_dir():
+    env = os.environ.get("KLOCK_SEEDVR2_DIR")
+    if env:
+        return os.path.abspath(os.path.expanduser(env))
+    here = os.path.dirname(os.path.abspath(__file__))
+    # 统一模型库（D:/AI/models）和 ComfyUI 自带目录（D:/AI/ComfyUI/models）都要试。
+    # SeedVR2 是 ComfyUI 自定义节点，模型按节点约定放在 ComfyUI/models/SEEDVR2。
+    for parent in (os.path.dirname(here), here):
+        candidate = os.path.join(parent, "ComfyUI", "models", "SEEDVR2")
+        if os.path.isdir(candidate):
+            return candidate
+    return os.path.join(os.path.dirname(here), "ComfyUI", "models", "SEEDVR2")
+
+
+SEEDVR2_DIR = _detect_seedvr2_dir()
+SEEDVR2_DIT = "seedvr2_ema_3b-Q4_K_M.gguf"
+SEEDVR2_VAE = "ema_vae_fp16.safetensors"
 TE_DIR = os.environ.get("KLOCK_TE_DIR") or os.path.join(MODELS_ROOT, "text_encoders")
 VAE_DIR = os.environ.get("KLOCK_VAE_DIR") or os.path.join(MODELS_ROOT, "vae")
 
@@ -1911,6 +1931,50 @@ def _upscale_with_model(blob, scale, model_name):
     return images[0]
 
 
+def upscale_seedvr2(blob, scale):
+    """SeedVR2 一步扩散超分：补细节但不重绘人物。
+
+    与 ESRGAN 不同，它按「短边目标像素」出图，所以 scale 就是真实的放大倍数。
+    8GB 显存靠三件事：BlockSwap 32（全部 transformer 块卸 CPU）、
+    swap_io_components、VAE 编解码分块。实测 2x / 1024x1536 约 37 秒。
+    """
+    if Image is None:
+        raise EngineError("Pillow 不可用，无法读取待放大的图")
+    if not os.path.isfile(os.path.join(SEEDVR2_DIR, SEEDVR2_DIT)):
+        raise EngineError("SeedVR2 模型未安装：缺少 " + SEEDVR2_DIT)
+    if not os.path.isfile(os.path.join(SEEDVR2_DIR, SEEDVR2_VAE)):
+        raise EngineError("SeedVR2 模型未安装：缺少 " + SEEDVR2_VAE)
+
+    src = Image.open(io.BytesIO(blob))
+    src.load()
+    scale = max(1.5, min(4.0, float(scale or 2)))
+    # 短边目标像素；对齐到 8 的倍数，避免半像素
+    short_edge = int(round(min(src.size) * scale / 8)) * 8
+    uploaded = _upload_image(base64.b64encode(blob).decode("ascii"), "klock_seedvr2.png")
+    graph = {
+        "1": {"class_type": "LoadImage", "inputs": {"image": uploaded}},
+        "2": {"class_type": "SeedVR2LoadDiTModel", "inputs": {
+            "model": SEEDVR2_DIT, "device": "cuda:0", "offload_device": "cpu",
+            "blocks_to_swap": 32, "swap_io_components": True}},
+        "3": {"class_type": "SeedVR2LoadVAEModel", "inputs": {
+            "model": SEEDVR2_VAE, "device": "cuda:0", "offload_device": "cpu",
+            "encode_tiled": True, "encode_tile_size": 512, "encode_tile_overlap": 64,
+            "decode_tiled": True, "decode_tile_size": 512, "decode_tile_overlap": 64}},
+        "4": {"class_type": "SeedVR2VideoUpscaler", "inputs": {
+            "image": ["1", 0], "dit": ["2", 0], "vae": ["3", 0],
+            "seed": random.randint(0, 2 ** 31 - 1),
+            "resolution": short_edge, "max_resolution": 0,
+            "batch_size": 1, "uniform_batch_size": False, "color_correction": "lab"}},
+        "5": {"class_type": "SaveImage", "inputs": {
+            "images": ["4", 0], "filename_prefix": "klock/seedvr2"}},
+    }
+    log.info("seedvr2 upscale %sx%s -> short edge %d", src.width, src.height, short_edge)
+    images = _submit_and_collect(graph, timeout=900, expected_steps=1)
+    if not images:
+        raise EngineError("SeedVR2 放大没有产出图像")
+    return images[0]
+
+
 def upscale_image(blob, scale, upscaler):
     """放大：指定了本地超分模型就走 AI，否则退回 PIL 插值。
 
@@ -1921,6 +1985,8 @@ def upscale_image(blob, scale, upscaler):
         raise EngineError("Pillow 不可用，无法放大")
     name = str(upscaler or "")
     scale = max(1.0, min(8.0, float(scale or 2)))
+    if name.lower() == "seedvr2":
+        return upscale_seedvr2(blob, scale)
     if name and os.path.isfile(os.path.join(UPSCALE_DIR, name)):
         return _upscale_with_model(blob, scale, name)
     image = Image.open(io.BytesIO(blob))

@@ -504,6 +504,7 @@
     loraOnlyActive: false,
     promptConfirmPending: false,
     engineOptionsLoaded: false,
+    seedvr2Ready: false,
     engineOptionsLoading: false,
     statusSeq: 0,
     pollTimer: null,
@@ -1843,6 +1844,8 @@
         .map((name) => String(name || "").trim())
         .filter(Boolean);
       state.kreaReady = Boolean(krea.ready);
+      const seedvr2 = data.seedvr2 && typeof data.seedvr2 === "object" ? data.seedvr2 : {};
+      state.seedvr2Ready = Boolean(seedvr2.ready);
       state.catalogLoaded = true;
       renderVaeOptions();
       return true;
@@ -1971,6 +1974,9 @@
   // 算法按钮是按引擎列表动态重建的，mdui 的 group.value 不一定跟着更新，
   // 所以自己记一份选中值，取值时优先用它（声明放在使用之前，避免 TDZ）。
   let upscaleAlgoValue = "Lanczos";
+  // SeedVR2 按「短边目标像素」出图，与固定 4x 的 ESRGAN 不同：倍数选择器对它有效。
+  // 模型未安装时不显示这个选项。
+  const SEEDVR2_ALGO = "SeedVR2";
 
   // 放大对话框只留 AI 超分模型：插值（Lanczos/Bicubic/Nearest）放大后照样糊，
   // 留着只会让人以为换了算法就清晰了。一个模型都没装时才退回插值兜底。
@@ -1991,16 +1997,19 @@
   // 直接换成"原生 4x"标签，免得选了 1.5x 却出 4x，让人以为设置没生效。
   // 注意：mdui 组件的 :host{display:block} 会盖掉 UA 的 [hidden]，所以用 class 关。
   function syncUpscaleScaleMode() {
-    const native = upscaleNativeScale(upscaleAlgoValue);
+    const isSeedVR2 = upscaleAlgoValue === SEEDVR2_ALGO;
+    const native = isSeedVR2 ? 0 : upscaleNativeScale(upscaleAlgoValue);
     el.upscaleScale?.classList.toggle("is-off", Boolean(native));
     if (el.upscaleNativeHint) {
       el.upscaleNativeHint.classList.toggle("is-off", !native);
       el.upscaleNativeHint.textContent = native ? `原生 ${native}x` : "";
     }
     if (el.upscaleHint) {
-      el.upscaleHint.textContent = native
-        ? `${shortUpscaler(upscaleAlgoValue)} 固定 ${native}× 出图：不再缩回小倍数，换算法只是换风格，尺寸由模型决定。`
-        : "未检测到超分模型，暂时只能用插值放大（放大后仍然偏糊）。把 4x 模型放进 models\\upscale_models 后刷新即可。";
+      el.upscaleHint.textContent = isSeedVR2
+        ? "SeedVR2 是扩散放大：按所选倍数出图，会补细节但保持人物和构图不变。8GB 显存约 37 秒（2x / 1024×1536）。"
+        : native
+          ? `${shortUpscaler(upscaleAlgoValue)} 固定 ${native}× 出图：不再缩回小倍数，换算法只是换风格，尺寸由模型决定。`
+          : "未检测到超分模型，暂时只能用插值放大（放大后仍然偏糊）。把 4x 模型放进 models\\upscale_models 后刷新即可。";
     }
   }
 
@@ -2010,9 +2019,12 @@
     if (!el.upscaleAlgo) return;
     const all = state.upscalerOptions.length ? state.upscalerOptions : UPSCALER_FALLBACKS;
     const models = nativeUpscalerOptions();
-    const list = models.length
+    let list = models.length
       ? models
       : all.filter((item) => !/^latent/i.test(String(item.value || "")));
+    if (state.seedvr2Ready) {
+      list = [{ value: SEEDVR2_ALGO, label: "SeedVR2 · 扩散放大（保人物）", native: false }, ...list];
+    }
     if (!list.length) return;
     const current = String(el.upscaleAlgo.value || "");
     const frag = document.createDocumentFragment();
@@ -8872,9 +8884,10 @@
     // 优先读控件当前值（重建按钮后我们自己写过 value，比内存变量更跟手）。
     const upscaler = String(el.upscaleAlgo?.value || upscaleAlgoValue || "Lanczos");
     const native = upscaleNativeScale(upscaler);
+    const isSeedVR2 = upscaler === SEEDVR2_ALGO;
     return {
-      // 超分模型一律按原生倍数出图，这里传原生倍数；插值兜底时才用用户选的倍数。
-      scale: native || Number(el.upscaleScale.value) || 2,
+      // SeedVR2 按目标短边出图，倍数选择器有效；ESRGAN 固定 4x，只传原生倍数。
+      scale: (native && !isSeedVR2) ? native : (Number(el.upscaleScale.value) || 2),
       upscaler
     };
   }

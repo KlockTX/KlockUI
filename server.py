@@ -5348,6 +5348,16 @@ def _engine_catalog():
             "modules": [item["file"] for item in (moss_te, moss_vae) if item],
             "ready": bool(moss_te and moss_vae),
         },
+        # SeedVR2 一步扩散超分：模型和 ComfyUI 节点都在才算可用。
+        # 前端据此决定放大弹窗里是否显示「SeedVR2」这个算法。
+        "seedvr2": {
+            "dit": comfy_bridge.SEEDVR2_DIT,
+            "vae": comfy_bridge.SEEDVR2_VAE,
+            "ready": (
+                os.path.isfile(os.path.join(comfy_bridge.SEEDVR2_DIR, comfy_bridge.SEEDVR2_DIT))
+                and os.path.isfile(os.path.join(comfy_bridge.SEEDVR2_DIR, comfy_bridge.SEEDVR2_VAE))
+            ),
+        },
         "generated_at": int(now),
     }
     with _ENGINE_CATALOG_LOCK:
@@ -6368,7 +6378,8 @@ class Handler(BaseHTTPRequestHandler):
         # 现在插值三种 + 本地超分模型都放行，最终由 comfy_bridge.upscale_image
         # 自己判断（文件存在就走 UpscaleModelLoader，否则退回 PIL）。
         _interp = ("Lanczos", "Nearest", "Bicubic")
-        if upscaler not in _interp and upscaler not in comfy_bridge._upscale_model_names():
+        if (upscaler != "SeedVR2" and upscaler not in _interp
+                and upscaler not in comfy_bridge._upscale_model_names()):
             upscaler = "Lanczos"
         save = bool(data.get("save"))
         rel = str(data.get("path") or "").strip()

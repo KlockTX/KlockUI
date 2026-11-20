@@ -127,16 +127,40 @@ SeedVR2 的价值在**不改人物**的场景：
 
 ---
 
-## 是否接入 KlockUI
+## 已接入 KlockUI（2026-11-21）
 
-**尚未接入**。要接的话有两处改法：
+接在**放大弹窗的「算法」选择区**，不是新开一个按钮——用户本来就在那里选
+AnimeSharp / UltraSharp / Remacri / Anime6B，SeedVR2 作为第一种算法排在最前面。
 
-| 方案 | 改动 | 体验 |
-|---|---|---|
-| A. 作品库加「扩散放大」按钮 | 前端按钮 → 新接口 → 调 ComfyUI `/prompt` 跑 SeedVR2 工作流 | 对已有图放大，最自然 |
-| B. Hires 里加「SeedVR2」档 | `comfy_bridge.build_graph` 加分支 | 出图前放大，但会拉长单张耗时到 40s+ |
+改动：
 
-倾向 A：SeedVR2 是"事后精修"，放在作品库比塞进出图流程合理。
+| 层 | 改了什么 |
+|---|---|
+| 前端 | `renderUpscaleAlgoOptions()` 在模型可用时插入 `SeedVR2` 选项；倍数选择器对它有效（ESRGAN 固定 4x 才隐藏倍数） |
+| 前端 | `loadEngineCatalog()` 读 `data.seedvr2.ready` → `state.seedvr2Ready` |
+| 后端 | `/local/engine/catalog` 新增 `seedvr2` 字段，探测 DiT + VAE 两个文件是否都在 |
+| 后端 | `/local/postprocess` 白名单放行 `SeedVR2` |
+| 桥接 | `comfy_bridge.upscale_seedvr2()`：LoadImage → SeedVR2LoadDiTModel + LoadVAEModel → VideoUpscaler → SaveImage，走已有的 `_submit_and_collect` |
+| 路径 | `SEEDVR2_DIR` 自动探测：统一模型库和 `ComfyUI/models/SEEDVR2` 都试，可用 `KLOCK_SEEDVR2_DIR` 覆盖 |
+
+**端到端实测**（KlockUI → ComfyUI → 出图）：
+
+```
+catalog.seedvr2.ready = true
+POST /local/postprocess {path, scale:2, upscaler:"SeedVR2"}
+→ 39.5s，返回标准放大结果（image/width/height/preview/mode）
+```
+
+浏览器确认算法按钮顺序：`SeedVR2 / AnimeSharp / UltraSharp / Remacri / Anime6B`。
+
+### 踩坑（接入时）
+
+1. `seed: -1` 被节点拒绝（最小 0），改成随机正整数
+2. `uniform_batch_size` 是必填字段，漏了校验失败
+3. `SEEDVR2_DIR` 最初按 `UPSCALE_DIR` 的父目录推，那是统一模型库 `D:/AI/models`，
+   而模型实际在 `D:/AI/ComfyUI/models/SEEDVR2` —— 必须单独探测
+4. `/local/postprocess` 的 `path` 必须带输出子目录前缀
+   （`txt2img-images/xxx.png`），裸文件名 404
 
 ---
 
