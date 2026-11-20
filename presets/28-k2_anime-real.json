@@ -3,7 +3,7 @@
   "name": "k2_anime-real",
   "model": "krea2_noct_v4_int8_convrot.safetensors",
   "arch": "krea",
-  "prompt": "an anime girl drawn with clean lineart and flat cel shading, pink twintails, school uniform cardigan, composited into a real photograph of a busy city street, photorealistic background with bokeh, f/1.8, warm afternoon sunlight matching on both, documentary photo style",
+  "prompt": "Yoneyama Mai style, hatsune miku with long teal twin tails, dramatic rim light, strong silhouette, dynamic pose looking back over her shoulder, crisp contour lines, composited into a real photograph of a busy city street at sunset, photorealistic background, bokeh, 35mm photo, warm sunlight matching on both",
   "negative": "",
   "quality": "standard",
   "size": {
@@ -21,16 +21,12 @@
   "easyCache": true,
   "loras": [
     {
+      "name": "krea2_yoneyama_mai",
+      "weight": 0.6
+    },
+    {
       "name": "krea2_bold-inked-anime-realism",
-      "weight": 0.9
-    },
-    {
-      "name": "kieed_style_krea2_v2",
-      "weight": 0.35
-    },
-    {
-      "name": "kazutake-hazano_k2_v1",
-      "weight": 0.3
+      "weight": 0.6
     },
     {
       "name": "krea2_rim_light",
@@ -41,5 +37,5 @@
       "weight": 0.3
     }
   ],
-  "note": "动画人物 + 真实照片背景。关键在提示词：先用 clean lineart / flat cel shading 把人物钉成动画，再用 real photograph / photorealistic background / bokeh / f1.8 把背景钉成照片，最后用 sunlight matching on both 让光统一 —— 两边风格不分开描述，模型就会整张拉成一边。LoRA 只做辅助：bold-inked 0.9 打底，kieed 与 kazutake 各 0.3 左右点缀，rim_light 0.4 压逆光边缘，detail_slider 0.3 补细节。换角色和场景只改提示词前两段，后半段（照片 + 光照）不要动。"
+  "note": "米山舞风的 Miku + 真实街景。米山舞 LoRA 默认 0.9 会把写实场景拉平成插画，这里压到 0.6，和 bold-inked 0.6 对半，既留住逆光轮廓和飘逸头发，又保住背景的照片感；实测 0.8 时招牌与建筑开始失真。提示词三段不能拆：Yoneyama Mai style 加角色、dramatic rim light 和 dynamic pose 给画风、real photograph / bokeh / 35mm 钉住背景，最后 sunlight matching on both 统一光照。换角色改第二段，后两段别动。"
 }
