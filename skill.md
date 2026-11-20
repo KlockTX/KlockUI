@@ -524,6 +524,20 @@ LoRA 归属看名字前缀：`krea*`→krea、`moss_*`→moss、`anima_*`→anim
 
 缺哪个报给用户，按 `models.manifest.json` 的 `arch_requires` 补，**已存在的不动**。
 
+**提示词转写模型（可选，最容易和 CLIP 编码器搞混）**：
+
+- 它不是底模的编码器，是独立的本地 LLM：`Qwen3.5-4B abliterated` GGUF（2.7GB），
+  走 llama.cpp **CPU** 推理，端口 7865，**不占 ComfyUI 显存**。
+- 扫 `<ComfyUI>/models/prompt-llm/*.gguf` 和 `<父目录>/llama-engine/llama/llama-server.exe`。
+  两者都有才可用；只有模型没有运行时，或反过来，按钮都点不动。
+- 文件名不必叫 `prompt-llm.gguf`：KlockUI 会自动发现该目录**唯一的** .gguf
+  （历史默认名早就废弃了）。多个 gguf 才需要 `KLOCK_PROMPT_LLM_MODEL` 显式指定。
+- 下载项在 `models.manifest.json` 的 `arch_requires["prompt-llm"]`：
+  GGUF 来自 `mradermacher/Huihui-Qwen3.5-4B-abliterated-GGUF`，
+  运行时用 **CPU 版** `llama-b11877-bin-win-cpu-x64.zip`（24MB），别下 CUDA 版。
+- 验收别只看 `ready`：模型按需启动、空闲 600 秒退出。
+  查 `/api/prompt/status` 的 `detail` 不含"找不到提示词模型"即路径正确。
+
 ### 11.4 第三步：生成配置草案
 
 每个扫到的架构一份 JSON preset，字段参照 `presets/*.json`。参数从 `MODEL_PROFILES[arch]`

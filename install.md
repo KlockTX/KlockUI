@@ -377,6 +377,69 @@ description: ...
 
 ---
 
+## 4.5 P1.5 · 提示词转写模型（可选，中文直出英文）
+
+> 这一段装的是**提示词转写**用的本地 LLM，不是底模的 CLIP 编码器，别搞混。
+> 它让"转写预览"按钮可用：中文描述 → 英文提示词，**走 llama.cpp CPU，不占 ComfyUI 显存**。
+
+### 4.5.1 先问用户要不要装
+
+`models.manifest.json` 的 `ask.prompt_llm_question` 有现成话术。**不装也能正常出图**，
+只是要自己写英文提示词、"转写预览"按钮不可用。
+
+### 4.5.2 装两样东西
+
+清单里 `arch_requires["prompt-llm"]` 列了两项，缺一不可：
+
+**① 运行时**（Windows x64 CPU 版 llama.cpp，24MB）
+
+```bash
+# 下载（注意：GitHub release 不走 hf-mirror，直接用这个 URL）
+https://github.com/ggml-org/llama.cpp/releases/download/b11877/llama-b11877-bin-win-cpu-x64.zip
+
+# 解压后摆成这个结构
+<父目录>/llama-engine/llama/llama-server.exe
+```
+
+用 **CPU 版**是刻意设计：转写不能抢 ComfyUI 的显存。别下 CUDA 版（272MB）。
+
+**② 模型**（GGUF，2.7GB）
+
+```bash
+# 放到
+<ComfyUI>/models/prompt-llm/Huihui-Qwen3.5-4B-abliterated.Q4_K_M.gguf
+
+# 下载源（mirrors + path）
+https://hf-mirror.com/mradermacher/Huihui-Qwen3.5-4B-abliterated-GGUF/resolve/main/Huihui-Qwen3.5-4B-abliterated.Q4_K_M.gguf
+```
+
+按 `models.manifest.json` 的 `size` + `sha256` 校验。本机实测值与官方 LFS oid 一致。
+
+### 4.5.3 文件名不用改
+
+KlockUI 会自动发现 `prompt-llm/` 下**唯一的 .gguf**——历史默认名 `prompt-llm.gguf`
+早就不用了。目录里放一个 gguf 即可让服务找到；多个 gguf 时必须用
+`KLOCK_PROMPT_LLM_MODEL` 显式指定，agent 不要替用户猜。
+
+### 4.5.4 验收
+
+启动 KlockUI 后：
+
+```bash
+curl -s http://127.0.0.1:7861/api/prompt/status | python3 -m json.tool
+```
+
+**别只看 `ready`**：模型是按需启动的（点转写才拉起，约 10–30 秒）、空闲 600 秒自动退出，
+所以刚启动服务时 `ready: false` 是正常现象。正确判据：
+
+- `detail` **不含**"找不到提示词模型" / "找不到 llama-server.exe" → 安装路径正确
+- 想要 `ready: true`，先在界面点一次"转写预览"触发加载，再查状态
+
+本机 gguf 可被自动发现：`KLOCK_PROMPT_LLM_MODEL` 未设置时，
+KlockUI 会扫 `prompt-llm/` 目录下唯一的 `.gguf`。有多个 gguf 时必须显式指定路径。
+
+---
+
 ## 5. P2 · 模型（全部可选，按第 2 节的回答装）
 
 清单：`models.manifest.json`。先按用户选择的架构查 `arch_requires`，只下这些 id。
@@ -575,6 +638,7 @@ python -c "import comfy_bridge as c; print(c.MODELS_ROOT, c.DIFF_DIR)"
 - [ ] 6.4 返回 `done`，产出 PNG
 - [ ] P0.5 扫描报告已产出（扫到的架构/缺的模块/LoRA 数量），并入环境报告
 - [ ] 每个扫到的架构都已导入配置草案，或用户明确说"先不装模型"
+- [ ] 提示词转写（可选）：装了则 `/api/prompt/status` 的 detail 无"找不到"错误；跳过则在报告注明"
 - [ ] skill.md 已复制为 `<技能目录>/klockui/SKILL.md`（用户拒绝则注明）
 - [ ] 环境报告已填写
 - [ ] 未改 ComfyUI 源码、未用系统 Python、**未删除或覆盖用户已有的模型/LoRA**

@@ -1,7 +1,7 @@
 {
   "$schema": "klockui-models/2",
   "verified_at": "2026-11-18",
-  "note": "KlockUI 不附带任何模型。本清单只描述『哪个架构需要哪几个文件、去哪下、多大、什么许可』。安装代理应先用第 0 节的询问流程确定用户要哪些架构，只下对应条目。超分模型（upscaler）是通用放大能力，不属于任何底模架构，可选装。",
+  "note": "KlockUI 不附带任何模型。本清单只描述『哪个架构需要哪几个文件、去哪下、多大、什么许可』。安装代理应先用第 0 节的询问流程确定用户要哪些架构，只下对应条目。超分模型（upscaler）是通用放大能力，不属于任何底模架构，可选装。超分模型（upscaler）与提示词转写模型（prompt-llm）是通用能力，可选装。",
   "mirrors": {
     "cn": "https://hf-mirror.com",
     "global": "https://huggingface.co"
@@ -53,6 +53,17 @@
         }
       ],
       "rule": "超分是通用能力，不属于任何架构，也不要求全装。至少一个都没有时，高清档只能用插值放大。"
+    },
+    "prompt_llm_question": {
+      "question": "要不要装本地提示词转写模型（中文描述 → 英文提示词，CPU 跑不占显存，约 2.7GB）？",
+      "options": [
+        {
+          "id": "prompt-llm-qwen35",
+          "label": "Qwen3.5-4B abliterated Q4_K_M（约 2.7GB，推荐）",
+          "note": "中文直出，按需启动、空闲 10 分钟自动退出。不装则转写按钮不可用，需自己写英文提示词。"
+        }
+      ],
+      "rule": "转写是可选能力，不影响出图。它走 llama.cpp CPU，不占 ComfyUI 显存；8GB 内存机器也能跑，但会慢一些。"
     }
   },
   "assets": [
@@ -198,6 +209,28 @@
       "sha256": "",
       "license": "MIT / Apache-2.0",
       "note": "写实基线超分，4x 原生倍数。Comfy-Org 官方重打包 safetensors；清单未记录 sha256，按 size 精确校验。"
+    },
+    {
+      "id": "prompt-llm-qwen35",
+      "arch": "prompt-llm",
+      "file": "Huihui-Qwen3.5-4B-abliterated.Q4_K_M.gguf",
+      "dir": "prompt-llm",
+      "path": "mradermacher/Huihui-Qwen3.5-4B-abliterated-GGUF/resolve/main/Huihui-Qwen3.5-4B-abliterated.Q4_K_M.gguf",
+      "size": 2707514688,
+      "sha256": "423f10b6ec2d99c3378143d7cd3b80eb4887b3ed92103103ac59173b404f4f7c",
+      "license": "Apache-2.0",
+      "note": "提示词转写用的本地 LLM，llama.cpp CPU 推理，按需启动。放 models/prompt-llm/；文件名不必改，KlockUI 会自动发现该目录唯一的 .gguf。"
+    },
+    {
+      "id": "prompt-llm-runtime",
+      "arch": "prompt-llm",
+      "file": "llama-b11877-bin-win-cpu-x64.zip",
+      "dir": "llama-engine",
+      "path": "github-release:ggml-org/llama.cpp/b11877/llama-b11877-bin-win-cpu-x64.zip",
+      "size": 24216222,
+      "sha256": "",
+      "license": "MIT",
+      "note": "Windows x64 CPU 版 llama.cpp 运行时（24MB）。解压后把 llama/ 放到 <父目录>/llama-engine/llama/，内含 llama-server.exe。用 CPU 版是刻意的：转写不占 ComfyUI 显存。GitHub release 不走 mirrors，直接下载 browser_download_url。"
     }
   ],
   "arch_requires": {
@@ -224,6 +257,10 @@
     "upscaler": [
       "upscale-ultrasharp",
       "upscale-real-esrgan"
+    ],
+    "prompt-llm": [
+      "prompt-llm-runtime",
+      "prompt-llm-qwen35"
     ]
   }
 }

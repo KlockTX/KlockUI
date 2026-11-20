@@ -163,6 +163,32 @@ PROMPT_LLM = {
     "log": "llama-prompt-llm",
     "no_think": True,
 }
+def _discover_prompt_llm_model():
+    """默认文件名不存在时，扫 prompt-llm/ 下唯一的 .gguf 顶上。
+
+    官方发行包里的模型叫 Huihui-Qwen3.5-4B-abliterated.Q4_K_M.gguf，
+    而历史默认路径写的是 prompt-llm.gguf —— 不自动发现的话转写开箱即坏。
+    用户通过 KLOCK_PROMPT_LLM_MODEL 显式指定时永远优先，不覆盖。
+    """
+    model = PROMPT_LLM.get("model") or ""
+    if os.path.isfile(model):
+        return model
+    if os.environ.get("KLOCK_PROMPT_LLM_MODEL"):
+        return model  # 显式指定就是用户说了算，缺失就报缺失，别偷偷换
+    folder = os.path.dirname(model)
+    if not folder or not os.path.isdir(folder):
+        return model
+    found = sorted(
+        os.path.join(folder, name)
+        for name in os.listdir(folder)
+        if name.lower().endswith(".gguf") and os.path.isfile(os.path.join(folder, name))
+    )
+    if len(found) == 1:
+        return found[0]
+    return model  # 0 个还是坏；多个不猜，交给用户指定
+
+
+PROMPT_LLM["model"] = _discover_prompt_llm_model()
 PROMPT_LLM["url"] = "http://127.0.0.1:%d" % PROMPT_LLM["port"]
 PROMPT_LLM["err_log"] = os.path.join(LLAMA_ENGINE_DIR, PROMPT_LLM["log"] + ".err.log")
 PROMPT_LLM["last_error"] = ""
