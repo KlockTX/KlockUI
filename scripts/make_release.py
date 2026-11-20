@@ -46,8 +46,9 @@ DEV_ONLY = {
     ".gitattributes",
     "docs/frontend.md",       # 前端改动记录，纯开发过程
     "docs/swarmui-notes.md",  # 竞品调研
-    "scripts/smoke.py",       # 开发自检，不是运行时依赖
 }
+# 整个目录排除：scripts/ 里是打包工具和开发自检，运行时一个都用不到。
+DEV_ONLY_DIRS = ("scripts/",)
 
 
 def tracked_files():
@@ -55,7 +56,9 @@ def tracked_files():
     return [
         f for f in files
         # 打包产物自己不能进包
-        if not f.startswith("dist/") and f not in DEV_ONLY
+        if not f.startswith("dist/")
+        and f not in DEV_ONLY
+        and not f.startswith(DEV_ONLY_DIRS)
     ]
 
 
