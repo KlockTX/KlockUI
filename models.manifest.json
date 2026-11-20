@@ -260,17 +260,6 @@
       "note": "自然写实向，4x。比 UltraSharp 柔和、几乎无光晕，人像皮肤最稳；Civitai 下载量第二。非商用。"
     },
     {
-      "id": "upscale-anime6b",
-      "arch": "upscaler",
-      "file": "RealESRGAN_x4plus_anime_6B.pth",
-      "dir": "upscale_models",
-      "path": "https://github.com/xinntao/Real-ESRGAN/releases/download/v0.2.2.4/RealESRGAN_x4plus_anime_6B.pth",
-      "size": 17938799,
-      "sha256": "f872d837d3c90ed2e05227bed711af5671a6fd1c9f7d7e91c911a61f155e99da",
-      "license": "BSD-3-Clause",
-      "note": "官方动漫超分，4x，只有 17MB 最省显存。线条偏干净但锐度不如 AnimeSharp。path 是完整 URL（GitHub 官方 release），HF 上无同款。"
-    },
-    {
       "id": "upscale-seedvr2-dit3b",
       "arch": "diffusion-upscaler",
       "file": "seedvr2_ema_3b-Q4_K_M.gguf",

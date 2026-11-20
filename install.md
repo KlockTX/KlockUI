@@ -465,20 +465,19 @@ anima_*          → anima     zimage_* / z_image_* → zimage
 
 > 我在 `<用户给的 ComfyUI 路径>/models` 扫到了：Krea 2 全套（底模 + 编码器 + VAE）、
 > Anima 底模但缺编码器、12 支 LoRA（8 支 Krea / 4 支 Anima）、
-> 2 个超分模型（UltraSharp 4x / Anime6B 4x）。
+> 3 个超分模型（UltraSharp / AnimeSharp / Remacri）。
 > 要我补装缺的 Anima 编码器吗？还是只用 Krea？超分够用还是要加写实基线？
 
-**超分模型清单**（`models.manifest.json` 里 `arch: upscaler`，全装 240MB，不是必需）：
+**超分模型清单**（`models.manifest.json` 里 `arch: upscaler`，全装约 223MB，不是必需）：
 
 | 文件 | 擅长 | 体积 | 来源 |
 |---|---|---|---|
 | `4x-AnimeSharp.safetensors` | 动漫线条最锐 | 32MB | HF `Kim2091/AnimeSharp` |
 | `4x-UltraSharp.safetensors` | 通用/数字艺术 | 64MB | HF `Kim2091/UltraSharp` |
-| `RealESRGAN_x4plus_anime_6B.pth` | 动漫，最省显存 | 17MB | GitHub `xinntao/Real-ESRGAN` release |
 | `4x_foolhardy_Remacri.safetensors` | 人像/皮肤最稳 | 64MB | HF `LyliaEngine/4x_foolhardy_Remacri` |
 | `RealESRGAN_x4plus.safetensors` | 写实基线 | 64MB | HF `Comfy-Org/Real-ESRGAN_repackaged` |
 
-装 2 个够用：**动漫**（AnimeSharp 或 Anime6B）+ **通用**（UltraSharp 或 Remacri）。
+装 2 个够用：**动漫**（AnimeSharp）+ **通用**（UltraSharp 或 Remacri）。
 四个的区别只在锐度倾向——超分模型不造新细节，只放大和锐化；
 要真补纹理得靠 Hires 二采的低噪重绘，模型只是像素那一环。
 
