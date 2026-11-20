@@ -151,8 +151,11 @@ Windows 注意：路径不要含中文或空格；用 `venv\Scripts\python.exe`�
 # A. 端口是否已有引擎在跑（最优先，命中就直接进 P1）
 curl -fsS http://127.0.0.1:8188/system_stats && echo "ENGINE_READY"
 
-# B. 本机是否已有 ComfyUI 目录（按优先级找，找到第一个就停）
+# B. 本机是否已有 ComfyUI 目录（这几个只是常见位置，没命中不代表没有 —— 往下看）
 ls -d ../ComfyUI ../ComfyUI_windows_portable ~/ComfyUI /d/AI/ComfyUI 2>/dev/null
+# 用户常把 AI 工具放在 D/E 盘，扫一层 + 一层子目录就够（不要递归全盘）
+ls -d /c/*[Cc]omfy* /d/*[Cc]omfy* /e/*[Cc]omfy* 2>/dev/null
+ls -d /c/*/[Cc]omfy* /d/*/[Cc]omfy* /e/*/[Cc]omfy* 2>/dev/null
 
 # C. 找到后确认它是能用的，而不是空壳
 <找到的目录>/venv/bin/python -c "import torch; print(torch.__version__, torch.cuda.is_available())" \
@@ -166,7 +169,24 @@ test -f <找到的目录>/main.py && echo "COMFY_USABLE"
 |---|---|
 | A 命中（`ENGINE_READY`） | **跳过下面的"全新安装"子节**，但仍要做 P0.5 扫描配置；别另起一个引擎抢 8188 端口 |
 | A 未命中、B/C 命中 | **复用这个目录**：不要 clone、不要新建 venv、不要覆盖已装的 torch；直接启动它（见 6.1），确认 8188 通了再进 P1 |
-| 全未命中 | 才走下面的全新安装 |
+| 全未命中 | **先问用户，别直接开始下载** —— 见下面的话术，确认真的没有才走全新安装 |
+
+**全未命中时先问一句**（这是最容易被跳过、也最容易白下载几 GB 的一步）：
+
+> 我在常见位置没找到 ComfyUI。你这台机器上装过吗？
+> 装过的话告诉我装在哪（比如 `D:/ComfyUI`、`E:/AI/ComfyUI`），我直接复用现有的；
+> 没有的话我再下载安装，大概 2–3GB。
+
+问清楚再动手的理由：
+
+- 装在非常规路径是常态，尤其习惯把 AI 工具放 D/E 盘的用户
+- 用过一键包的话，目录可能叫 `ComfyUI_windows_portable`、`ComfyUI-aki`、`comfyui-v1.0`
+  这类名字，默认列表扫不到
+- 复用已装的能省掉：2–3GB 下载 + venv 安装 + torch 下载（这一步最慢，GB 级）
+- 用户答"不确定"时，按 B 的扫盘命令查一层目录，别直接开装
+
+拿到路径后回到 C 复验（torch 能 import、`main.py` 存在）。**仍不通过就当没有** ——
+空壳目录或坏掉的 venv 复用过来只会把故障带到后面。
 
 > **KlockUI 不要求 ComfyUI 一定和它同级。** 桥接层只连 `127.0.0.1:8188`；
 > 同级目录只是 `start.bat` 的默认探测路径，实际路径可以用 `KLOCK_COMFY_DIR` 覆盖。
@@ -229,7 +249,7 @@ venv/bin/python -c "import torch; print(torch.__version__, torch.cuda.is_availab
 
 > 你的 ComfyUI 装在哪个目录？我需要扫一下里面的 models 文件夹，看看你已经有
 > 哪些底模和 LoRA，这样就不会重复下载，也能直接帮你配好参数。
-> （示例：`D://AI//ComfyUI` / `E://sd//ComfyUI_windows_portable`）
+> （示例：`D:/AI/ComfyUI` / `E:/sd/ComfyUI_windows_portable`）
 
 拿到路径后先确认：
 
