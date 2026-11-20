@@ -1,0 +1,45 @@
+{
+  "klockui": 1,
+  "name": "Krea 2 · 五层画风叠加",
+  "model": "krea2_noct_v4_int8_convrot.safetensors",
+  "arch": "krea",
+  "prompt": "masterpiece, best quality, 1girl, upper body, looking at viewer, calm expression, soft cinematic light, detailed hair, film grain",
+  "negative": "",
+  "quality": "standard",
+  "size": {
+    "ratio": "2:3",
+    "width": 1024,
+    "height": 1536
+  },
+  "steps": 14,
+  "cfg": 1,
+  "sampler": "Euler",
+  "scheduler": "Simple",
+  "seed": -1,
+  "batch": 1,
+  "hires": false,
+  "easyCache": true,
+  "loras": [
+    {
+      "name": "Krea_2_in_real_krea2_3320272_epoch_20",
+      "weight": 1
+    },
+    {
+      "name": "NIJISIS_krea2_V_2",
+      "weight": 0.6
+    },
+    {
+      "name": "kieed_style_krea2_v2",
+      "weight": 0.6
+    },
+    {
+      "name": "kazutake-hazano_k2_v1",
+      "weight": 0.6
+    },
+    {
+      "name": "krea2-masterpieces-v51",
+      "weight": 0.5
+    }
+  ],
+  "note": "按 LoRA 栈复刻：Anime in real 1.0 打底，NIJISIS / kieed / kazutake 各 0.6 叠画风，masterpieces 0.5 提质量。kieed 用的是 Krea 2 移植版（原版只有 Anima）。14 步是五层叠加后的平衡点，8 步会糊；想更快可降到 10 步。"
+}
