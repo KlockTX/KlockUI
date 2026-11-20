@@ -1,6 +1,6 @@
 {
   "klockui": 1,
-  "name": "Krea 2 · 五层画风叠加（免费版）",
+  "name": "k2_anime-real",
   "model": "krea2_noct_v4_int8_convrot.safetensors",
   "arch": "krea",
   "prompt": "masterpiece, best quality, 1girl, upper body, looking at viewer, calm expression, soft cinematic light, detailed hair",
@@ -21,7 +21,7 @@
   "easyCache": true,
   "loras": [
     {
-      "name": "krea2_bold-inked-anime-realism",
+      "name": "Krea2_DreamCos_Realism",
       "weight": 1
     },
     {
@@ -41,5 +41,5 @@
       "weight": 0.5
     }
   ],
-  "note": "与「原版」同一套叠加结构，把三支付费 LoRA 换成同类型的免费替代：Anime in real → krea2_bold-inked-anime-realism 1.0（动漫写实融合）、NIJISIS → krea2_semi_thick_paint 0.6（日系厚涂）、masterpieces → krea2_detail_slider 0.5（细节增强）。kieed 用 Krea 2 移植版，kazutake 原版。五支本机都有，导入即可出图。"
+  "note": "k2_anime-real：DreamCos Realism 1.0 打底（写实动漫融合），semi_thick_paint / kieed / kazutake 各 0.6 叠画风，detail_slider 0.5 提细节。14 步、CFG 1（Krea 2 蒸馏模型，负面词无效）。五支全部免费可得，导入即可出图。"
 }
