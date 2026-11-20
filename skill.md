@@ -643,3 +643,49 @@ LoRA 挑选：只挂同架构前缀的，画风 0.6–0.9、工具/细节 0.3–
 > 12 支 LoRA（8 Krea / 4 Anima）。要补装 Anima 的 TE 吗？还是只用 Krea？
 
 用户的选择决定下载清单；已存在且校验通过的文件直接跳过。
+
+### 11.7 用户指定了本机没有的模型（去站外找）
+
+install.md 2.1 的「其他」就是这个场景。**不要凭印象编下载地址**，按站点的接口核对。
+
+**Hugging Face（首选，信息最全）**
+
+```bash
+# 列仓库里有哪些文件、各自多大 —— 比看网页可靠
+curl -s "https://huggingface.co/api/models/<org>/<repo>/tree/main?recursive=true" | python3 -m json.tool
+```
+
+返回里每条有 `path` / `size` / `lfs.oid`（就是 sha256）：
+`size` 用来比对，`lfs.oid` 直接当校验值用。国内换 `hf-mirror.com`，路径不变。
+
+**Civitai（C站）**
+
+- 需要 API token（用户在站内 Settings → API Keys 生成），放在请求头里
+- 模型页 URL 里的数字就是 model id / version id，走 `/api/v1/model-versions/<id>` 拿文件列表
+- 返回的 `files[].sizeKB`（乘 1024 得字节）、`files[].hashes.SHA256` 就是校验依据
+- 站内有成人内容，按用户要求筛选，别默认全推
+- 下载链接有时需要 token，别把 token 写进任何"配置文件"或日志
+
+**ModelScope（魔搭）**
+
+国内直连快，阿里系模型（Qwen / Z-Image 系）常在这：
+
+```bash
+curl -s "https://www.modelscope.cn/api/v1/models/<org>/<name>/repo/files?Revision=master&Root=" | python3 -m json.tool
+```
+
+返回 `Data.Files[]`，每项有 `Name` / `Size`（字节）/ `IsLFS`，按 `Size` 核对。
+
+**三步核对，缺一不可**
+
+1. **架构对不对**：下完先用 `_classify()` 判，别信文件名（第三节）
+2. **字节数对不对**：和站点返回的 `size` 精确比对，差一个字节都算截断
+3. **header 能不能解析**：截断的 safetensors 能"下载成功"，加载时才崩
+
+**下完往哪放**
+
+- 架构已支持 → `models/diffusion_models/`（SDXL 系 `checkpoints/`），重启 KlockUI
+- 架构是新的 → 先按 6.2 改八处，再按 6.2.1 定参数，最后才放模型
+
+**许可**：模型页写什么就转告什么，不要替用户判断能不能商用。C 站的模型尤其要看清楚
+是否允许商用、是否禁止再分发。

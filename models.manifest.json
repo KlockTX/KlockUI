@@ -35,9 +35,14 @@
         "arch": "moss",
         "label": "MOSS-Image（约 13GB）",
         "note": "支持 JSON 布局排版与中英文字。Apache-2.0。"
+      },
+      {
+        "arch": "custom",
+        "label": "其他（我另有指定）",
+        "note": "报模型名或链接即可。agent 按 skill.md 第十一节去 Hugging Face / Civitai / ModelScope 搜索、判架构、校验后安装；架构是新的则按 skill.md 6.2 加支持。"
       }
     ],
-    "rule": "用户只选一个也能完整出图。不要默认全装——四个架构合计约 50GB；另有可选的提示词转写模型 2.5GB、超分模型 0.12GB。",
+    "rule": "用户只选一个也能完整出图。不要默认全装——四个架构合计约 50GB；另有可选的提示词转写模型 2.5GB、超分模型 0.12GB。选「其他」时不要硬塞进上面四个架构，按 skill.md 第十一节流程处理。",
     "upscale_question": {
       "question": "要不要装 AI 超分模型（放大补细节用）？可跳过，跳过只能用 Lanczos 等插值放大，会偏糊。",
       "options": [
