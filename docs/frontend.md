@@ -660,3 +660,29 @@ TypeError: Cannot read properties of null (reading 'addEventListener')
 
 **教训**：mdui 的 modal 不要嵌套。二级操作要么内联展开，要么把父弹窗关掉再开新的。
 嵌套时既没有报错，也看不出是层级问题——只能靠实测发现。
+
+## 二十五、参数的 ? 说明浮层（2026-11-20）
+
+借鉴点来自 SwarmUI 的"参数全暴露但可接近"。KlockUI 之前只有整段 `helper` 文字，
+新手看不出"哪个参数该动"。
+
+**做法**：只给最常调的四个参数挂 `?`，点开是一个小浮层，讲三件事——
+这参数管什么、调高调低各有什么后果、各架构该填多少。
+
+| 参数 | 为什么选它 |
+|---|---|
+| 步数 | 最容易"往上加"以求质量 |
+| 提示词强度（CFG） | 蒸馏模型必须 1，新手最常填错 |
+| 位移（Shift） | 只有 Anima / Krea 2 出现，看着莫名 |
+| 重绘幅度 | Hires 二采，调过头会改构图 |
+
+`sampler / scheduler / hrScale / hrUpscaler / clipSkip` 用原生 `title` 兜底——
+`mdui-select` 的 `label` 是属性，塞不进 HTML，为此改结构不划算。
+
+**实现要点**：
+
+- 浮层 `position: fixed`，按 `getBoundingClientRect()` 定位；下方放不下就翻到上方，
+  再夹到视口内（`Math.max(margin, Math.min(top, innerHeight - h - margin))`）——
+  只做翻转不做夹取，靠边的按钮会把浮层顶出屏幕。
+- 侧栏滚动 / 窗口 resize 直接关闭，而不是跟着重算位置。
+- 文案放在 `PARAM_HELP` 字典里，改文案不用碰逻辑。

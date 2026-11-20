@@ -20,7 +20,7 @@
 <link rel="icon" href="/assets/favicon.svg" type="image/svg+xml">
 <link rel="alternate icon" href="/assets/klockui.ico" sizes="any">
 <link rel="stylesheet" href="/vendor/mdui.css">
-<link rel="stylesheet" href="/assets/app.css?v=20261120preset3">
+<link rel="stylesheet" href="/assets/app.css?v=20261120help2">
 </head>
 <body data-mode="txt2img">
 <a class="skip-link" href="#promptCard">跳到画面描述</a>
@@ -402,7 +402,7 @@
         <div class="param-body" id="paramBody">
         <div class="sampler-presets" id="samplerPresets" role="group" aria-label="采样器与调度器组合"></div>
         <div class="two-col">
-          <mdui-select id="sampler" label="采样器" variant="outlined" value="Euler a">
+          <mdui-select id="sampler" title="采样器决定每步怎么走。蒸馏模型（Krea 2 / Z-Image / Turbo）用 Euler 或 Res Multistep，别用 Euler a。" label="采样器" variant="outlined" value="Euler a">
             <mdui-menu-item value="Euler a">Euler a</mdui-menu-item>
             <mdui-menu-item value="Euler">Euler</mdui-menu-item>
             <mdui-menu-item value="DPM++ 2M">DPM++ 2M</mdui-menu-item>
@@ -413,7 +413,7 @@
             <mdui-menu-item value="DDIM">DDIM</mdui-menu-item>
             <mdui-menu-item value="UniPC">UniPC</mdui-menu-item>
           </mdui-select>
-          <mdui-select id="scheduler" label="调度器" variant="outlined" value="Karras">
+          <mdui-select id="scheduler" title="调度器决定步间噪声怎么衰减。Simple 配蒸馏模型，SGM Uniform 配 Anima，Karras 配 SDXL。" label="调度器" variant="outlined" value="Karras">
             <mdui-menu-item value="Karras">Karras</mdui-menu-item>
             <mdui-menu-item value="Beta">Beta</mdui-menu-item>
             <mdui-menu-item value="SGM Uniform">SGM Uniform</mdui-menu-item>
@@ -428,11 +428,11 @@
 
         <div class="slider-pair">
           <div class="slider-field">
-            <label for="steps">步数 <output id="stepsOut">24</output></label>
+            <label for="steps">步数 <output id="stepsOut">24</output><button type="button" class="param-help" data-help="steps" aria-label="步数说明">?</button></label>
             <mdui-slider id="steps" min="6" max="60" step="1" value="24"></mdui-slider>
           </div>
           <div class="slider-field">
-            <label for="cfg">提示词强度 <output id="cfgOut">5.5</output></label>
+            <label for="cfg">提示词强度 <output id="cfgOut">5.5</output><button type="button" class="param-help" data-help="cfg" aria-label="提示词强度说明">?</button></label>
             <mdui-slider id="cfg" min="1" max="10" step="0.5" value="5.5"></mdui-slider>
           </div>
         </div>
@@ -444,19 +444,19 @@
           </div>
           <div class="sub-options" id="hiresOptions" hidden>
             <div class="two-col">
-              <mdui-select id="hrScale" label="放大倍数" variant="outlined" value="1.5">
+              <mdui-select id="hrScale" title="二采放大倍数。8GB 显存 1.5x 容易爆，优先 1.25x；Krea 2 推荐 1.35x。" label="放大倍数" variant="outlined" value="1.5">
                 <mdui-menu-item value="1.25">1.25x · 平衡</mdui-menu-item>
                 <mdui-menu-item value="1.35">1.35x · Krea 推荐</mdui-menu-item>
                 <mdui-menu-item value="1.5">1.5x · 结构更稳</mdui-menu-item>
               </mdui-select>
-              <mdui-select id="hrUpscaler" label="放大算法" variant="outlined" value="Lanczos">
+              <mdui-select id="hrUpscaler" title="Latent 最快但细节少；Lanczos 通用；装了 4x 超分模型就直接选它，能真补纹理。" label="放大算法" variant="outlined" value="Lanczos">
                 <mdui-menu-item value="Latent">Latent · 最快</mdui-menu-item>
                 <mdui-menu-item value="Lanczos">Lanczos · 通用</mdui-menu-item>
                 <mdui-menu-item value="Nearest">Nearest · 硬边</mdui-menu-item>
               </mdui-select>
             </div>
             <div class="slider-field">
-              <label for="hrDenoise">重绘幅度 <output id="hrOut">0.40</output></label>
+              <label for="hrDenoise">重绘幅度 <output id="hrOut">0.40</output><button type="button" class="param-help" data-help="hrDenoise" aria-label="重绘幅度说明">?</button></label>
               <mdui-slider id="hrDenoise" min="0.2" max="0.6" step="0.05" value="0.4"></mdui-slider>
             </div>
             <p class="helper" id="hrUpscalerHelper" title="Latent 最快、细节少；Lanczos 通用；Nearest 适合像素风。ESRGAN 放大模型未安装，暂不提供。">8 个算法 · Lanczos 通用；ESRGAN 未安装。</p>
@@ -466,7 +466,7 @@
 
         <div class="anima-block" id="animaBlock" hidden>
           <div class="slider-field">
-            <label for="shift"><span id="shiftLabel">位移</span> <span class="label-note">Shift</span> <output id="shiftOut">3.5</output></label>
+            <label for="shift"><span id="shiftLabel">位移</span> <span class="label-note">Shift</span> <output id="shiftOut">3.5</output><button type="button" class="param-help" data-help="shift" aria-label="Shift 说明">?</button></label>
             <mdui-slider id="shift" min="1" max="6" step="0.05" value="3.5"></mdui-slider>
             <span id="animaHint" class="sr-only">Shift 3.5</span>
           </div>
@@ -498,7 +498,7 @@
                 <span id="engineHint" class="side-card-meta">CLIP 1 · VAE 自动</span>
               </div>
               <div class="two-col">
-                <mdui-select id="clipSkip" label="CLIP 跳过层" variant="outlined" value="2">
+                <mdui-select id="clipSkip" title="跳过 CLIP 最后几层。SDXL / Pony 用 2；Anima 与 Krea 2 走 LLM 编码器，此项锁定为 1。" label="CLIP 跳过层" variant="outlined" value="2">
                   <mdui-menu-item value="1">1 层</mdui-menu-item>
                   <mdui-menu-item value="2">2 层（推荐）</mdui-menu-item>
                   <mdui-menu-item value="3">3 层</mdui-menu-item>
@@ -1165,11 +1165,11 @@
 </mdui-dialog>
 
 <script src="/vendor/mdui.global.js"></script>
-<script src="/assets/artists.js?v=20261120preset3"></script>
-<script src="/assets/characters.js?v=20261120preset3"></script>
-<script src="/assets/characters-normal.js?v=20261120preset3"></script>
-<script src="/assets/data.js?v=20261120preset3"></script>
-<script src="/assets/ui.js?v=20261120preset3"></script>
-<script src="/assets/app.js?v=20261120preset3"></script>
+<script src="/assets/artists.js?v=20261120help2"></script>
+<script src="/assets/characters.js?v=20261120help2"></script>
+<script src="/assets/characters-normal.js?v=20261120help2"></script>
+<script src="/assets/data.js?v=20261120help2"></script>
+<script src="/assets/ui.js?v=20261120help2"></script>
+<script src="/assets/app.js?v=20261120help2"></script>
 </body>
 </html>

@@ -3898,3 +3898,38 @@ mdui-menu-item:not(:defined) {
 .preset-inline-actions {
   display: flex; align-items: center; justify-content: flex-end; gap: var(--sp-2);
 }
+
+/* ---------- 参数说明浮层 ---------- */
+.param-help {
+  display: inline-flex; align-items: center; justify-content: center;
+  width: 15px; height: 15px; margin-left: 4px; padding: 0;
+  border-radius: 50%; border: 1px solid rgb(var(--mdui-color-outline));
+  background: transparent; color: rgb(var(--mdui-color-on-surface-variant));
+  font-size: 10px; line-height: 1; cursor: pointer;
+  vertical-align: middle; flex: none;
+}
+.param-help:hover, .param-help[aria-expanded="true"] {
+  border-color: rgb(var(--mdui-color-primary));
+  color: rgb(var(--mdui-color-primary));
+  background: rgb(var(--mdui-color-primary) / .08);
+}
+.param-pop {
+  position: fixed; z-index: 9000; width: 268px;
+  padding: 12px 14px; border-radius: 10px;
+  background: rgb(var(--mdui-color-surface-container-high));
+  border: 1px solid rgb(var(--mdui-color-outline-variant));
+  box-shadow: 0 8px 24px rgb(0 0 0 / .18);
+  font-size: 12px; line-height: 1.65;
+  color: rgb(var(--mdui-color-on-surface-variant));
+}
+.param-pop[hidden] { display: none; }
+.param-pop b {
+  display: block; margin-bottom: 4px;
+  font-size: 13px; font-weight: 500;
+  color: rgb(var(--mdui-color-on-surface));
+}
+.param-pop .param-pop-hint {
+  display: block; margin-top: 6px; padding-top: 6px;
+  border-top: 1px solid rgb(var(--mdui-color-outline-variant) / .6);
+  color: rgb(var(--mdui-color-primary));
+}

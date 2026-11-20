@@ -10280,7 +10280,100 @@
     if (save) writeJSON("klock.paramFolded", Boolean(folded));
   }
 
+  /* ---------------------------------------------------- 参数说明浮层
+   * 侧栏参数多，新手不知道哪些能动。四个最常调的挂 ? 号，
+   * select 类用原生 title 兜底（mdui-select 的 label 是属性，塞不进 HTML）。
+   * 文案只讲"这参数管什么 + 各架构该填多少"，不写原理。
+   */
+  const PARAM_HELP = {
+    steps: {
+      title: "步数",
+      desc: "采样迭代次数。超过模型推荐值只会更慢，画面不会更好。",
+      hint: "Anima 28–40 · Krea 2 8–16 · Z-Image 9 · SDXL 26–30 · Turbo 档固定 10"
+    },
+    cfg: {
+      title: "提示词强度（CFG）",
+      desc: "模型多听提示词的程度。调高更贴合描述，但过高会过曝、发灰、细节发硬。",
+      hint: "蒸馏模型必须 1（Krea 2 / Z-Image / Turbo）· Anima 4 · SDXL 5–5.5"
+    },
+    shift: {
+      title: "位移（Shift）",
+      desc: "流匹配模型的时间步偏移，决定细节在不同阶段的分配。多数情况不用动。",
+      hint: "Krea 2 1.15 · Z-Image 3 · Anima 3.5"
+    },
+    hrDenoise: {
+      title: "重绘幅度",
+      desc: "二采阶段重画多少。越高改动越大，越低越贴近首采。",
+      hint: "0.35–0.45 结构与细节较平衡；超过 0.5 可能改变构图"
+    }
+  };
+
+  function initParamHelp() {
+    const pop = document.createElement("div");
+    pop.className = "param-pop";
+    pop.hidden = true;
+    document.body.appendChild(pop);
+    let current = null;
+
+    const close = () => {
+      if (pop.hidden) return;
+      pop.hidden = true;
+      if (current) current.setAttribute("aria-expanded", "false");
+      current = null;
+    };
+
+    const open = (btn) => {
+      const info = PARAM_HELP[btn.dataset.help];
+      if (!info) return;
+      close();
+      pop.textContent = "";
+      const title = document.createElement("b");
+      title.textContent = info.title;
+      const body = document.createTextNode(info.desc);
+      const hint = document.createElement("span");
+      hint.className = "param-pop-hint";
+      hint.textContent = info.hint;
+      pop.append(title, body, hint);
+      pop.hidden = false;
+
+      const rect = btn.getBoundingClientRect();
+      const width = pop.offsetWidth || 268;
+      const margin = 8;
+      let left = rect.left + rect.width / 2 - width / 2;
+      left = Math.max(margin, Math.min(left, window.innerWidth - width - margin));
+      let top = rect.bottom + 8;
+      if (top + pop.offsetHeight > window.innerHeight - margin) {
+        top = rect.top - pop.offsetHeight - 8;   // 下方放不下就翻到上方
+      }
+      top = Math.max(margin, Math.min(top, window.innerHeight - pop.offsetHeight - margin));
+      pop.style.left = left + "px";
+      pop.style.top = top + "px";
+      btn.setAttribute("aria-expanded", "true");
+      current = btn;
+    };
+
+    document.addEventListener("click", (event) => {
+      const btn = event.target.closest(".param-help");
+      if (btn) {
+        event.preventDefault();
+        event.stopPropagation();
+        if (current === btn) close();
+        else open(btn);
+        return;
+      }
+      if (!pop.hidden && !pop.contains(event.target)) close();
+    });
+
+    document.addEventListener("keydown", (event) => {
+      if (event.key === "Escape") close();
+    });
+    // 侧栏滚动 / 窗口变化后浮层位置就错了，直接关掉比跟着飘更好。
+    window.addEventListener("scroll", close, true);
+    window.addEventListener("resize", close);
+  }
+
   function bindEvents() {
+    initParamHelp();
     el.themeBtn.addEventListener("click", (event) => {
       event.stopPropagation();
       closeModelSwitchMenu();
