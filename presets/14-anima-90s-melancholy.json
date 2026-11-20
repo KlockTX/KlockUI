@@ -1,7 +1,7 @@
 {
   "klockui": 1,
   "name": "二次元 · 90年代忧郁",
-  "model": "miaomiaoHarem_29BBETA11_bf16.safetensors",
+  "model": "anima-aesthetic-v1.1.safetensors",
   "arch": "anima",
   "prompt": "masterpiece, best quality, 1girl, sitting by the window, late afternoon, faded colors, film-like grain, quiet expression, old anime aesthetic, 90s_melancholy, retro",
   "negative": "worst quality, low quality, score_1, score_2, blurry, jpeg artifacts, watermark, extra fingers, bad hands",

@@ -1,7 +1,7 @@
 {
   "klockui": 1,
   "name": "二次元 · Ri-mix 厚涂",
-  "model": "miaomiaoHarem_29BBETA11_bf16.safetensors",
+  "model": "anima-aesthetic-v1.1.safetensors",
   "arch": "anima",
   "prompt": "masterpiece, best quality, very aesthetic, ultra detailed, 1girl, long hair, painterly illustration, visible brush strokes, rich color depth, soft blended shading, elegant pose",
   "negative": "worst quality, low quality, score_1, score_2, blurry, jpeg artifacts, watermark, extra fingers, bad hands",

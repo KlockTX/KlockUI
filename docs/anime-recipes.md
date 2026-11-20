@@ -10,7 +10,7 @@
 
 ## 一、新装的 9 支
 
-### Anima（适配你的 `miaomiaoHarem_29BBETA11_bf16`）
+### Anima（适配 `anima-aesthetic-v1.1`）
 
 | 条目 | 大小 | 下载 | 触发词 | 角色 |
 |---|---|---|---|---|

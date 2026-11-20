@@ -1,7 +1,7 @@
 {
   "klockui": 1,
   "name": "二次元 · 哥特霓虹",
-  "model": "miaomiaoHarem_29BBETA11_bf16.safetensors",
+  "model": "anima-aesthetic-v1.1.safetensors",
   "arch": "anima",
   "prompt": "masterpiece, best quality, 1girl, gothic dress, lace and metal ornaments, neon signs at night, dark background, purple and pink highlights, elaborate details, dramatic lighting",
   "negative": "worst quality, low quality, score_1, score_2, blurry, jpeg artifacts, watermark, extra fingers, bad hands",

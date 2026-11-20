@@ -216,7 +216,7 @@ PY
 
 ```
 krea         11.74GB  krea2_noct_v4_int8_convrot.safetensors
-anima         5.62GB  miaomiaoHarem_29BBETA11_bf16.safetensors
+anima         3.90GB  anima-aesthetic-v1.1.safetensors
 zimage        6.31GB  z_image_turbo_int8_convrot.safetensors
 unknown       0.21GB  some-random-model.safetensors
 ```
