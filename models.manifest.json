@@ -236,6 +236,39 @@
       "sha256": "",
       "license": "MIT",
       "note": "Windows x64 CPU 版 llama.cpp 运行时（24MB）。解压后把 llama/ 放到 <父目录>/llama-engine/llama/，内含 llama-server.exe。用 CPU 版是刻意的：转写不占 ComfyUI 显存。GitHub release 不走 mirrors，直接下载 browser_download_url。"
+    },
+    {
+      "id": "upscale-animesharp",
+      "arch": "upscaler",
+      "file": "4x-AnimeSharp.safetensors",
+      "dir": "upscale_models",
+      "path": "Kim2091/AnimeSharp/resolve/main/4x-AnimeSharp.safetensors",
+      "size": 33467822,
+      "sha256": "7fc60054d291579acac4fb537efd91c80611cbd281ef8b90f434048cc1313b39",
+      "license": "CC-BY-NC-SA-4.0",
+      "note": "动漫插画锐化，4x。线条和色块边缘比 Anime6B 更锐，代价是略吃显存；safetensors 版比 .pth 小一半。作者 Kim2091 官方仓库。"
+    },
+    {
+      "id": "upscale-remacri",
+      "arch": "upscaler",
+      "file": "4x_foolhardy_Remacri.safetensors",
+      "dir": "upscale_models",
+      "path": "LyliaEngine/4x_foolhardy_Remacri/resolve/main/4x_foolhardy_Remacri.safetensors",
+      "size": 66864028,
+      "sha256": "ac3e6cc5b5740c308e7f1f484da7030ae5bd0c1d33433cffcefc42e03704a036",
+      "license": "CC-BY-NC-SA-4.0",
+      "note": "自然写实向，4x。比 UltraSharp 柔和、几乎无光晕，人像皮肤最稳；Civitai 下载量第二。非商用。"
+    },
+    {
+      "id": "upscale-anime6b",
+      "arch": "upscaler",
+      "file": "RealESRGAN_x4plus_anime_6B.pth",
+      "dir": "upscale_models",
+      "path": "https://github.com/xinntao/Real-ESRGAN/releases/download/v0.2.2.4/RealESRGAN_x4plus_anime_6B.pth",
+      "size": 17938799,
+      "sha256": "f872d837d3c90ed2e05227bed711af5671a6fd1c9f7d7e91c911a61f155e99da",
+      "license": "BSD-3-Clause",
+      "note": "官方动漫超分，4x，只有 17MB 最省显存。线条偏干净但锐度不如 AnimeSharp。path 是完整 URL（GitHub 官方 release），HF 上无同款。"
     }
   ],
   "arch_requires": {

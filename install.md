@@ -468,6 +468,23 @@ anima_*          → anima     zimage_* / z_image_* → zimage
 > 2 个超分模型（UltraSharp 4x / Anime6B 4x）。
 > 要我补装缺的 Anima 编码器吗？还是只用 Krea？超分够用还是要加写实基线？
 
+**超分模型清单**（`models.manifest.json` 里 `arch: upscaler`，全装 240MB，不是必需）：
+
+| 文件 | 擅长 | 体积 | 来源 |
+|---|---|---|---|
+| `4x-AnimeSharp.safetensors` | 动漫线条最锐 | 32MB | HF `Kim2091/AnimeSharp` |
+| `4x-UltraSharp.safetensors` | 通用/数字艺术 | 64MB | HF `Kim2091/UltraSharp` |
+| `RealESRGAN_x4plus_anime_6B.pth` | 动漫，最省显存 | 17MB | GitHub `xinntao/Real-ESRGAN` release |
+| `4x_foolhardy_Remacri.safetensors` | 人像/皮肤最稳 | 64MB | HF `LyliaEngine/4x_foolhardy_Remacri` |
+| `RealESRGAN_x4plus.safetensors` | 写实基线 | 64MB | HF `Comfy-Org/Real-ESRGAN_repackaged` |
+
+装 2 个够用：**动漫**（AnimeSharp 或 Anime6B）+ **通用**（UltraSharp 或 Remacri）。
+四个的区别只在锐度倾向——超分模型不造新细节，只放大和锐化；
+要真补纹理得靠 Hires 二采的低噪重绘，模型只是像素那一环。
+
+不建议上 HAT / SwinIR / SUPIR 这类：transformer 与扩散方案在 8GB 卡上太慢，
+而 UltraSharp / AnimeSharp 的差距肉眼看不出值得那个时间。
+
 用户的选择决定 P2 下载清单：**已存在且校验通过的文件直接跳过**，只下缺的。
 
 ---

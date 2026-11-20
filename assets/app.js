@@ -186,6 +186,7 @@
     "RealESRGAN_x4plus_anime_6B.pth": "Anime6B · 动漫线条",
     "RealESRGAN_x4plus.pth": "RealESRGAN · 写实基线",
     "4x-AnimeSharp.pth": "AnimeSharp · 动漫锐化",
+    "4x-AnimeSharp.safetensors": "AnimeSharp · 动漫锐化",
     "2x-AnimeSharpV3.pth": "AnimeSharpV3 · 2x 动漫",
     "Latent": "Latent · 最快",
     "Latent (antialiased)": "Latent AA · 抗锯齿",
