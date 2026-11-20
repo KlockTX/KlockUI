@@ -297,6 +297,8 @@ clone 下来就能跑，不需要 `npm install`。
 2. **新增架构**：四处一起改，别只改 `_classify`
 3. **提交前自检**：`python -c "import server, comfy_bridge"` 与 `node --check assets/app.js` 都要过
 4. **别提交模型文件**：`.gitignore` 已挡，但 PR 里塞大文件会被拒
+5. **commit 标题只写对象**：如「对 README 进行修改」「对预设进行修改」；
+   改动理由写进正文，标题不写
 
 排错思路和已知坑写在 [`skill.md`](skill.md) 里，改代码前建议先扫一眼。
 
