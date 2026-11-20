@@ -220,7 +220,7 @@ CFG:   5–7
 
 ### 6.2 加一个**新架构**
 
-要改七处，少一处就会出现"能选但不生效"或"静默换架构"的怪现象。
+要改八处，少一处就会出现"能选但不生效"或"静默换架构"的怪现象。
 
 | # | 文件 | 位置 | 改什么 |
 |---|---|---|---|
@@ -228,9 +228,10 @@ CFG:   5–7
 | 2 | `comfy_bridge.py` | `_modules_for()` | 返回该架构依赖的编码器 / VAE 文件名 |
 | 3 | `comfy_bridge.py` | `build_graph()` | 加采样分支：加载器、CLIP type、采样节点、latent 类型 |
 | 4 | `comfy_bridge.py` | `ALLOWED_ARCHS` | 把新名字加进元组 |
-| 5 | `assets/app.js` | `MODEL_PROFILES` | 加 profile：`match` 正则、默认 sampler/scheduler/shift、各画质档 |
-| 6 | `assets/app.js` | `SAMPLER_SETS` | 允许该架构用的采样器/调度器（不加会被下拉隐藏） |
-| 7 | `assets/app.js` | `archForModel()` | 前端回退判定用的正则 |
+| 5 | `assets/data.js` | `MODEL_PROFILES` | 加 profile：`match` 正则、默认 sampler/scheduler/shift、各画质档 |
+| 6 | `assets/data.js` | `SAMPLER_PRESETS` | 该架构的参数卡片（均衡 / 结构 / 柔和…） |
+| 7 | `assets/app.js` | `SAMPLER_SETS` | 允许该架构用的采样器/调度器（不加会被下拉隐藏） |
+| 8 | `assets/app.js` | `archForModel()` | 前端回退判定用的正则 |
 
 第 4 处是**最阴的**：漏了不会报"未知架构"，而是把 arch 静默换成上一个用过的架构，
 然后拿错的文本编码器去编码，报一个与真实原因毫无关系的维度错误。
@@ -254,6 +255,51 @@ print(json.dumps(g, ensure_ascii=False, indent=1))
 
 重点核对：`CLIPLoader` 的 `clip_name` 与 `type`、`VAELoader`、采样节点 class、latent 节点 class、保存前缀。
 
+### 6.2.1 新架构的参数怎么定（别自己试）
+
+八处改完只是"能跑起来"，参数错了照样出废图。顺序是：**先找官方工作流，再按类型套区间，最后实拍验证**。
+
+**第一步：找官方工作流，从里面读，不猜**
+
+- Hugging Face 的 model card 通常挂 `workflow.json` / `example workflow`
+- 官方 ComfyUI 支持新模型时会加节点，`comfy_extras/` 里有对应实现
+- 从工作流里能直接读出四样东西：`KSampler` 的 `sampler_name` / `scheduler` / `steps` / `cfg`、
+  `CLIPLoader` 的 `type`、latent 节点类型、VAE 文件名
+
+**第二步：判断它属于哪一类**，区间就对上了
+
+| 类型 | 识别特征 | CFG | 步数 | 备注 |
+|---|---|---|---|---|
+| 蒸馏 | 名字带 turbo / lightning / dmd / distill | ≈ 1 | 4–12 | CFG 高于 1 会过曝发灰 |
+| 流匹配 | 要 shift、latent 不是 `EmptyLatentImage` | 1–4 | 8–30 | shift 烤在模型里，界面只给微调 |
+| 传统 DDPM | 常规 UNet / DiT | 3.5–7 | 20–40 | 负面词真生效 |
+
+**第三步：两个最容易错的地方**
+
+- **latent 节点**：流匹配架构要用对应的空 latent（`EmptySD3LatentImage` 等），
+  用普通的会出纯色或噪点图
+- **CLIPLoader 的 `type`**：目前用到 `stable_diffusion`（Anima）/ `krea2`（Krea 2）/
+  `lumina2`（Z-Image）/ `moss_image`（MOSS）；新架构可能新增 type，以 ComfyUI 的
+  `CLIPLoader` 文档为准。填错报的是编码器维度错，和采样参数毫无关系
+
+**第四步：填 `MODEL_PROFILES` 的五档，不是简单倍增**
+
+| 档位 | 怎么填 |
+|---|---|
+| `gacha` | **只有带加速 LoRA 的架构才给**，没加速 LoRA 就别开这档 |
+| `draft` | 标准步数 ×0.6，CFG 不变 |
+| `standard` | 官方工作流的值 |
+| `fine` | 标准步数 ×1.4，到架构上限为止（蒸馏模型别超 20 步，白烧时间） |
+| `hires` | 首采一半（至少 8 步），二采重绘幅度 0.35–0.45 |
+
+**第五步：实拍验证，别只看不报错**
+
+1. `standard` 一张：结构对不对、有没有过曝/发灰
+2. `fine` 一张：细节是变多还是崩坏（崩了说明步数超了架构上限）
+3. 和官方工作流出的图并排看，风格应当一致
+
+三项都过再写进 `models.manifest.json` 和 README 的架构表。
+
 ### 6.3 移除一个架构
 
 分两种：
@@ -261,7 +307,7 @@ print(json.dumps(g, ensure_ascii=False, indent=1))
 **只是不想用了** —— 删掉底模文件即可，代码不用动。前端 profile 还在，但模型列表里没有它，
 选不到就不会触发；启动不会报错。
 
-**彻底移除** —— 按 6.2 的七处反向删：profile、`SAMPLER_SETS` 条目、`archForModel` 正则、
+**彻底移除** —— 按 6.2 的八处反向删：profile、`SAMPLER_SETS` 条目、`archForModel` 正则、
 `build_graph` 分支、`_modules_for` 分支、`_classify` 判据、`ALLOWED_ARCHS` 里的名字。
 **`ALLOWED_ARCHS` 最后删**：先删它有概率让残留的旧配置指向不存在的架构。
 

@@ -121,12 +121,14 @@ Krea 2 和 MOSS 给完整段落——这两家的编码器读长文本，塞成�
 | **Krea 2 Turbo** | 12.9B | Euler + Simple，8 步起，CFG 1 | 社区（年收 <100 万美元免费） |
 | **MOSS-Image** | 5B | Euler + Simple，50 步，CFG 3 | Apache-2.0 |
 | **SDXL / Pony / Illustrious** | 6–7B | DPM++ 2M SDE + Karras，20–30 步 | 见各模型 |
+| **更多 / 新出的架构** | 任意 | 交给 agent：模型和官方工作流一起给它，按 [`skill.md`](skill.md) 第六节加进来 | 见各模型 |
 
-加一个新架构要改七处：后端四处（`_classify` 识别、`_modules_for` 依赖、`build_graph` 节点图、`ALLOWED_ARCHS` 白名单），
-前端三处（`MODEL_PROFILES`、`SAMPLER_SETS`、`archForModel`）。
+上面这几行不是白名单。新模型出来不用等更新——把它和官方 ComfyUI 工作流一起发给 agent，
+它会按 `skill.md` 第六节的清单改八处（后端四处、前端四处），
+再照官方工作流反推采样器、步数、CFG、shift 和各画质档，装完直接能用。
 
-白名单那处最容易漏——漏了不会报"未知架构"，而是把 arch 静默换成上一个用过的，
-再以错误的编码器报一个看不懂的维度错。完整步骤见 [`skill.md`](skill.md) 第六节。
+白名单那处最容易漏：漏了不报错，而是把架构静默换成上一个用过的，
+拿错编码器去编码，最后报一个和真实原因无关的维度错。
 
 ---
 
