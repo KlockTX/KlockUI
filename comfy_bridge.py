@@ -1931,6 +1931,22 @@ def _upscale_with_model(blob, scale, model_name):
     return images[0]
 
 
+def _comfy_free_vram():
+    """让 ComfyUI 卸掉驻留模型并释放显存。
+
+    SeedVR2 即使 BlockSwap 32 也要在换入块时申请大块显存（cuMemSetAccess），
+    如果引擎里还驻留着刚用过的 Krea2 权重或预览缓冲，就会 OOM。
+    所以跑之前清一次；跑完再清一次，避免 SeedVR2 自己的缓存影响下次出图。
+    """
+    try:
+        _post_json("/free", {"unload_models": True, "free_memory": True}, timeout=60)
+        time.sleep(1.0)
+        return True
+    except Exception as exc:
+        log.warning("ComfyUI /free failed: %s", exc)
+        return False
+
+
 def upscale_seedvr2(blob, scale):
     """SeedVR2 一步扩散超分：补细节但不重绘人物。
 
@@ -1969,7 +1985,13 @@ def upscale_seedvr2(blob, scale):
             "images": ["4", 0], "filename_prefix": "klock/seedvr2"}},
     }
     log.info("seedvr2 upscale %sx%s -> short edge %d", src.width, src.height, short_edge)
-    images = _submit_and_collect(graph, timeout=900, expected_steps=1)
+    # 引擎里驻留的底模/预览缓冲不腾出来，BlockSwap 换入权重时直接 OOM
+    _comfy_free_vram()
+    try:
+        images = _submit_and_collect(graph, timeout=900, expected_steps=1)
+    finally:
+        # SeedVR2 的缓存不清，下次文生图会跟着一起挤显存
+        _comfy_free_vram()
     if not images:
         raise EngineError("SeedVR2 放大没有产出图像")
     return images[0]
