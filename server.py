@@ -5660,6 +5660,9 @@ class Handler(BaseHTTPRequestHandler):
         if path == "/local/preset/save":
             self._preset_save()
             return
+        if path == "/local/preset/delete":
+            self._preset_delete()
+            return
         if path == "/local/open-output":
             self._open_output()
             return
@@ -6256,6 +6259,36 @@ class Handler(BaseHTTPRequestHandler):
         with open(tmp, "w", encoding="utf-8", newline="\n") as handle:
             handle.write(pretty)
         os.replace(tmp, target)
+        self._send(200, json.dumps({"ok": True, "file": name}, ensure_ascii=False).encode("utf-8"))
+
+    def _preset_delete(self):
+        """删除 presets/ 下的配方文件。
+
+        内置配方和自存配方在界面上权限一致，所以要能删。删之前留 .bak，
+        git 里也有原始版本，误删能从两边捞回来。
+        """
+        data = self._read_json()
+        name = str((data or {}).get("file") or "").strip()
+        if not name or not name.lower().endswith(".json"):
+            self._send(400, b'{"detail":"file must end with .json"}')
+            return
+        if not re.fullmatch(r"[A-Za-z0-9._-]{1,80}", name):
+            self._send(400, b'{"detail":"invalid file name"}')
+            return
+        base = self.PRESET_DIRS[0]
+        target = os.path.join(base, name)
+        # 白名单校验已经挡掉 ../，再确认一次真实路径没跑出 presets/
+        if os.path.dirname(os.path.abspath(target)) != os.path.abspath(base):
+            self._send(400, b'{"detail":"invalid path"}')
+            return
+        if not os.path.isfile(target):
+            self._send(404, b'{"detail":"not found"}')
+            return
+        try:
+            shutil.copy2(target, target + ".bak")
+        except OSError:
+            pass
+        os.remove(target)
         self._send(200, json.dumps({"ok": True, "file": name}, ensure_ascii=False).encode("utf-8"))
 
     def _preset_one(self):

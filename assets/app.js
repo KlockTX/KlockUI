@@ -5895,19 +5895,26 @@
         item.loras ? `${item.loras} 支 LoRA` : ""
       ].filter(Boolean).join(" · ");
 
-      el.repoPresets.appendChild(
-        h("div", { class: "repo-preset" },
+      const card = h("div", { class: "repo-preset" },
           h("div", { class: "repo-preset-main" },
             h("div", { class: "repo-preset-name", text: item.name }),
             h("div", { class: "repo-preset-meta", text: meta })
           ),
           h("div", { class: "repo-preset-actions" },
-            h("mdui-button", { variant: "text", text: "导入", on: { click: () => importRepoPreset(item) } }),
+            h("mdui-button", { variant: "text", text: "载入", on: { click: () => importRepoPreset(item) } }),
+            h("mdui-button-icon", { "aria-label": "导出为 JSON", title: "导出为 JSON（可分享 / 可拖回界面）",
+              html: '<span class="icon" data-icon="download"></span>',
+              on: { click: () => exportRepoPreset(item) } }),
             h("mdui-button", { variant: "text", text: "编辑",
-              on: { click: (event) => openInlinePresetEditor(item.file, "", event.currentTarget.closest(".repo-preset")) } })
+              on: { click: (event) => openInlinePresetEditor(item.file, "", event.currentTarget.closest(".repo-preset")) } }),
+            h("mdui-button-icon", { "aria-label": "删除配方", title: "删除这个配方文件（会先留一份 .bak）",
+              html: '<span class="icon" data-icon="trash"></span>',
+              on: { click: (event) => deleteRepoPreset(item, event.currentTarget.closest(".repo-preset")) } })
           )
-        )
       );
+      el.repoPresets.appendChild(card);
+      // h() 只建元素，[data-icon] 的 svg 要再过一遍才会显示
+      hydrateIcons(card);
     });
   }
 
@@ -6133,6 +6140,49 @@
     } catch (err) {
       snack(`导入失败：${err.message}`, { bad: true });
     }
+  }
+
+  async function exportRepoPreset(item) {
+    try {
+      const res = await fetch(`/local/preset?file=${encodeURIComponent(item.file)}`, { cache: "no-store" });
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      const text = await res.text();
+      let data;
+      try {
+        data = JSON.parse(text);
+      } catch {
+        throw new Error("内容不是合法 JSON");
+      }
+      downloadPresetJson(data, item.name || item.file);
+    } catch (err) {
+      snack(`导出失败：${err.message}`, { bad: true });
+    }
+  }
+
+  function deleteRepoPreset(item) {
+    mdui.confirm({
+      headline: "删除这个配方？",
+      description: `${item.name || item.file}（${item.file}）。会先留一份 .bak，git 里也有原始版本。`,
+      confirmText: "删除",
+      cancelText: "取消",
+      onConfirm: async () => {
+        try {
+          const res = await fetch("/local/preset/delete", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ file: item.file })
+          });
+          const data = await res.json().catch(() => ({}));
+          if (!res.ok) throw new Error(data.detail || `HTTP ${res.status}`);
+          closeInlinePresetEditor();
+          repoPresetCache = null;
+          await loadRepoPresets(true);
+          snack(`已删除 ${item.file}`);
+        } catch (err) {
+          snack(`删除失败：${err.message}`, { bad: true });
+        }
+      }
+    }).catch(() => {});
   }
 
   function updateSavedList() {
