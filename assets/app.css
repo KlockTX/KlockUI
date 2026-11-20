@@ -3230,14 +3230,14 @@ mdui-select::part(menu) mdui-menu-item { white-space: nowrap; }
   color: rgb(var(--mdui-color-on-surface-variant));
 }
 
-.upscale-dialog::part(panel) { width: min(700px, calc(100vw - 32px)); max-width: 700px; }
-.upscale-body { display: flex; flex-direction: column; gap: var(--sp-5); overflow-x: hidden; }
+.upscale-dialog::part(panel) { width: min(700px, calc(100vw - 32px)); max-width: 700px; max-height: calc(100dvh - 48px); }
+.upscale-body { display: flex; flex-direction: column; gap: var(--sp-4); overflow-x: hidden; }
 .upscale-preview {
   position: relative; display: flex; align-items: center; justify-content: center;
-  min-height: 220px; max-height: 46vh; border-radius: var(--r-md); overflow: hidden;
+  min-height: 180px; max-height: 40vh; border-radius: var(--r-md); overflow: hidden;
   background: repeating-conic-gradient(rgb(var(--mdui-color-surface-container-high)) 0% 25%, rgb(var(--mdui-color-surface-container)) 0% 50%) 0 0 / 18px 18px;
 }
-.upscale-preview img { display: block; max-width: 100%; max-height: 46vh; object-fit: contain; }
+.upscale-preview img { display: block; max-width: 100%; max-height: 40vh; object-fit: contain; }
 .upscale-preview img[hidden] { display: none; }
 .upscale-empty { font-size: var(--fs-xs); color: rgb(var(--mdui-color-on-surface-variant)); }
 .upscale-empty[hidden] { display: none; }
@@ -3256,8 +3256,8 @@ mdui-select::part(menu) mdui-menu-item { white-space: nowrap; }
 .upscale-meta { font-size: var(--fs-xs); line-height: 1.5; color: rgb(var(--mdui-color-on-surface-variant)); font-variant-numeric: tabular-nums; }
 .upscale-meta.is-bad { color: rgb(var(--mdui-color-error)); }
 @media (max-width: 600px) {
-  .upscale-preview { min-height: 160px; max-height: 38vh; }
-  .upscale-preview img { max-height: 38vh; }
+  .upscale-preview { min-height: 140px; max-height: 34vh; }
+  .upscale-preview img { max-height: 34vh; }
   .queue-dialog::part(panel), .upscale-dialog::part(panel) { width: calc(100vw - 20px); max-width: none; }
   .queue-list { max-height: 52vh; }
 }
