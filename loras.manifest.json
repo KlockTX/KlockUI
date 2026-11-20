@@ -1,0 +1,398 @@
+{
+  "_comment": "预设用到的 LoRA 清单。size 取自本机实测，缺失为 null；agent 按 search_hint 到 Civitai/HF 找，流程见 skill.md 11.7。",
+  "items": [
+    {
+      "name": "anima_turbo_v0.2",
+      "arch": "anima",
+      "purpose": "加速（必装）",
+      "tier": "prime",
+      "presets": 8,
+      "used_by": [
+        "二次元 · 米山舞强光影",
+        "二次元 · 90年代忧郁",
+        "二次元 · 番剧平涂日常"
+      ],
+      "size": 148902616,
+      "search_hint": "turbo v0.2 Anima"
+    },
+    {
+      "name": "krea2_rim_light",
+      "arch": "krea",
+      "purpose": "光照氛围",
+      "tier": "prime",
+      "presets": 5,
+      "used_by": [
+        "初音 · 天台夜空",
+        "初音 · 未来实验室",
+        "二次元 · 蔚蓝档案立绘"
+      ],
+      "size": 400705088,
+      "search_hint": "rim light Krea 2"
+    },
+    {
+      "name": "krea2_yoneyama_mai",
+      "arch": "krea",
+      "purpose": "画师画风",
+      "tier": "prime",
+      "presets": 4,
+      "used_by": [
+        "初音 · 雨夜霓虹",
+        "初音 · 天台夜空",
+        "二次元 · 米山舞动感"
+      ],
+      "size": 219513428,
+      "search_hint": "yoneyama mai Krea 2"
+    },
+    {
+      "name": "krea2_loundraw",
+      "arch": "krea",
+      "purpose": "画师画风",
+      "tier": "prime",
+      "presets": 4,
+      "used_by": [
+        "初音 · 废弃教室",
+        "初音 · 雪原列车",
+        "二次元 · Kuvshinov 空气感"
+      ],
+      "size": 234681088,
+      "search_hint": "loundraw Krea 2"
+    },
+    {
+      "name": "krea2_fuzichoco",
+      "arch": "krea",
+      "purpose": "画师画风",
+      "tier": "prime",
+      "presets": 3,
+      "used_by": [
+        "初音 · 夏日祭",
+        "初音 · 樱花坡道",
+        "二次元 · 清透赛璐璐"
+      ],
+      "size": 228588920,
+      "search_hint": "fuzichoco Krea 2"
+    },
+    {
+      "name": "anima_flatline",
+      "arch": "anima",
+      "purpose": "作品风格",
+      "tier": "prime",
+      "presets": 3,
+      "used_by": [
+        "二次元 · 米山舞强光影",
+        "二次元 · 番剧平涂日常",
+        "二次元 · 蓝图科幻"
+      ],
+      "size": 23071296,
+      "search_hint": "flatline Anima"
+    },
+    {
+      "name": "anima_rimix",
+      "arch": "anima",
+      "purpose": "光照氛围",
+      "tier": "prime",
+      "presets": 3,
+      "used_by": [
+        "二次元 · 哥特霓虹",
+        "二次元 · Ri-mix 厚涂",
+        "二次元 · 武田弘光画风"
+      ],
+      "size": 528653464,
+      "search_hint": "rimix Anima"
+    },
+    {
+      "name": "krea2_clear_anime",
+      "arch": "krea",
+      "purpose": "画风",
+      "tier": "optional",
+      "presets": 2,
+      "used_by": [
+        "初音 · 夏日祭",
+        "二次元 · 清透赛璐璐"
+      ],
+      "size": 410640000,
+      "search_hint": "clear anime Krea 2"
+    },
+    {
+      "name": "krea2_90s_aesthetic",
+      "arch": "krea",
+      "purpose": "作品风格",
+      "tier": "optional",
+      "presets": 2,
+      "used_by": [
+        "初音 · 废弃教室",
+        "二次元 · 90年代动画"
+      ],
+      "size": 228588968,
+      "search_hint": "90s aesthetic Krea 2"
+    },
+    {
+      "name": "krea2_anmi",
+      "arch": "krea",
+      "purpose": "画师画风",
+      "tier": "optional",
+      "presets": 2,
+      "used_by": [
+        "初音 · 图书馆",
+        "二次元 · Anmi 温柔"
+      ],
+      "size": 234680576,
+      "search_hint": "anmi Krea 2"
+    },
+    {
+      "name": "krea2_kuvshinov",
+      "arch": "krea",
+      "purpose": "画师画风",
+      "tier": "optional",
+      "presets": 2,
+      "used_by": [
+        "初音 · 海边黄昏",
+        "二次元 · Kuvshinov 空气感"
+      ],
+      "size": 114325320,
+      "search_hint": "kuvshinov Krea 2"
+    },
+    {
+      "name": "anima_yoneyama_mai",
+      "arch": "anima",
+      "purpose": "画师画风",
+      "tier": "optional",
+      "presets": 2,
+      "used_by": [
+        "二次元 · 米山舞强光影",
+        "二次元 · 现实系光影"
+      ],
+      "size": 183615784,
+      "search_hint": "yoneyama mai Anima"
+    },
+    {
+      "name": "anima_moriimee_gothic",
+      "arch": "anima",
+      "purpose": "作品风格",
+      "tier": "optional",
+      "presets": 2,
+      "used_by": [
+        "二次元 · 90年代忧郁",
+        "二次元 · 哥特霓虹"
+      ],
+      "size": 138663768,
+      "search_hint": "moriimee gothic Anima"
+    },
+    {
+      "name": "anima_anime_in_real",
+      "arch": "anima",
+      "purpose": "画风",
+      "tier": "optional",
+      "presets": 2,
+      "used_by": [
+        "二次元 · Ri-mix 厚涂",
+        "二次元 · 现实系光影"
+      ],
+      "size": 277207608,
+      "search_hint": "anime in real Anima"
+    },
+    {
+      "name": "krea2_cyberpunk_anime",
+      "arch": "krea",
+      "purpose": "场景氛围",
+      "tier": "optional",
+      "presets": 1,
+      "used_by": [
+        "初音 · 雨夜霓虹"
+      ],
+      "size": 228588992,
+      "search_hint": "cyberpunk anime Krea 2"
+    },
+    {
+      "name": "krea2_rella",
+      "arch": "krea",
+      "purpose": "画师画风",
+      "tier": "optional",
+      "presets": 1,
+      "used_by": [
+        "初音 · 水族馆"
+      ],
+      "size": 234680576,
+      "search_hint": "rella Krea 2"
+    },
+    {
+      "name": "krea2_bioluminescent",
+      "arch": "krea",
+      "purpose": "画风",
+      "tier": "optional",
+      "presets": 1,
+      "used_by": [
+        "初音 · 水族馆"
+      ],
+      "size": 400705096,
+      "search_hint": "bioluminescent Krea 2"
+    },
+    {
+      "name": "krea2_rembrandt_light",
+      "arch": "krea",
+      "purpose": "光照氛围",
+      "tier": "optional",
+      "presets": 1,
+      "used_by": [
+        "初音 · 雪原列车"
+      ],
+      "size": 400705104,
+      "search_hint": "rembrandt light Krea 2"
+    },
+    {
+      "name": "krea2_murata",
+      "arch": "krea",
+      "purpose": "画师画风",
+      "tier": "optional",
+      "presets": 1,
+      "used_by": [
+        "初音 · 未来实验室"
+      ],
+      "size": 228588920,
+      "search_hint": "murata Krea 2"
+    },
+    {
+      "name": "krea2_kantoku",
+      "arch": "krea",
+      "purpose": "画师画风",
+      "tier": "optional",
+      "presets": 1,
+      "used_by": [
+        "初音 · 樱花坡道"
+      ],
+      "size": 229932352,
+      "search_hint": "kantoku Krea 2"
+    },
+    {
+      "name": "krea2_evan_cagle",
+      "arch": "krea",
+      "purpose": "画师画风",
+      "tier": "optional",
+      "presets": 1,
+      "used_by": [
+        "初音 · 废墟都市"
+      ],
+      "size": 457177860,
+      "search_hint": "evan cagle Krea 2"
+    },
+    {
+      "name": "krea2_dark_art",
+      "arch": "krea",
+      "purpose": "画风",
+      "tier": "optional",
+      "presets": 1,
+      "used_by": [
+        "初音 · 废墟都市"
+      ],
+      "size": 228588984,
+      "search_hint": "dark art Krea 2"
+    },
+    {
+      "name": "zimage_cyberpunk_anime",
+      "arch": "zimage",
+      "purpose": "场景氛围",
+      "tier": "optional",
+      "presets": 1,
+      "used_by": [
+        "初音 · 演唱会海报"
+      ],
+      "size": 340193560,
+      "search_hint": "zimage cyberpunk anime"
+    },
+    {
+      "name": "anima_90s_melancholy",
+      "arch": "anima",
+      "purpose": "作品风格",
+      "tier": "optional",
+      "presets": 1,
+      "used_by": [
+        "二次元 · 90年代忧郁"
+      ],
+      "size": 138719024,
+      "search_hint": "90s melancholy Anima"
+    },
+    {
+      "name": "anima_anime_flat",
+      "arch": "anima",
+      "purpose": "作品风格",
+      "tier": "optional",
+      "presets": 1,
+      "used_by": [
+        "二次元 · 番剧平涂日常"
+      ],
+      "size": 91879600,
+      "search_hint": "anime flat Anima"
+    },
+    {
+      "name": "anima_takeda_hiromitsu",
+      "arch": "anima",
+      "purpose": "画师画风",
+      "tier": "optional",
+      "presets": 1,
+      "used_by": [
+        "二次元 · 武田弘光画风"
+      ],
+      "size": 183618520,
+      "search_hint": "takeda hiromitsu Anima"
+    },
+    {
+      "name": "anima_blueprint",
+      "arch": "anima",
+      "purpose": "画风",
+      "tier": "optional",
+      "presets": 1,
+      "used_by": [
+        "二次元 · 蓝图科幻"
+      ],
+      "size": 38420360,
+      "search_hint": "blueprint Anima"
+    },
+    {
+      "name": "krea2_blue_archive_style",
+      "arch": "krea",
+      "purpose": "画风",
+      "tier": "optional",
+      "presets": 1,
+      "used_by": [
+        "二次元 · 蔚蓝档案立绘"
+      ],
+      "size": 938539208,
+      "search_hint": "blue archive style Krea 2"
+    },
+    {
+      "name": "krea2_celdepth_25d",
+      "arch": "krea",
+      "purpose": "画风",
+      "tier": "optional",
+      "presets": 1,
+      "used_by": [
+        "二次元 · Anmi 温柔"
+      ],
+      "size": 228588968,
+      "search_hint": "celdepth 25d Krea 2"
+    },
+    {
+      "name": "krea2_bold-inked-anime-realism",
+      "arch": "krea",
+      "purpose": "画风",
+      "tier": "optional",
+      "presets": 1,
+      "used_by": [
+        "k2_anime-real"
+      ],
+      "size": 234676792,
+      "search_hint": "bold-inked-anime-realism Krea 2"
+    },
+    {
+      "name": "krea2_detail_slider",
+      "arch": "krea",
+      "purpose": "细节增强",
+      "tier": "optional",
+      "presets": 1,
+      "used_by": [
+        "k2_anime-real"
+      ],
+      "size": 11524152,
+      "search_hint": "detail slider Krea 2"
+    }
+  ]
+}

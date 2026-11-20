@@ -496,6 +496,10 @@ if arch not in ALLOWED_ARCHS:
 
 > 场景：用户说"我 ComfyUI 已经装好了 / 我有一堆模型"，或 install.md 的 P0 探测到已有引擎。
 > **目标**：不重复下载、不覆盖用户已有文件，按实测结果配好 KlockUI 的参数。
+>
+> **补装 LoRA 时先看 `loras.manifest.json`**：`presets/` 里用到的 31 支 LoRA 都在里面，
+> 每条有 `name`（必须按这个命名，预设按名字匹配）、`arch`、`purpose`、`size`、`search_hint`。
+> `tier: "prime"` 是 install.md 2.3「精选档」的 7 支。
 
 ### 11.1 流程总览（四步，顺序不能乱）
 
