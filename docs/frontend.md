@@ -630,3 +630,33 @@ TypeError: Cannot read properties of null (reading 'addEventListener')
 ```
 
 以后发新版：`python scripts/make_release.py vX.Y.Z`，然后用 GitHub API 建 release 传 zip。
+
+## 二十四、配方编辑改为卡片内联展开（2026-11-20）
+
+**症状**：点预设卡片的「编辑」，编辑页面不出现。
+
+**根因**：`presetEditDialog` 是 mdui 的 modal，从「我的预设」（`savedDialog`，也是 modal）
+里再开第二个 modal —— 嵌套后打不开，且没有任何报错。
+
+**修法**：不再用弹窗，直接把编辑区插到被点的那张卡片下面。
+
+```
+┌─ 初音·雨夜霓虹   [导入] [编辑] ┐   ← 卡片高亮 is-editing
+├─ 01-miku-rainy-neon.json  格式有效 ┤
+│  ┌──────────────────────────┐  │
+│  │ { "klockui": 1, ...      │  │   ← textarea，340px
+│  └──────────────────────────┘  │
+│        格式化   收起   保存     │
+└────────────────────────────────┘
+  下一张卡片…
+```
+
+要点：
+
+- 同时只展开一个（`closeInlinePresetEditor()` 在前）
+- 保存后自动收起并刷新仓库配方列表
+- JSON 语法校验沿用 `presetJsonError()`，输入防抖 260ms
+- `area.focus()` 会把滚动位置留在中间，要显式 `scrollTop = 0`
+
+**教训**：mdui 的 modal 不要嵌套。二级操作要么内联展开，要么把父弹窗关掉再开新的。
+嵌套时既没有报错，也看不出是层级问题——只能靠实测发现。

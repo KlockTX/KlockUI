@@ -1,7 +1,7 @@
 {
   "klockui": 1,
   "name": "初音 · 雨夜霓虹",
-  "note": "初音未来插画组 · 画风版",
+  "note": "inline-test",
   "model": "krea2_turbo_int8_convrot.safetensors",
   "arch": "krea",
   "prompt": "anime illustration, cel shading, clean lineart, flat colors, crisp edges, 2D artwork, hatsune miku standing on a rain-soaked city street at night, turning her head back over her shoulder, teal twin tails heavy with rain, magenta and cyan signs reflected in the puddles as flat color shapes, steam rising from a grate, simplified background with layered neon shapes, cold palette with warm accents, three-quarter view",

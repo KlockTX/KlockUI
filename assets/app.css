@@ -3877,3 +3877,24 @@ mdui-menu-item:not(:defined) {
 }
 .gallery-batchbar[hidden] { display: none; }
 .gallery-batch-actions { display: flex; align-items: center; gap: var(--sp-2); }
+
+/* ---------- 配方内联编辑（点「编辑」在卡片下方展开） ---------- */
+.preset-inline-editor {
+  display: flex; flex-direction: column; gap: var(--sp-4);
+  margin: var(--sp-2) 0 var(--sp-4);
+  padding: var(--sp-5) var(--sp-5) var(--sp-4);
+  border-radius: var(--r-md);
+  background: rgb(var(--mdui-color-surface-container));
+  border: 1px solid rgb(var(--mdui-color-primary) / .35);
+  box-shadow: 0 6px 18px rgb(0 0 0 / .06);
+  animation: presetEditorIn .18s ease;
+}
+@keyframes presetEditorIn {
+  from { opacity: 0; transform: translateY(-4px); }
+  to { opacity: 1; transform: none; }
+}
+.repo-preset.is-editing { border-color: rgb(var(--mdui-color-primary) / .5); }
+.preset-inline-editor .preset-edit-text { height: 240px; min-height: 140px; }
+.preset-inline-actions {
+  display: flex; align-items: center; justify-content: flex-end; gap: var(--sp-2);
+}

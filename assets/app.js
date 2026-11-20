@@ -5903,7 +5903,8 @@
           ),
           h("div", { class: "repo-preset-actions" },
             h("mdui-button", { variant: "text", text: "导入", on: { click: () => importRepoPreset(item) } }),
-            h("mdui-button", { variant: "text", text: "编辑", on: { click: () => openPresetEditor(item.file) } })
+            h("mdui-button", { variant: "text", text: "编辑",
+              on: { click: (event) => openInlinePresetEditor(item.file, "", event.currentTarget.closest(".repo-preset")) } })
           )
         )
       );
@@ -5934,6 +5935,126 @@
     el.presetEditStatus.textContent = message || "";
     el.presetEditStatus.classList.toggle("is-ok", Boolean(ok && message));
     el.presetEditStatus.classList.toggle("is-bad", Boolean(!ok && message));
+  }
+
+  /* -------------------------------------------------- 配方内联编辑
+   * 原来点「编辑」弹一个 mdui-dialog，但它是从「我的预设」这个 modal 里再开的
+   * 第二个 modal —— 嵌套后打不开。改成直接把编辑区插到被点的那张卡片下面，
+   * 既绕开嵌套弹窗，位置也对得上「编辑这张」的直觉。
+   */
+  let inlinePresetEditor = null;
+
+  function closeInlinePresetEditor() {
+    if (!inlinePresetEditor) return;
+    inlinePresetEditor.box.remove();
+    if (inlinePresetEditor.anchor) inlinePresetEditor.anchor.classList.remove("is-editing");
+    inlinePresetEditor = null;
+  }
+
+  async function openInlinePresetEditor(file, presetText, anchor) {
+    closeInlinePresetEditor();
+    let text = presetText;
+    if (!text && file) {
+      try {
+        const res = await fetch(`/local/preset?file=${encodeURIComponent(file)}`, { cache: "no-store" });
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        text = await res.text();
+      } catch (err) {
+        snack(`读取失败：${err.message}`, { bad: true });
+        return;
+      }
+    }
+    if (!text) {
+      const cfg = currentConfig();
+      text = JSON.stringify({
+        klockui: 1, name: "新配方", model: cfg.model, arch: activeProfile()?.arch || "krea",
+        prompt: cfg.prompt, negative: cfg.negative, quality: cfg.quality,
+        size: { ratio: cfg.ratioKey, width: cfg.width, height: cfg.height },
+        steps: cfg.steps, cfg: cfg.cfg, sampler: cfg.sampler, scheduler: cfg.scheduler,
+        loras: cfg.loras
+      }, null, 2);
+    }
+
+    const fileName = file || `preset-${Date.now()}.json`;
+    const status = h("span", { class: "preset-edit-status" });
+    const area = h("textarea", { class: "preset-edit-text", spellcheck: "false" });
+    area.value = text;
+
+    const setStatus = (message, ok) => {
+      status.textContent = message || "";
+      status.classList.toggle("is-ok", Boolean(ok && message));
+      status.classList.toggle("is-bad", Boolean(!ok && message));
+    };
+    const check = () => {
+      const err = presetJsonError(area.value);
+      setStatus(err || "格式有效", !err);
+      return err;
+    };
+    check();
+    area.addEventListener("input", debounce(check, 260));
+
+    const save = h("mdui-button", {
+      variant: "filled", text: "保存",
+      on: { click: async () => {
+        const err = check();
+        if (err) {
+          snack("JSON 还有问题，先修一下", { bad: true });
+          return;
+        }
+        let body;
+        try { body = JSON.parse(area.value); } catch { return; }
+        save.disabled = true;
+        try {
+          const res = await fetch("/local/preset/save", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ file: fileName, json: body })
+          });
+          const data = await res.json().catch(() => ({}));
+          if (!res.ok) throw new Error(data.detail || `HTTP ${res.status}`);
+          closeInlinePresetEditor();
+          repoPresetCache = null;
+          await loadRepoPresets(true);
+          snack(`已保存 ${fileName}`);
+        } catch (error) {
+          snack(`保存失败：${error.message}`, { bad: true });
+        } finally {
+          save.disabled = false;
+        }
+      } }
+    });
+
+    const box = h("div", { class: "preset-inline-editor" },
+      h("div", { class: "preset-edit-bar" },
+        h("span", { class: "preset-edit-file", text: fileName }),
+        status
+      ),
+      area,
+      h("div", { class: "preset-inline-actions" },
+        h("mdui-button", {
+          variant: "text", text: "格式化",
+          on: { click: () => {
+            try {
+              area.value = JSON.stringify(JSON.parse(area.value), null, 2);
+              check();
+            } catch (err) {
+              setStatus(`JSON 语法错误，无法格式化`, false);
+            }
+          } }
+        }),
+        h("mdui-button", { variant: "text", text: "收起", on: { click: closeInlinePresetEditor } }),
+        save
+      )
+    );
+
+    const host = anchor && anchor.isConnected ? anchor : (el.repoPresets || el.savedList);
+    if (!host) return;
+    host.after(box);
+    if (anchor) anchor.classList.add("is-editing");
+    inlinePresetEditor = { box, file: fileName, anchor };
+    area.focus();
+    area.scrollTop = 0;   // focus 会把光标放开头，但滚动位置可能停在中间
+    area.scrollIntoView({ block: "nearest", behavior: "smooth" });
   }
 
   async function openPresetEditor(file, presetText) {
@@ -10963,7 +11084,7 @@
       }, 200));
     }
     if (el.repoPresetNew) {
-      el.repoPresetNew.addEventListener("click", () => openPresetEditor("", ""));
+      el.repoPresetNew.addEventListener("click", () => openInlinePresetEditor("", "", el.repoPresets));
     }
     bindPresetDrop();
     el.refinePresetsBtn.addEventListener("click", openRefineDialog);
