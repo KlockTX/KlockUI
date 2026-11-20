@@ -5,14 +5,14 @@
   "arch": "anima",
   "prompt": "masterpiece, best quality, 1girl, futuristic laboratory, blue technical schematics, holographic panels, clean mechanical details, cool blue-white lighting, sci-fi concept art",
   "negative": "worst quality, low quality, score_1, score_2, blurry, jpeg artifacts, watermark, extra fingers, bad hands",
-  "quality": "standard",
+  "quality": "gacha",
   "size": {
     "ratio": "2:3",
     "width": 832,
     "height": 1216
   },
-  "steps": 36,
-  "cfg": 4,
+  "steps": 10,
+  "cfg": 1,
   "sampler": "Euler",
   "scheduler": "SGM Uniform",
   "seed": -1,
@@ -20,6 +20,10 @@
   "hires": false,
   "easyCache": true,
   "loras": [
+    {
+      "name": "anima_turbo_v0.2",
+      "weight": 1
+    },
     {
       "name": "anima_blueprint",
       "weight": 0.8
@@ -29,5 +33,5 @@
       "weight": 0.4
     }
   ],
-  "note": "二次元串配置 · 来自 docs/anime-recipes.md"
+  "note": "二次元串配置 · 来自 docs/anime-recipes.md · 已挂 anima_turbo_v0.2 加速：10 步 / CFG 1 出图；CFG 1 时负面词几乎无效，构图更随机，适合抽卡，选定后再关 Turbo 细化重绘。"
 }
