@@ -85,9 +85,21 @@ Windows 注意：路径不要含中文或空格；用 `venv\Scripts\python.exe`�
 
 | 显存 | 启动参数 |
 |---|---|
-| ≥16GB | 不加 `--lowvram` |
+| ≥16GB | 不加 `--lowvram`，`--cache-ram 8` |
 | 8–12GB | `--lowvram --cache-ram 2` |
 | <8GB | `--lowvram --cache-ram 1`，且只装 Anima |
+
+**真的爆显存时按需追加**（KlockUI 侧已经做了分块 VAE，这几条是最后的兜底）：
+
+| 参数 | 代价 | 什么时候用 |
+|---|---|---|
+| `--novram` | 更频繁搬运，慢 | `--lowvram` 仍然 OOM |
+| `--cpu-vae` | VAE 慢 2–3 倍，显存省 1–2GB | Hires 二采、超大图解码时 OOM |
+| `--fp16-vae` | **部分 VAE 会出黑图** | 最后手段，出黑图立即回退 |
+| `--reserve-vram 1` | 少用一点显存 | 系统/浏览器抢显存导致掉驱动 |
+
+设置方式：`run_comfy.bat` 里直接加；或在 KlockUI 的 `start.bat` 走**兜底启动**时用
+`set KLOCK_ENGINE_ARGS=--cpu-vae` 追加（该变量只在没有 `run_comfy.bat` 时生效）。
 
 ---
 

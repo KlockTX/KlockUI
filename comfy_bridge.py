@@ -1570,6 +1570,7 @@ def generate(endpoint, payload, timeout=None):
             except (TypeError, ValueError):
                 threshold, node_type = 0.2, "EasyCache"
             _apply_step_cache(g, threshold, node_type)
+        _apply_tiled_vae(g, _tiled_vae_enabled(payload))
         if control_image and control_cfg.get("model"):
             _apply_controlnet(g, control_cfg["model"], control_image,
                               control_cfg.get("strength", 0.8),
@@ -1795,6 +1796,52 @@ def _upscale_model_names():
     for ext in ("*.safetensors", "*.pth", "*.pt"):
         names.extend(os.path.basename(p) for p in glob.glob(os.path.join(UPSCALE_DIR, ext)))
     return sorted(set(names))
+
+
+# 分块 VAE：8GB 卡上 1024×1536 整图解码峰值能吃掉 1–2GB，Hires 二采的
+# 大图更狠。分块解码把峰值压到 tile 级别，代价是多几次 kernel 启动。
+# tile_size/overlap 与 ComfyUI 的 VAEDecodeTiled 默认值一致，overlap 足够时
+# 接缝不可见。KLOCK_TILED_VAE=0 可整体关掉回退整图解码。
+TILED_VAE_TILE = int(os.environ.get("KLOCK_TILED_VAE_TILE", "512"))
+TILED_VAE_OVERLAP = int(os.environ.get("KLOCK_TILED_VAE_OVERLAP", "64"))
+
+
+def _tiled_vae_enabled(payload):
+    """是否用分块 VAE。显式传 klock_tiled_vae 优先，否则看环境变量（默认开）。"""
+    if isinstance(payload, dict):
+        value = payload.get("klock_tiled_vae")
+        if value is not None:
+            return str(value).strip().lower() not in ("0", "false", "off", "no", "")
+    return os.environ.get("KLOCK_TILED_VAE", "1").strip().lower() not in ("0", "false", "off", "no")
+
+
+def _apply_tiled_vae(graph, enabled=True):
+    """把图里的 VAEDecode / VAEEncode 换成 Tiled 版本。
+
+    统一在组装完成后改，而不是在 10 处 build_graph 分支里各写一遍 ——
+    新增架构时不会再漏掉某个解码点。
+    """
+    if not enabled:
+        return graph
+    for node in graph.values():
+        kind = node.get("class_type")
+        if kind == "VAEDecode":
+            node["class_type"] = "VAEDecodeTiled"
+            node["inputs"].update({
+                "tile_size": TILED_VAE_TILE,
+                "overlap": TILED_VAE_OVERLAP,
+                "temporal_size": 64,
+                "temporal_overlap": 8,
+            })
+        elif kind == "VAEEncode":
+            node["class_type"] = "VAEEncodeTiled"
+            node["inputs"].update({
+                "tile_size": TILED_VAE_TILE,
+                "overlap": TILED_VAE_OVERLAP,
+                "temporal_size": 64,
+                "temporal_overlap": 8,
+            })
+    return graph
 
 
 # 超分模型原生倍数兜底：名字里没写倍数时按 4x 处理（ESRGAN 系绝大多数是 4x）。

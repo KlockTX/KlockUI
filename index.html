@@ -563,7 +563,7 @@
                   <span>低显存保底</span>
                   <label class="switch-inline"><span>NeverOOM</span><mdui-switch id="lowVram" aria-label="开启低显存保底"></mdui-switch></label>
                 </div>
-                <p class="helper">整批生成结束后释放 ComfyUI 显存缓存；Hires 1.5x 或批量爆显存时再开，采样不会变慢但下一轮要重载模型。</p>
+                <p class="helper">整批结束后释放 ComfyUI 显存缓存。VAE 解码与编码始终分块（512/64），8GB 卡上大图反而更快；这块不受此开关影响。Hires 或批量爆显存时再开保底，下一轮会重载模型。</p>
               </div>
             </section>
           </div>

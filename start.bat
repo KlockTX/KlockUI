@@ -24,14 +24,21 @@ if not exist "%PY%" (
   exit /b 1
 )
 
+rem Low-VRAM extra switches. Leave empty by default: --fp16-vae can produce
+rem black images on some VAEs, and --cpu-vae trades 2-3x VAE time for VRAM.
+rem Set KLOCK_ENGINE_ARGS to opt in, e.g. "--cpu-vae" or "--fp16-vae".
+set "EXTRA=%KLOCK_ENGINE_ARGS%"
+
 netstat -ano | findstr ":8188" | findstr "LISTENING" >nul
 if errorlevel 1 (
   echo Starting ComfyUI engine, first launch may take 15-30 seconds...
   if exist "%ENGINE%\run_comfy.bat" (
+    rem run_comfy.bat owns its own flags and does NOT read KLOCK_ENGINE_ARGS;
+    rem edit that file directly if you want extras applied on this path.
     start "ComfyEngine" /min /D "%ENGINE%" "%ENGINE%\run_comfy.bat"
   ) else (
     rem Plain ComfyUI clone has no run_comfy.bat; start main.py with sane defaults.
-    start "ComfyEngine" /min /D "%ENGINE%" "%PY%" "%ENGINE%\main.py" --listen 127.0.0.1 --port 8188 --lowvram --cache-ram 2 --preview-method auto
+    start "ComfyEngine" /min /D "%ENGINE%" "%PY%" "%ENGINE%\main.py" --listen 127.0.0.1 --port 8188 --lowvram --cache-ram 2 --preview-method auto %EXTRA%
   )
 )
 

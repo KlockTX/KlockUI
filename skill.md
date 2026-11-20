@@ -502,12 +502,19 @@ ls <ComfyUI>/models/upscale_models/*.{safetensors,pth,pt} 2>/dev/null | sed 's#.
 
 - 有超分模型时，高清档走 `UpscaleModelLoader + ImageUpscaleWithModel`，真补细节；
   没有时走 `VAEDecode + ImageScale` 插值，放大后偏糊。
+- 超分节点内部**已经分块**（`tiled_scale(512/32)`，OOM 会自动把 tile 减半），
+  KlockUI 侧没有可传的分块参数；`UPSCALE_MAX_EDGE` 限制的是输出尺寸，不是分块。
 - 倍数是**模型固定的**：`_upscale_model_scale()` 从文件名猜（`4x-` / `_x4plus` → 4），
   没写就按 4x。桥接层按原生倍数出图，不再缩回用户选的 1.5x——缩回去等于白扔像素。
 - 超分模型名带 `4x` 也可能其实是别家版本。**按字节数 + sha256 校验**才认，
   `models.manifest.json` 的 `ask.upscale_question` 和两条 `arch: upscaler` 条目是安装依据。
 - 本机文件与官方源不一致时（例如旧版 Remacri 66MB vs 官方 33MB），
   不要偷偷替换用户已有的——只报告差异，让用户决定。
+
+**分块 VAE 是默认开的**（`_apply_tiled_vae()` 在组装后统一替换所有
+`VAEDecode` / `VAEEncode`）。8GB 卡上实测比整图快一倍（12.1s vs 24.3s）、
+像素差 0.19/255。调 `KLOCK_TILED_VAE_TILE` / `KLOCK_TILED_VAE_OVERLAP` 改分块，
+`KLOCK_TILED_VAE=0` 回退整图解码。爆显存时优先动这个，别急着上 `--cpu-vae`。
 
 LoRA 归属看名字前缀：`krea*`→krea、`moss_*`→moss、`anima_*`→anima、
 `zimage_*`/`z_image_*`→zimage，其余→sdxl。注意 `krea2_turbo_lora*` 是 Raw 侧 adapter，
