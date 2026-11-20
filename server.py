@@ -101,7 +101,6 @@ JOB_QUEUE = []
 JOBS_LOCK = threading.Lock()
 _QUEUE_ACTIVE = False
 HISTORY_LOCK = threading.Lock()
-POSTPROCESS_MAX_SIDE = 16384
 _ACTIVITY_LOCK = threading.Lock()
 _last_activity = time.time()
 SCRYPT_N = 32768
