@@ -8,6 +8,8 @@
 设计要点：
 1. 只打 git ls-files 里的文件 —— 个人数据、缓存、备份、模型权重天然被排除。
 2. 包里额外放 AGENT-INSTALL.md，告诉 agent「这是一个压缩包，按 install.md 执行」。
+3. 开发期文档（docs/frontend.md、docs/swarmui-notes.md、scripts/smoke.py）不进包，
+   它们留在仓库里；包里只放装机与排错会用到的。
 3. 不改版本号到代码里：index.html 用 ?v= 参数做缓存失效，包本身用目录名带版本。
 """
 import os
@@ -38,10 +40,23 @@ def version_arg():
     return "v1.0.0"
 
 
+# 开发期才用的东西，装机不需要 —— 不进发行包，仓库里仍保留。
+# 判断标准：运行 KlockUI 时不会被读到，也不是用户排错要查的资料。
+DEV_ONLY = {
+    ".gitattributes",
+    "docs/frontend.md",       # 前端改动记录，纯开发过程
+    "docs/swarmui-notes.md",  # 竞品调研
+    "scripts/smoke.py",       # 开发自检，不是运行时依赖
+}
+
+
 def tracked_files():
     files = git(["ls-files"]).splitlines()
-    # 打包产物自己不能进包
-    return [f for f in files if not f.startswith("dist/")]
+    return [
+        f for f in files
+        # 打包产物自己不能进包
+        if not f.startswith("dist/") and f not in DEV_ONLY
+    ]
 
 
 def main():
