@@ -433,3 +433,124 @@ if arch not in ALLOWED_ARCHS:
 4. **大文件下载必须校验**。比对字节数 + safetensors header，截断文件能通过"下载成功"却会在加载时崩。
 5. **不要用间接指标代替观感**。"像素差异变大"不代表画质变差；蒸馏模型的步数上限要靠实拍对比，不靠推理。
 6. **改动后写清回滚路径**。启动参数、依赖包这类改动，说清楚删哪一行 / 卸哪个包能恢复。
+
+---
+
+## 十一、扫描本机已有模型与 LoRA，自动配置
+
+> 场景：用户说"我 ComfyUI 已经装好了 / 我有一堆模型"，或 install.md 的 P0 探测到已有引擎。
+> **目标**：不重复下载、不覆盖用户已有文件，按实测结果配好 KlockUI 的参数。
+
+### 11.1 流程总览（四步，顺序不能乱）
+
+```
+① 拿 models 路径（用户可能要手动给）
+        ↓
+② 只读扫描：底模判架构 + LoRA 判归属 + 查缺失的 TE/VAE
+        ↓
+③ 生成配置草案（JSON preset，每个架构一份），不落盘
+        ↓
+④ KlockUI 启动后，通过前端"导入预设"入口写入 localStorage
+```
+
+**为什么③④要分开**：后端**不保存任何设置**，`_CURRENT_MODEL` 只是进程内存态，
+调 `/local/engine/select-model` 重启就丢。唯一的持久化层是浏览器 localStorage
+（`simplegen.settings.v2`），而导入入口在前端。所以"配置"必须走前端导入，
+不能只调后端 API。
+
+### 11.2 第一步：拿路径，别只找默认位置
+
+优先按环境变量 / 约定路径找；找不到**直接问用户**，不要猜：
+
+> 你的 ComfyUI 装在哪个目录？我扫一下 models 文件夹，看已有底模和 LoRA，
+> 避免重复下载，也能直接帮你配参数。
+
+拿到后设 `KLOCK_MODELS_ROOT=<路径>/models`。**注意不是 `KLOCK_COMFY_DIR`**：
+`comfy_bridge.py` 扫模型只读 `KLOCK_MODELS_ROOT`；`KLOCK_COMFY_DIR` 只被 `start.bat`
+用来定位引擎目录。装过多个 ComfyUI 的机器上，用户给的路径最可靠。
+
+### 11.3 第二步：只读扫描
+
+用 `comfy_bridge._classify()` 读 safetensors header 判架构，**别用文件名猜**：
+
+```bash
+cd <KlockUI 目录>
+../ComfyUI/venv/bin/python - <<'PY'
+import os, comfy_bridge as b
+print("ROOT", b.MODELS_ROOT)
+for folder in (b.DIFF_DIR, b.CKPT_DIR):
+    for name in b._model_filenames():
+        path = os.path.join(folder, name)
+        if os.path.isfile(path):
+            print("%-10s %5.1fGB %s" % (b._classify(path), os.path.getsize(path)/1024**3, name))
+PY
+```
+
+判据见第三节。**zimage 要单独处理**：服务端 `/local/engine/catalog` 的 `checkpoints[].arch`
+和 payload 都没有 zimage，只能靠 `_classify()`（`cap_embedder.0.weight` + `noise_refiner.*`）
+或文件名 `/z[_ -]?image/i` 兜底，并在配方里显式写 `"arch": "zimage"`。
+
+再扫 LoRA 与配套模块：
+
+```bash
+ls <ComfyUI>/models/loras/*.safetensors 2>/dev/null | sed 's#.*/##'
+ls <ComfyUI>/models/text_encoders/*.safetensors <ComfyUI>/models/vae/*.safetensors 2>/dev/null | sed 's#.*/##'
+```
+
+LoRA 归属看名字前缀：`krea*`→krea、`moss_*`→moss、`anima_*`→anima、
+`zimage_*`/`z_image_*`→zimage，其余→sdxl。注意 `krea2_turbo_lora*` 是 Raw 侧 adapter，
+在 Turbo 底模下前端会自动隐藏，别给它配权重。
+
+**查缺失的配套模块**（按 `comfy_bridge.py:89-111` 的固定文件名）：
+
+| 架构 | 必需 TE | 必需 VAE |
+|---|---|---|
+| anima | `qwen_3_06b_base.safetensors` | `qwen_image_vae.safetensors` |
+| krea | `qwen3vl_4b_fp8_scaled.safetensors` | 同 anima 的 VAE |
+| moss | `qwen3.5_9b_w4a8_gptq.safetensors` | `flux2-vae_small.safetensors` |
+| zimage | `qwen_3_4b_fp8_mixed.safetensors` | `ae.safetensors` |
+
+缺哪个报给用户，按 `models.manifest.json` 的 `arch_requires` 补，**已存在的不动**。
+
+### 11.4 第三步：生成配置草案
+
+每个扫到的架构一份 JSON preset，字段参照 `presets/*.json`。参数从 `MODEL_PROFILES[arch]`
+（`assets/data.js`，**不是 app.js**）取：
+
+| 架构 | sampler / scheduler | shift | standard | 加速 LoRA（仅抽卡档） |
+|---|---|---|---|---|
+| anima | Euler / SGM Uniform | 3.5 | 28 步 / CFG 4 | `anima_turbo_v0.2` |
+| krea | Euler / Simple | 1.15 | 8 步 / CFG 1 | 无（底模即 Turbo） |
+| moss | Euler / Simple | — | 35 步 / CFG 3 | `moss_image_sft_8steps_dmd_lora` |
+| zimage | Res Multistep / Simple | 3 | 9 步 / CFG 1 | 无 |
+| sdxl | Euler a / Karras | — | 26 步 / CFG 5 | 无 |
+
+各画质档、负面词、尺寸约束见第四节。**硬约束别违背**：
+
+- Krea 步数 ≥ 8、原生 1K–2K，低于 1K 掉画质
+- Z-Image 的 CFG 必须为 1，负面词无效
+- MOSS 所有档位 `turbo:false`，否则会挂上 Anima 的加速 LoRA
+
+LoRA 挑选：只挂同架构前缀的，画风 0.6–0.9、工具/细节 0.3–0.6，
+一次不超过 2 支，总权重蒸馏架构 ≈ 1、多步架构 1.3–1.6。
+
+### 11.5 第四步：落成设置（必须走前端）
+
+每份 JSON 存成文件，在已打开的 KlockUI 页面：
+
+- 拖到提示词卡或参数卡上（拖拽导入），或
+- 点参数区的"导入预设"文件按钮
+
+`applyPresetJson()` 会按 `model` → 同架构兜底 → 显式字段 → `loras` 的优先级应用，
+并写入 localStorage。导入后核对：模型下拉非空、步数/CFG/采样器与草案一致。
+
+**别用后端 API 代替导入**——`select-model` 只改内存，刷新页面就没了。
+
+### 11.6 扫描后的用户反馈话术
+
+基于实测说，别凭空问：
+
+> 在 `<路径>` 扫到：Krea 2 全套（底模+TE+VAE）、Anima 底模但缺 TE、
+> 12 支 LoRA（8 Krea / 4 Anima）。要补装 Anima 的 TE 吗？还是只用 Krea？
+
+用户的选择决定下载清单；已存在且校验通过的文件直接跳过。

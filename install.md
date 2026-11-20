@@ -112,13 +112,16 @@ test -f <找到的目录>/main.py && echo "COMFY_USABLE"
 
 | 结果 | 你要做的 |
 |---|---|
-| A 命中（`ENGINE_READY`） | **整个 P0 跳过**，直接进第 4 节。别另起一个引擎抢 8188 端口 |
+| A 命中（`ENGINE_READY`） | **跳过下面的"全新安装"子节**，但仍要做 P0.5 扫描配置；别另起一个引擎抢 8188 端口 |
 | A 未命中、B/C 命中 | **复用这个目录**：不要 clone、不要新建 venv、不要覆盖已装的 torch；直接启动它（见 6.1），确认 8188 通了再进 P1 |
 | 全未命中 | 才走下面的全新安装 |
 
 > **KlockUI 不要求 ComfyUI 一定和它同级。** 桥接层只连 `127.0.0.1:8188`；
 > 同级目录只是 `start.bat` 的默认探测路径，实际路径可以用 `KLOCK_COMFY_DIR` 覆盖。
 > 所以本机已有 ComfyUI 时，**优先复用**，不要为了凑目录结构去搬动或复制它。
+>
+> **端口通 ≠ 知道模型路径**。即使 A 命中，也继续做 P0.5：引擎可能在跑但模型装在别处，
+> 必须确认路径才能扫描配置。
 
 ---
 
@@ -151,6 +154,153 @@ venv/bin/python -c "import torch; print(torch.__version__, torch.cuda.is_availab
 
 ---
 
+## 3.5 P0.5 · 扫描本机已有模型与 LoRA，生成配置草案
+
+> **这一段只读，不改任何文件、不写任何配置。**
+> 目的：把第 2 节的"你要装哪些架构"从凭空问变成**基于实测问**，
+> 并提前准备好一份待导入的 JSON 配方，避免重复下载用户已有的模型。
+
+### 3.5.1 拿到 models 目录（两种途径）
+
+优先用 P0 探测到的 ComfyUI 路径：
+
+```bash
+<ComfyUI>/models/diffusion_models/
+<ComfyUI>/models/checkpoints/
+<ComfyUI>/models/loras/
+<ComfyUI>/models/text_encoders/
+<ComfyUI>/models/vae/
+```
+
+**如果 P0 没定位到目录，或用户说"我 ComfyUI 装在别处"，就直接问用户路径**，
+不要猜、不要只找默认位置：
+
+> 你的 ComfyUI 装在哪个目录？我需要扫一下里面的 models 文件夹，看看你已经有
+> 哪些底模和 LoRA，这样就不会重复下载，也能直接帮你配好参数。
+> （示例：`D://AI//ComfyUI` / `E://sd//ComfyUI_windows_portable`）
+
+拿到路径后先确认：
+
+```bash
+test -d "<用户给的路径>/models" && echo "MODELS_FOUND"
+```
+
+用户给的路径可以放进环境变量，后面 KlockUI 启动时会用到：
+
+```bash
+export KLOCK_MODELS_ROOT="<用户给的路径>/models"
+```
+
+> 注意是 `KLOCK_MODELS_ROOT`，不是 `KLOCK_COMFY_DIR`。桥接层扫模型只读这个根。
+> 让用户自己确认路径比自动找更可靠——装过多个 ComfyUI 的机器很常见。
+
+### 3.5.2 只读扫描（用 KlockUI 自带的分类函数，别自己猜架构）
+
+KlockUI 源码里有现成的 `_classify()`：**读 safetensors header 的张量名判定架构**，
+比看文件名准。从 KlockUI 目录跑：
+
+```bash
+cd <KlockUI 目录>
+../ComfyUI/venv/bin/python - <<'PY'
+import os, comfy_bridge as b
+print("MODELS_ROOT =", b.MODELS_ROOT)
+for folder in (b.DIFF_DIR, b.CKPT_DIR):
+    for name in b._model_filenames():
+        path = os.path.join(folder, name)
+        if os.path.isfile(path):
+            print("%-12s %10.2fGB  %s" % (b._classify(path), os.path.getsize(path)/1024**3, name))
+PY
+```
+
+输出示例：
+
+```
+krea         11.74GB  krea2_noct_v4_int8_convrot.safetensors
+anima         5.62GB  miaomiaoHarem_29BBETA11_bf16.safetensors
+zimage        6.31GB  z_image_turbo_int8_convrot.safetensors
+unknown       0.21GB  some-random-model.safetensors
+```
+
+**判据表**（`comfy_bridge.py:420-454`，写代码前先核对）：
+
+| 架构 | safetensors header 特征键 |
+|---|---|
+| moss | `shared_block_modulation.weight` + `layers.0.proj.ffn_up_gate.weight` |
+| anima | `llm_adapter.blocks.0.cross_attn.q_proj.weight` |
+| krea | `txtfusion.projector.weight` |
+| zimage | `cap_embedder.0.weight` + `noise_refiner.*` |
+| sdxl | `conditioner.*` / `first_stage_model.*` / `input_blocks.*` |
+
+> **服务端 `/local/engine/catalog` 不返回 zimage**，所以这一步必须直接调 `_classify()`，
+> 或按文件名 `/z[_ -]?image/i` 兜底。别拿 catalog 的 `arch` 字段当唯一依据。
+
+再扫 LoRA 和配套模块：
+
+```bash
+ls <ComfyUI>/models/loras/*.safetensors 2>/dev/null | sed 's#.*/##'
+ls <ComfyUI>/models/text_encoders/*.safetensors <ComfyUI>/models/vae/*.safetensors 2>/dev/null | sed 's#.*/##'
+```
+
+LoRA 的架构归属**看名字前缀**（`app.js:2584-2592`）：
+
+```
+krea* / krea2_*  → krea      moss_*  → moss
+anima_*          → anima     zimage_* / z_image_* → zimage
+其它             → sdxl
+```
+
+### 3.5.3 生成配置草案（不落盘，等 P1 完成后导入）
+
+对**每个扫到的架构**生成一份 JSON preset，字段参照 `presets/*.json`。
+参数从 `assets/data.js` 的 `MODEL_PROFILES[arch]` 取，**不要自己发明**：
+
+| 架构 | 采样器 / 调度器 | shift | 标准档 | 加速 LoRA |
+|---|---|---|---|---|
+| anima | Euler / SGM Uniform | 3.5 | 28 步 / CFG 4 | `anima_turbo_v0.2`（仅抽卡档） |
+| krea | Euler / Simple | 1.15 | 8 步 / CFG 1 | 无（底模即 Turbo） |
+| moss | Euler / Simple | — | 35 步 / CFG 3 | `moss_image_sft_8steps_dmd_lora`（仅抽卡档） |
+| zimage | Res Multistep / Simple | 3 | 9 步 / CFG 1 | 无 |
+| sdxl | Euler a / Karras | — | 26 步 / CFG 5 | 无 |
+
+完整规则、各画质档、LoRA 权重建议见 `skill.md` 第三、四、五节。
+
+草案示例（krea）：
+
+```json
+{
+  "klockui": 1,
+  "name": "自动配置 · Krea",
+  "model": "krea2_noct_v4_int8_convrot.safetensors",
+  "arch": "krea",
+  "quality": "standard",
+  "steps": 8,
+  "cfg": 1,
+  "sampler": "Euler",
+  "scheduler": "Simple",
+  "shift": 1.15,
+  "size": { "ratio": "2:3", "width": 1024, "height": 1536 },
+  "loras": []
+}
+```
+
+**匹配到已有 LoRA 时**：按前缀挑同架构的，画风类权重 0.6–0.9，
+工具/细节类 0.3–0.6；不要一次挂超过 2 支。Krea / MOSS 的 LoRA 是 DiT-only，
+桥接层会自动用 `LoraLoaderModelOnly`，不需要你处理。
+
+### 3.5.4 把扫描结果反馈给用户，再继续
+
+用这个话术（**基于实测，不要凭空问**）：
+
+> 我在 `D://AI//ComfyUI//models` 扫到了：Krea 2 全套（底模 + 编码器 + VAE）、
+> Anima 底模但缺编码器、12 支 LoRA（8 支 Krea / 4 支 Anima）。
+> 要我补装缺的 Anima 编码器吗？还是只用 Krea？
+
+用户的选择决定 P2 下载清单：**已存在且校验通过的文件直接跳过**，只下缺的。
+
+---
+
+---
+
 ## 4. P1 · 装 KlockUI
 
 ```bash
@@ -173,6 +323,21 @@ cd KlockUI
 `skill.md` 是给 agent 用的配置手册：架构参数、排错表、加/删模型的七处改动、文件与功能索引。
 把它装进你的技能目录，以后用户问"怎么换个底模""报错了"，下一个会话的 agent 能直接查到，
 不必重新翻代码。
+
+### 4.2 把 P0.5 的配置草案落成设置
+
+**后端不保存设置**——配置只存在浏览器 localStorage（`simplegen.settings.v2`）。
+所以不要指望调 API 选个模型就完事，重启就没了。正确做法是把 P0.5 生成的每份 JSON
+通过前端入口导入：
+
+1. 启动 KlockUI 并打开页面（见 6.2）；
+2. 把 JSON 存成 `<名字>.json`，拖到**提示词卡或参数卡**上（支持拖拽导入），
+   或点参数区的"导入预设"文件按钮选中它；
+3. `applyPresetJson()` 会自动匹配模型名——找不到同名模型时按 `arch` 兜底到同架构的，
+   再写入 localStorage 并立即生效。
+
+每个架构导入一份。导入后到画面区确认：模型下拉非空、步数/CFG/采样器与草案一致。
+若用户明确说"先不装模型"，跳过这一步，但按 6.3 说明交付状态。
 
 **装法**：整份复制成 `SKILL.md`，目录名用 `klockui`。
 
@@ -208,6 +373,9 @@ description: ...
 ## 5. P2 · 模型（全部可选，按第 2 节的回答装）
 
 清单：`models.manifest.json`。先按用户选择的架构查 `arch_requires`，只下这些 id。
+
+**先对照 P0.5 的扫描报告**：已经存在且字节数/header 校验通过的文件**直接跳过**，
+只下用户确认要补的缺口——不要因为清单里写了就重新下一遍。
 
 ### 5.1 源的选择
 
@@ -398,9 +566,11 @@ python -c "import comfy_bridge as c; print(c.MODELS_ROOT, c.DIFF_DIR)"
 - [ ] `8188/system_stats` → 200
 - [ ] `7861/api/status` → `online: true` 且 `model` 非空（为空即未完成，见 6.3）
 - [ ] 6.4 返回 `done`，产出 PNG
+- [ ] P0.5 扫描报告已产出（扫到的架构/缺的模块/LoRA 数量），并入环境报告
+- [ ] 每个扫到的架构都已导入配置草案，或用户明确说"先不装模型"
 - [ ] skill.md 已复制为 `<技能目录>/klockui/SKILL.md`（用户拒绝则注明）
 - [ ] 环境报告已填写
-- [ ] 未改 ComfyUI 源码、未用系统 Python
+- [ ] 未改 ComfyUI 源码、未用系统 Python、**未删除或覆盖用户已有的模型/LoRA**
 
 ---
 
