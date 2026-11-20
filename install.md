@@ -234,12 +234,18 @@ unknown       0.21GB  some-random-model.safetensors
 > **服务端 `/local/engine/catalog` 不返回 zimage**，所以这一步必须直接调 `_classify()`，
 > 或按文件名 `/z[_ -]?image/i` 兜底。别拿 catalog 的 `arch` 字段当唯一依据。
 
-再扫 LoRA 和配套模块：
+再扫 LoRA、配套模块和**超分模型**：
 
 ```bash
 ls <ComfyUI>/models/loras/*.safetensors 2>/dev/null | sed 's#.*/##'
 ls <ComfyUI>/models/text_encoders/*.safetensors <ComfyUI>/models/vae/*.safetensors 2>/dev/null | sed 's#.*/##'
+# 超分（放大补细节用）——不属于任何底模架构，最容易被漏
+ls <ComfyUI>/models/upscale_models/*.{safetensors,pth,pt} 2>/dev/null | sed 's#.*/##'
 ```
+
+**超分扫描报告**单独列出：有没有、4x 还是 2x（`_upscale_model_scale()` 从文件名猜，
+没写倍数按 4x）、safetensors 还是 pth。一个都没有时高清档只能用插值放大、**仍然偏糊**，
+要明确告诉用户并问要不要装（`models.manifest.json` 的 `ask.upscale_question`）。
 
 LoRA 的架构归属**看名字前缀**（`app.js:2584-2592`）：
 
@@ -292,8 +298,9 @@ anima_*          → anima     zimage_* / z_image_* → zimage
 用这个话术（**基于实测，不要凭空问**）：
 
 > 我在 `D://AI//ComfyUI//models` 扫到了：Krea 2 全套（底模 + 编码器 + VAE）、
-> Anima 底模但缺编码器、12 支 LoRA（8 支 Krea / 4 支 Anima）。
-> 要我补装缺的 Anima 编码器吗？还是只用 Krea？
+> Anima 底模但缺编码器、12 支 LoRA（8 支 Krea / 4 支 Anima）、
+> 2 个超分模型（UltraSharp 4x / Anime6B 4x）。
+> 要我补装缺的 Anima 编码器吗？还是只用 Krea？超分够用还是要加写实基线？
 
 用户的选择决定 P2 下载清单：**已存在且校验通过的文件直接跳过**，只下缺的。
 

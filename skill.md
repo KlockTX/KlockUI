@@ -490,12 +490,24 @@ PY
 和 payload 都没有 zimage，只能靠 `_classify()`（`cap_embedder.0.weight` + `noise_refiner.*`）
 或文件名 `/z[_ -]?image/i` 兜底，并在配方里显式写 `"arch": "zimage"`。
 
-再扫 LoRA 与配套模块：
+再扫 LoRA、配套模块与**超分模型**：
 
 ```bash
 ls <ComfyUI>/models/loras/*.safetensors 2>/dev/null | sed 's#.*/##'
 ls <ComfyUI>/models/text_encoders/*.safetensors <ComfyUI>/models/vae/*.safetensors 2>/dev/null | sed 's#.*/##'
+ls <ComfyUI>/models/upscale_models/*.{safetensors,pth,pt} 2>/dev/null | sed 's#.*/##'
 ```
+
+**超分模型（放大）必须单独扫**，它不属于任何底模架构，最容易被漏：
+
+- 有超分模型时，高清档走 `UpscaleModelLoader + ImageUpscaleWithModel`，真补细节；
+  没有时走 `VAEDecode + ImageScale` 插值，放大后偏糊。
+- 倍数是**模型固定的**：`_upscale_model_scale()` 从文件名猜（`4x-` / `_x4plus` → 4），
+  没写就按 4x。桥接层按原生倍数出图，不再缩回用户选的 1.5x——缩回去等于白扔像素。
+- 超分模型名带 `4x` 也可能其实是别家版本。**按字节数 + sha256 校验**才认，
+  `models.manifest.json` 的 `ask.upscale_question` 和两条 `arch: upscaler` 条目是安装依据。
+- 本机文件与官方源不一致时（例如旧版 Remacri 66MB vs 官方 33MB），
+  不要偷偷替换用户已有的——只报告差异，让用户决定。
 
 LoRA 归属看名字前缀：`krea*`→krea、`moss_*`→moss、`anima_*`→anima、
 `zimage_*`/`z_image_*`→zimage，其余→sdxl。注意 `krea2_turbo_lora*` 是 Raw 侧 adapter，

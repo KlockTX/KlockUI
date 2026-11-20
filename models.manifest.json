@@ -1,7 +1,7 @@
 {
   "$schema": "klockui-models/2",
   "verified_at": "2026-11-18",
-  "note": "KlockUI 不附带任何模型。本清单只描述『哪个架构需要哪几个文件、去哪下、多大、什么许可』。安装代理应先用第 0 节的询问流程确定用户要哪些架构，只下对应条目。",
+  "note": "KlockUI 不附带任何模型。本清单只描述『哪个架构需要哪几个文件、去哪下、多大、什么许可』。安装代理应先用第 0 节的询问流程确定用户要哪些架构，只下对应条目。超分模型（upscaler）是通用放大能力，不属于任何底模架构，可选装。",
   "mirrors": {
     "cn": "https://hf-mirror.com",
     "global": "https://huggingface.co"
@@ -16,12 +16,44 @@
   "ask": {
     "question": "要装哪些模型的 LoRA 生态？（可多选，只影响能跑哪些底模，不影响 KlockUI 本身）",
     "options": [
-      { "arch": "anima", "label": "Anima 2.9B（推荐，约 5.4GB）", "note": "写实/二次元通用，28–50 步，生态成熟。非商用许可。" },
-      { "arch": "zimage", "label": "Z-Image Turbo（约 12GB）", "note": "9 步出图，唯一能正确渲染中文的架构。Apache-2.0。" },
-      { "arch": "krea", "label": "Krea 2 Turbo（约 19GB）", "note": "画质上限最高，12.9B。8GB 显存需 --lowvram。社区许可。" },
-      { "arch": "moss", "label": "MOSS-Image（约 13GB）", "note": "支持 JSON 布局排版与中英文字。Apache-2.0。" }
+      {
+        "arch": "anima",
+        "label": "Anima 2.9B（推荐，约 5.4GB）",
+        "note": "写实/二次元通用，28–50 步，生态成熟。非商用许可。"
+      },
+      {
+        "arch": "zimage",
+        "label": "Z-Image Turbo（约 12GB）",
+        "note": "9 步出图，唯一能正确渲染中文的架构。Apache-2.0。"
+      },
+      {
+        "arch": "krea",
+        "label": "Krea 2 Turbo（约 19GB）",
+        "note": "画质上限最高，12.9B。8GB 显存需 --lowvram。社区许可。"
+      },
+      {
+        "arch": "moss",
+        "label": "MOSS-Image（约 13GB）",
+        "note": "支持 JSON 布局排版与中英文字。Apache-2.0。"
+      }
     ],
-    "rule": "用户只选一个也能完整出图。不要默认全装——总量约 49GB。"
+    "rule": "用户只选一个也能完整出图。不要默认全装——总量约 49GB。",
+    "upscale_question": {
+      "question": "要不要装 AI 超分模型（放大补细节用）？可跳过，跳过只能用 Lanczos 等插值放大，会偏糊。",
+      "options": [
+        {
+          "id": "upscale-ultrasharp",
+          "label": "UltraSharp 4x（约 64MB，通用锐利，推荐）",
+          "note": "safetensors 格式，许可 CC-BY-NC-SA-4.0，非商用。"
+        },
+        {
+          "id": "upscale-real-esrgan",
+          "label": "RealESRGAN x4（约 64MB，写实基线）",
+          "note": "Comfy-Org 官方 repackaged safetensors。"
+        }
+      ],
+      "rule": "超分是通用能力，不属于任何架构，也不要求全装。至少一个都没有时，高清档只能用插值放大。"
+    }
   },
   "assets": [
     {
@@ -144,12 +176,54 @@
       "size": 249521340,
       "license": "Apache-2.0",
       "note": "FLUX.2 小 VAE（128 通道 latent）。"
+    },
+    {
+      "id": "upscale-ultrasharp",
+      "arch": "upscaler",
+      "file": "4x-UltraSharp.safetensors",
+      "dir": "upscale_models",
+      "path": "Kim2091/UltraSharp/resolve/main/4x-UltraSharp.safetensors",
+      "size": 66864028,
+      "sha256": "36a340b5509b699d2c06cb445ddc1d3d39199ac734d889ed6d7915f60e05bcbc",
+      "license": "CC-BY-NC-SA-4.0",
+      "note": "通用锐利超分，4x 原生倍数。safetensors 安全格式。非商用。"
+    },
+    {
+      "id": "upscale-real-esrgan",
+      "arch": "upscaler",
+      "file": "RealESRGAN_x4plus.safetensors",
+      "dir": "upscale_models",
+      "path": "Comfy-Org/Real-ESRGAN_repackaged/resolve/main/RealESRGAN_x4plus.safetensors",
+      "size": 66857836,
+      "sha256": "",
+      "license": "MIT / Apache-2.0",
+      "note": "写实基线超分，4x 原生倍数。Comfy-Org 官方重打包 safetensors；清单未记录 sha256，按 size 精确校验。"
     }
   ],
   "arch_requires": {
-    "anima": ["anima-aesthetic", "anima-te", "anima-vae"],
-    "zimage": ["zimage-model", "zimage-te", "zimage-vae"],
-    "krea": ["krea-model", "krea-te", "anima-vae"],
-    "moss": ["moss-model", "moss-te", "moss-vae"]
+    "anima": [
+      "anima-aesthetic",
+      "anima-te",
+      "anima-vae"
+    ],
+    "zimage": [
+      "zimage-model",
+      "zimage-te",
+      "zimage-vae"
+    ],
+    "krea": [
+      "krea-model",
+      "krea-te",
+      "anima-vae"
+    ],
+    "moss": [
+      "moss-model",
+      "moss-te",
+      "moss-vae"
+    ],
+    "upscaler": [
+      "upscale-ultrasharp",
+      "upscale-real-esrgan"
+    ]
   }
 }
