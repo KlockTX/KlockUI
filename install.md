@@ -143,48 +143,97 @@ Windows 注意：路径不要含中文或空格；用 `venv\Scripts\python.exe`�
 
 ---
 
-### 2.3 要装哪些 LoRA
+### 2.3 要装哪些 LoRA（两步问，别一次抛出 31 支）
 
-LoRA 不是必需品——不装也能出图，只是预设里挂的 LoRA 会提示缺件。
-清单在 [`loras.manifest.json`](loras.manifest.json)，31 支全部来自 `presets/` 里的配方。
+LoRA 不是必需品——不装也能出图，只是预设里挂的会提示缺件。
+清单在 [`loras.manifest.json`](loras.manifest.json)，31 支全部来自 `presets/` 里的配方，★ 是精选。
 
-四档，让用户选：
+#### 第一步：先选系（可多选）
 
-> 预设里用到的 LoRA 要不要一起装？
-> ① **全装** —— 31 支，约 7.4GB，27 个预设全部开箱可用
-> ② **精选** —— 7 支，约 1.7GB（加速 1 + 光照 2 + 画师 4），日常自己搭配方够用
-> ③ **不装** —— 只装底模，预设会提示缺件
-> ④ **我指定** —— 你有想用的 LoRA，报名字或链接
+> 预设里的 LoRA 按底模分系，先选要装哪几系：
+> ① **Anima 系** —— 10 支，约 1.6GB
+> ② **Krea 2 系** —— 20 支，约 5.5GB
+> ③ **Z-Image 系** —— 1 支，约 0.3GB
+> 可以多选。没打算装的架构就别选，省得白下。
 
-**精选的 7 支**（覆盖「加速必需 + 通用光照 + 主力画师」，不是"能跑所有预设"）：
+**只列用户选中的系，别把三系混在一起报。** 用户只装 Anima 就别提 Krea 2 那 20 支。
 
-| LoRA | 用途 | 体积 | 代表预设 |
+MOSS 系没有预设引用 LoRA，所以不用问；用户主动要 MOSS 的 LoRA 再按 `skill.md` 11.7 找。
+
+#### 第二步：每系选装法
+
+对每一个选中的系，三选一：
+
+> ① **全装** —— 该系全部，预设一次跑通
+> ② **精选** —— 只装 ★ 那几支（加速 + 通用光照 + 主力画师），自己搭配方够用
+> ③ **不装** —— 只要底模
+
+另外任何时候都可以加一句：**你有想装的 LoRA 报名字或链接，我单独装。**
+
+**精选只有这些**（Krea 2 系 4 支、Anima 系 3 支，Z-Image 系只有 1 支不分档）：
+
+| 系 | 精选支数 | 体积 |
+|---|---|---|
+| Anima | 3 支 | 0.65GB |
+| Krea 2 | 4 支 | 1.01GB |
+| Z-Image | 全部 1 支 | 0.32GB |
+
+要提醒一句：每个预设用的 LoRA 组合都不一样，**精选只能保住最常用的场景**，
+其余预设仍会缺它自己的那几支。要"全都跑得通"，只有全装。
+
+#### 各系清单
+
+**Anima 系 · 10 支 · 1.63GB**
+
+| LoRA | 用途 | 体积 | 预设 |
 |---|---|---|---|
-| `anima_turbo_v0.2` | 加速（必装） | 142MB | 二次元 · 米山舞强光影 |
-| `krea2_rim_light` | 光照氛围 | 382MB | 初音 · 天台夜空 |
-| `krea2_yoneyama_mai` | 画师画风 | 209MB | 初音 · 雨夜霓虹 |
-| `krea2_loundraw` | 画师画风 | 224MB | 初音 · 废弃教室 |
-| `krea2_fuzichoco` | 画师画风 | 218MB | 初音 · 夏日祭 |
-| `anima_flatline` | 作品风格 | 22MB | 二次元 · 米山舞强光影 |
-| `anima_rimix` | 光照氛围 | 504MB | 二次元 · 哥特霓虹 |
+| `anima_turbo_v0.2` | ★ 加速（必装） | 142MB | 8 |
+| `anima_flatline` | ★ 作品风格 | 22MB | 3 |
+| `anima_rimix` | ★ 光照氛围 | 504MB | 3 |
+| `anima_yoneyama_mai` | 画师画风 | 175MB | 2 |
+| `anima_moriimee_gothic` | 作品风格 | 132MB | 2 |
+| `anima_anime_in_real` | 画风 | 264MB | 2 |
+| `anima_90s_melancholy` | 作品风格 | 132MB | 1 |
+| `anima_anime_flat` | 作品风格 | 88MB | 1 |
+| `anima_takeda_hiromitsu` | 画师画风 | 175MB | 1 |
+| `anima_blueprint` | 画风 | 37MB | 1 |
 
-先说清楚：每个预设用的 LoRA 组合都不一样，所以精选只能保证最常用的场景，
-剩下 25 个预设仍会缺它自己的那几支。要"全都能跑"，只有选 ①。
+**Krea 2 系 · 20 支 · 5.49GB**
 
-**下载后必须重命名**——Civitai / HF 上的原始文件名和清单对不上，预设是按名字匹配的：
+| LoRA | 用途 | 体积 | 预设 |
+|---|---|---|---|
+| `krea2_rim_light` | ★ 光照氛围 | 382MB | 5 |
+| `krea2_yoneyama_mai` | ★ 画师画风 | 209MB | 4 |
+| `krea2_loundraw` | ★ 画师画风 | 224MB | 4 |
+| `krea2_fuzichoco` | ★ 画师画风 | 218MB | 3 |
+| `krea2_clear_anime` | 画风 | 392MB | 2 |
+| `krea2_90s_aesthetic` | 作品风格 | 218MB | 2 |
+| `krea2_anmi` | 画师画风 | 224MB | 2 |
+| `krea2_kuvshinov` | 画师画风 | 109MB | 2 |
+| `krea2_cyberpunk_anime` | 场景氛围 | 218MB | 1 |
+| `krea2_rella` | 画师画风 | 224MB | 1 |
+| `krea2_bioluminescent` | 画风 | 382MB | 1 |
+| `krea2_rembrandt_light` | 光照氛围 | 382MB | 1 |
+| `krea2_murata` | 画师画风 | 218MB | 1 |
+| `krea2_kantoku` | 画师画风 | 219MB | 1 |
+| `krea2_evan_cagle` | 画师画风 | 436MB | 1 |
+| `krea2_dark_art` | 画风 | 218MB | 1 |
+| `krea2_blue_archive_style` | 画风 | 895MB | 1 |
+| `krea2_celdepth_25d` | 画风 | 218MB | 1 |
+| `krea2_bold-inked-anime-realism` | 画风 | 224MB | 1 |
+| `krea2_detail_slider` | 细节增强 | 11MB | 1 |
 
-```
-选 ① 或 ② → 按清单里的 name 命名，放进 models/loras/
-没改名 → 预设导入时全部标红缺失
-```
+**Z-Image 系 · 1 支 · 0.32GB**
 
-**找源的方法**：按清单里的 `search_hint` 去 Civitai / HF / 魔搭搜，
-注意 baseModel 必须匹配（Krea 2 的标 Krea 2，Anima 的标 Anima）。核对流程见 `skill.md` 11.7。
+| LoRA | 用途 | 体积 | 预设 |
+|---|---|---|---|
+| `zimage_cyberpunk_anime` | 场景氛围 | 324MB | 1 |
 
-Civitai 上标 `Rent` 的是付费，跳过，按 `purpose` 找同类型的免费替代。
+#### 装的时候三件事不能错
 
-**选了 ④ 时**：按用户给的名字判断架构（`skill.md` 第三节），架构对了就放进去；
-不对或找不到，回头问用户要链接。
+1. **按清单的 `name` 命名**——Civitai / HF 上的原始文件名和这里对不上，预设是按名字匹配的，不改名等于没装。
+2. **架构要匹配**——按清单的 `arch` 放对目录；Krea 2 的 LoRA 挂到 Anima 上不会报错，只是没效果，最难查。
+3. **认 `search_hint`**——按它去 Civitai / HF / 魔搭搜，核对方法见 `skill.md` 11.7。Civitai 标 `Rent` 的是付费，跳过，按 `purpose` 找同类免费替代。
 
 ---
 
