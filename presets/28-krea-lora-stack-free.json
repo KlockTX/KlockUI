@@ -1,0 +1,45 @@
+{
+  "klockui": 1,
+  "name": "Krea 2 · 五层画风叠加（免费版）",
+  "model": "krea2_noct_v4_int8_convrot.safetensors",
+  "arch": "krea",
+  "prompt": "masterpiece, best quality, 1girl, upper body, looking at viewer, calm expression, soft cinematic light, detailed hair",
+  "negative": "",
+  "quality": "standard",
+  "size": {
+    "ratio": "2:3",
+    "width": 1024,
+    "height": 1536
+  },
+  "steps": 14,
+  "cfg": 1,
+  "sampler": "Euler",
+  "scheduler": "Simple",
+  "seed": -1,
+  "batch": 1,
+  "hires": false,
+  "easyCache": true,
+  "loras": [
+    {
+      "name": "krea2_bold-inked-anime-realism",
+      "weight": 1
+    },
+    {
+      "name": "krea2_semi_thick_paint",
+      "weight": 0.6
+    },
+    {
+      "name": "kieed_style_krea2_v2",
+      "weight": 0.6
+    },
+    {
+      "name": "kazutake-hazano_k2_v1",
+      "weight": 0.6
+    },
+    {
+      "name": "krea2_detail_slider",
+      "weight": 0.5
+    }
+  ],
+  "note": "与「原版」同一套叠加结构，把三支付费 LoRA 换成同类型的免费替代：Anime in real → krea2_bold-inked-anime-realism 1.0（动漫写实融合）、NIJISIS → krea2_semi_thick_paint 0.6（日系厚涂）、masterpieces → krea2_detail_slider 0.5（细节增强）。kieed 用 Krea 2 移植版，kazutake 原版。五支本机都有，导入即可出图。"
+}

@@ -1,6 +1,6 @@
 {
   "klockui": 1,
-  "name": "Krea 2 · 五层画风叠加",
+  "name": "Krea 2 · 五层画风叠加（原版）",
   "model": "krea2_noct_v4_int8_convrot.safetensors",
   "arch": "krea",
   "prompt": "masterpiece, best quality, 1girl, upper body, looking at viewer, calm expression, soft cinematic light, detailed hair",
@@ -21,15 +21,15 @@
   "easyCache": true,
   "loras": [
     {
-      "name": "krea2_bold-inked-anime-realism",
+      "name": "Krea_2_in_real_krea2_3320272_epoch_20",
       "weight": 1
     },
     {
-      "name": "krea2_semi_thick_paint",
+      "name": "NIJISIS_krea2_V_2",
       "weight": 0.6
     },
     {
-      "name": "kieed_style_krea2_v2",
+      "name": "kieed_v1_epoch20",
       "weight": 0.6
     },
     {
@@ -37,9 +37,9 @@
       "weight": 0.6
     },
     {
-      "name": "krea2_detail_slider",
+      "name": "krea2-masterpieces-v51",
       "weight": 0.5
     }
   ],
-  "note": "五层叠加：bold-inked-anime-realism 1.0 打底（动漫写实融合），semi_thick_paint / kieed / kazutake 各 0.6 叠厚涂画风，detail_slider 0.5 提细节。14 步、CFG 1（蒸馏模型负面词无效）。原配方里的 Anime in real / NIJISIS / masterpieces 在 Civitai 是 Rent 付费，这里用同类型的免费 LoRA 替代，效果接近。"
+  "note": "完全照截图配置：LoRA 顺序与权重一致（1.0 / 0.6 / 0.6 / 0.6）；第五层截图里被截断，强度按 AQM 类惯例取 0.5。14 步、CFG 1 是按 Krea 2 蒸馏模型的规矩补的，截图没显示。三条提醒：① Anime in real / NIJISIS / masterpieces 在 Civitai 标 Rent 付费，需购买后放入 models/loras/ 才不报缺件；② kieed_v1_epoch20 在 Civitai 只有 Anima 版权重，Krea 2 挂不上，需要它的 Krea 2 版；③ 想立刻能用就导「五层画风叠加（免费版）」，用的是同类型免费 LoRA。"
 }
