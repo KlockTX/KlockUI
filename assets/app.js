@@ -2006,7 +2006,7 @@
     }
     if (el.upscaleHint) {
       el.upscaleHint.textContent = isSeedVR2
-        ? "SeedVR2 是扩散放大：按所选倍数出图，会补细节但保持人物和构图不变。8GB 显存约 37 秒（2x / 1024×1536）。"
+        ? "SeedVR2 是扩散放大：补细节但保持人物和构图不变。8GB 显存上限约 2x（1024×1536 源图），3x / 4x 会自动收敛到上限；要更大先用 2x 再切 ESRGAN 接力。"
         : native
           ? `${shortUpscaler(upscaleAlgoValue)} 固定 ${native}× 出图：不再缩回小倍数，换算法只是换风格，尺寸由模型决定。`
           : "未检测到超分模型，暂时只能用插值放大（放大后仍然偏糊）。把 4x 模型放进 models\\upscale_models 后刷新即可。";
@@ -8966,6 +8966,9 @@
       const label = data.native
         ? `${data.width}×${data.height} · 原生 ${scaleText} ${shortUpscaler(data.upscaler)} · ${(Number(data.elapsed) || 0).toFixed(2)} 秒`
         : `${data.width}×${data.height} · ${scaleText} ${data.upscaler || "Lanczos"} · ${(Number(data.elapsed) || 0).toFixed(2)} 秒`;
+      if (data.vramClamped) {
+        label += " · 倍数超出 8GB 显存上限已收敛（要更大：先按 2x 放大，再用 ESRGAN 接力）";
+      }
       // 大图预览是同尺寸 JPEG（只是换编码，像素没缩），保存/导出才是原始 PNG。
       const labelText = data.preview ? `${label} · 预览为 JPEG，尺寸不变` : label;
       if (save && data.path) {

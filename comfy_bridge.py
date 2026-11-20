@@ -103,6 +103,9 @@ def _detect_seedvr2_dir():
 SEEDVR2_DIR = _detect_seedvr2_dir()
 SEEDVR2_DIT = "seedvr2_ema_3b-Q4_K_M.gguf"
 SEEDVR2_VAE = "ema_vae_fp16.safetensors"
+# 8GB 实测：6.29M（2048x3072）正常 37 秒；6.7M 就能把采样器卡死（interrupt 都
+# 响应不了，只能重启引擎）。上限必须贴着实测成功值，宁小勿大。
+SEEDVR2_MAX_PIXELS = 6_300_000
 TE_DIR = os.environ.get("KLOCK_TE_DIR") or os.path.join(MODELS_ROOT, "text_encoders")
 VAE_DIR = os.environ.get("KLOCK_VAE_DIR") or os.path.join(MODELS_ROOT, "vae")
 
@@ -1931,22 +1934,6 @@ def _upscale_with_model(blob, scale, model_name):
     return images[0]
 
 
-def _comfy_free_vram():
-    """让 ComfyUI 卸掉驻留模型并释放显存。
-
-    SeedVR2 即使 BlockSwap 32 也要在换入块时申请大块显存（cuMemSetAccess），
-    如果引擎里还驻留着刚用过的 Krea2 权重或预览缓冲，就会 OOM。
-    所以跑之前清一次；跑完再清一次，避免 SeedVR2 自己的缓存影响下次出图。
-    """
-    try:
-        _post_json("/free", {"unload_models": True, "free_memory": True}, timeout=60)
-        time.sleep(1.0)
-        return True
-    except Exception as exc:
-        log.warning("ComfyUI /free failed: %s", exc)
-        return False
-
-
 def upscale_seedvr2(blob, scale):
     """SeedVR2 一步扩散超分：补细节但不重绘人物。
 
@@ -1963,9 +1950,19 @@ def upscale_seedvr2(blob, scale):
 
     src = Image.open(io.BytesIO(blob))
     src.load()
-    scale = max(1.5, min(4.0, float(scale or 2)))
-    # 短边目标像素；对齐到 8 的倍数，避免半像素
-    short_edge = int(round(min(src.size) * scale / 8)) * 8
+    requested = max(1.5, min(4.0, float(scale or 2)))
+    # DiT 一次处理整图（节点无图像分块），显存由**输出像素量**决定：
+    # 实测 6.3M（2048x3072）可行，25M（4096x6144）必爆。超限自动收敛倍数，
+    # 需要更大就再用一次 SeedVR2 接力，或换 ESRGAN 纯锐化。
+    aspect = src.width / float(src.height)
+    short_edge = int(round(min(src.size) * requested / 8)) * 8
+    if short_edge * (short_edge * aspect) > SEEDVR2_MAX_PIXELS:
+        allowed = int((SEEDVR2_MAX_PIXELS / aspect) ** 0.5)
+        scale = max(1.5, round(allowed / min(src.size), 2))
+        short_edge = int(round(min(src.size) * scale / 8)) * 8
+        log.info("seedvr2 4x exceeds VRAM budget, clamp to %.2fx", scale)
+    else:
+        scale = requested
     uploaded = _upload_image(base64.b64encode(blob).decode("ascii"), "klock_seedvr2.png")
     graph = {
         "1": {"class_type": "LoadImage", "inputs": {"image": uploaded}},
@@ -1985,13 +1982,7 @@ def upscale_seedvr2(blob, scale):
             "images": ["4", 0], "filename_prefix": "klock/seedvr2"}},
     }
     log.info("seedvr2 upscale %sx%s -> short edge %d", src.width, src.height, short_edge)
-    # 引擎里驻留的底模/预览缓冲不腾出来，BlockSwap 换入权重时直接 OOM
-    _comfy_free_vram()
-    try:
-        images = _submit_and_collect(graph, timeout=900, expected_steps=1)
-    finally:
-        # SeedVR2 的缓存不清，下次文生图会跟着一起挤显存
-        _comfy_free_vram()
+    images = _submit_and_collect(graph, timeout=900, expected_steps=1)
     if not images:
         raise EngineError("SeedVR2 放大没有产出图像")
     return images[0]

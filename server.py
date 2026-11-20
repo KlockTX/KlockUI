@@ -6505,6 +6505,8 @@ class Handler(BaseHTTPRequestHandler):
             "scale": real_scale,
             "requestedScale": scale,
             "native": bool(is_model),
+            # SeedVR2 按输出像素量限显存：请求倍数被收敛时置位，前端给出提示
+            "vramClamped": bool(upscaler == "SeedVR2" and abs(real_scale - scale) > 0.05),
             "sourceWidth": src_w,
             "sourceHeight": src_h,
             "upscaler": upscaler,

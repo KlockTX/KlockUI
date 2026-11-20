@@ -488,6 +488,10 @@ anima_*          → anima     zimage_* / z_image_* → zimage
 不改 torch。它保特征（缩回原图平均差 3.54/255），细节比插值多 24%，
 适合"出完图要放大但人物不能变"的场景。
 
+**上限约 2x**：节点 DiT 一次处理整图、无图像分块，显存由输出像素决定
+（6.3M 可行，更高直接卡死）。超限时后端自动收敛倍数并提示；
+要更大就先 2x 再用 ESRGAN 接力。
+
 但要装 ComfyUI 自定义节点 `numz/ComfyUI-SeedVR2_VideoUpscaler` 和 2.3GB 模型，
 不是零成本。若只是想让图更大，上面的 ESRGAN 够用；要补细节且不改人物，才上 SeedVR2。
 安装与参数见 [`docs/seedvr2-research.md`](docs/seedvr2-research.md)。
