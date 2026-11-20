@@ -27,6 +27,7 @@ import json
 import logging
 import os
 import random
+from math import sqrt
 import re
 import secrets
 import socket
@@ -1954,13 +1955,16 @@ def upscale_seedvr2(blob, scale):
     # DiT 一次处理整图（节点无图像分块），显存由**输出像素量**决定：
     # 实测 6.3M（2048x3072）可行，25M（4096x6144）必爆。超限自动收敛倍数，
     # 需要更大就再用一次 SeedVR2 接力，或换 ESRGAN 纯锐化。
-    aspect = src.width / float(src.height)
+    # 目标像素 = 短边^2 x (长边/短边)。之前这里把宽高比乘反（x aspect 而不是
+    # / aspect），目标像素被低估 2.25 倍，4x 的 clamp 形同虚设——实际仍放行
+    # 14M 像素任务，把采样器卡死。竖图 aspect<1，必须用长边/短边。
+    long_ratio = max(src.size) / float(min(src.size))
     short_edge = int(round(min(src.size) * requested / 8)) * 8
-    if short_edge * (short_edge * aspect) > SEEDVR2_MAX_PIXELS:
-        allowed = int((SEEDVR2_MAX_PIXELS / aspect) ** 0.5)
-        scale = max(1.5, round(allowed / min(src.size), 2))
-        short_edge = int(round(min(src.size) * scale / 8)) * 8
-        log.info("seedvr2 4x exceeds VRAM budget, clamp to %.2fx", scale)
+    if short_edge * short_edge * long_ratio > SEEDVR2_MAX_PIXELS:
+        short_edge = int(sqrt(SEEDVR2_MAX_PIXELS / long_ratio) / 8) * 8
+        scale = round(short_edge / float(min(src.size)), 2)
+        log.info("seedvr2 %.2fx exceeds VRAM budget, clamp to %.2fx (short %d)",
+                 requested, scale, short_edge)
     else:
         scale = requested
     uploaded = _upload_image(base64.b64encode(blob).decode("ascii"), "klock_seedvr2.png")
