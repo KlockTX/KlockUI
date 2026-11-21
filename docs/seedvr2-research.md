@@ -194,3 +194,38 @@ python seedvr2_test.py klock_seed_test.png 2048
 ```
 
 第一个参数是已经放进 `ComfyUI/input/` 的文件名，第二个是短边目标像素。
+
+
+---
+
+## 补充：ESRGAN 分块放大（2026-11-21）
+
+SeedVR2 受 DiT 整图限制只能到 2x，但「要 4x」的需求可以用 ESRGAN 分块解决。
+
+`comfy_bridge._upscale_with_model_tiled()`：
+
+- 单图输出超过 `UPSCALE_TILE_PIXELS = 6M` 就自动切瓦片（512 边长，overlap 64）
+- 每块独立跑 `UpscaleModelLoader → ImageUpscaleWithModel`，单块输出仅 4.2M
+- 块间用羽化 mask 加权累加，网格接缝靠 overlap 消掉
+- 每块上传用唯一文件名（`/upload/image` 会覆盖同名）
+
+实测 1024×1536 → **4096×6144（25M 像素）37.7 秒**，实际 4.00x。
+
+接缝量化检测（边界列差 vs 邻近基准）：
+
+```
+x=1792  2.56 vs 2.14   正常
+x=3584  2.15 vs 1.47   正常
+y=1792  2.44 vs 2.06   正常
+y=3584  1.79 vs 1.48   正常
+```
+
+跨接缝区域目视无网格、无亮度跳变。
+
+于是 8GB 上的能力边界变成：
+
+| 需求 | 方案 | 上限 |
+|---|---|---|
+| 补细节、不改人物 | SeedVR2 | 2x（6.3M 输出） |
+| 纯放大到 4x/8x | ESRGAN 分块 | 受 `UPSCALE_MAX_EDGE 8192` 限制 |
+| 4x 且带细节 | 先 SeedVR2 2x 存图，再对结果跑 ESRGAN 分块 | 两步 |

@@ -1872,6 +1872,9 @@ def _apply_tiled_vae(graph, enabled=True):
 UPSCALE_NATIVE_DEFAULT = 4
 # 原生输出超过这个边长时才会兜底缩一次，纯粹为了不把显存/磁盘撑爆。
 UPSCALE_MAX_EDGE = 8192
+# 单次整图 ESRGAN 的输出像素上限：4x/1024x1536 是 25M，8GB 必爆。
+# 超过这个量就切瓦片跑（实测 4.2M 单块稳，留余量取 6M）。
+UPSCALE_TILE_PIXELS = 6_000_000
 
 
 def _upscale_model_scale(model_name):
@@ -1907,6 +1910,11 @@ def _upscale_with_model(blob, scale, model_name):
     src.load()
     native = _upscale_model_scale(model_name)
     out_w, out_h = src.width * native, src.height * native
+    # 整图放大放不下就分块：这是 4x 在 8GB 上能跑通的唯一办法
+    if out_w * out_h > UPSCALE_TILE_PIXELS:
+        log.info("upscale %s output %dx%d (%d px) too large, switch to tiled",
+                 model_name, out_w, out_h, out_w * out_h)
+        return _upscale_with_model_tiled(blob, model_name)
     uploaded = _upload_image(base64.b64encode(blob).decode("ascii"), "klock_upscale.png")
     graph = {
         "1": {"class_type": "LoadImage", "inputs": {"image": uploaded}},
@@ -1933,6 +1941,88 @@ def _upscale_with_model(blob, scale, model_name):
     if not images:
         raise EngineError("放大没有产出图像")
     return images[0]
+
+
+def _esrgan_tile(png_bytes, model_name, idx):
+    """放大一个瓦片。每块用独立文件名上传——/upload/image 会覆盖同名文件。"""
+    uploaded = _upload_image(base64.b64encode(png_bytes).decode("ascii"),
+                             "klock_tile_%03d_%s.png" % (idx, secrets.token_hex(4)))
+    graph = {
+        "1": {"class_type": "LoadImage", "inputs": {"image": uploaded}},
+        "2": {"class_type": "UpscaleModelLoader", "inputs": {"model_name": model_name}},
+        "3": {"class_type": "ImageUpscaleWithModel", "inputs": {
+            "upscale_model": ["2", 0], "image": ["1", 0]}},
+        "5": {"class_type": "SaveImage", "inputs": {
+            "images": ["3", 0], "filename_prefix": "klock/tile"}},
+    }
+    images = _submit_and_collect(graph, timeout=300, expected_steps=0)
+    if not images:
+        raise EngineError("分块放大第 %d 块没有产出图像" % idx)
+    return Image.open(io.BytesIO(images[0])).convert("RGB")
+
+
+def _upscale_with_model_tiled(blob, model_name, tile=512, overlap=64):
+    """分块跑 ESRGAN：单块显存可控，拼回来就是完整大图。
+
+    整图放大 25M 像素（4x / 1024x1536）在 8GB 上必爆；切成 512 的瓦片后
+    单块输出只有 2048x2048，卷积放得下。块间留 overlap 并用羽化权重累加，
+    避免出现网格接缝。
+    """
+    if Image is None:
+        raise EngineError("Pillow 不可用，无法放大")
+    try:
+        import numpy as np
+    except ImportError:
+        raise EngineError("numpy 不可用，无法分块放大")
+
+    src = Image.open(io.BytesIO(blob)).convert("RGB")
+    native = _upscale_model_scale(model_name)
+    out_w, out_h = src.width * native, src.height * native
+    acc = np.zeros((out_h, out_w, 3), dtype=np.float32)
+    weight = np.zeros((out_h, out_w, 1), dtype=np.float32)
+    # 羽化窗：中心为 1，边缘 0，块与块的重叠区自然过渡
+    ramp = np.ones((tile, tile), dtype=np.float32)
+    fade = np.linspace(0.0, 1.0, overlap, dtype=np.float32)
+    ramp[:overlap, :] *= fade[:, None]
+    ramp[-overlap:, :] *= fade[::-1, None]
+    ramp[:, :overlap] *= fade[None, :]
+    ramp[:, -overlap:] *= fade[::-1][None, :]
+    mask_big = Image.fromarray((ramp * 255).astype(np.uint8), mode="L").resize(
+        (tile * native, tile * native), Image.BILINEAR)
+
+    step = max(1, tile - overlap)
+    xs = list(range(0, max(1, src.width - overlap), step))
+    ys = list(range(0, max(1, src.height - overlap), step))
+    idx = 0
+    total = len(xs) * len(ys)
+    log.info("tiled upscale %s: %dx%d -> %dx%d, %d tiles",
+             model_name, src.width, src.height, out_w, out_h, total)
+    for y in ys:
+        for x in xs:
+            box = (x, y, min(x + tile, src.width), min(y + tile, src.height))
+            crop = src.crop(box)
+            buf = io.BytesIO()
+            crop.save(buf, format="PNG")
+            idx += 1
+            up = _esrgan_tile(buf.getvalue(), model_name, idx)
+            # 边缘块尺寸小，遮罩要跟着裁
+            mw = min(up.width, tile * native) if box[2] - box[0] == tile else up.width
+            mh = min(up.height, tile * native) if box[3] - box[1] == tile else up.height
+            m = np.asarray(mask_big.crop((0, 0, mw, mh)), dtype=np.float32)[:, :, None] / 255.0
+            oy, ox = y * native, x * native
+            eh, ew = min(up.height, out_h - oy), min(up.width, out_w - ox)
+            if eh <= 0 or ew <= 0:
+                continue
+            tile_arr = np.asarray(up.crop((0, 0, ew, eh)), dtype=np.float32)
+            m = m[:eh, :ew]
+            acc[oy:oy + eh, ox:ox + ew] += tile_arr * m
+            weight[oy:oy + eh, ox:ox + ew] += m
+    weight[weight == 0] = 1.0
+    merged = np.clip(acc / weight, 0, 255).astype(np.uint8)
+    out = Image.fromarray(merged, mode="RGB")
+    buffer = io.BytesIO()
+    out.save(buffer, format="PNG")
+    return buffer.getvalue()
 
 
 def upscale_seedvr2(blob, scale):

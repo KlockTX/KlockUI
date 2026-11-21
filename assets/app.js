@@ -2008,7 +2008,7 @@
       el.upscaleHint.textContent = isSeedVR2
         ? "SeedVR2 是扩散放大：补细节但保持人物和构图不变。8GB 显存上限约 2x（1024×1536 源图），3x / 4x 会自动收敛到上限；要更大先用 2x 再切 ESRGAN 接力。"
         : native
-          ? `${shortUpscaler(upscaleAlgoValue)} 固定 ${native}× 出图：不再缩回小倍数，换算法只是换风格，尺寸由模型决定。`
+          ? `${shortUpscaler(upscaleAlgoValue)} 固定 ${native}× 出图，换算法只是换风格；超大图会自动分块拼接，不会因为显存不够失败。`
           : "未检测到超分模型，暂时只能用插值放大（放大后仍然偏糊）。把 4x 模型放进 models\\upscale_models 后刷新即可。";
     }
   }
