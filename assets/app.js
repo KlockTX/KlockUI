@@ -8963,7 +8963,7 @@
       const scaleText = Math.abs(realScale - Math.round(realScale)) < 0.01
         ? `${Math.round(realScale)}x`
         : `${realScale.toFixed(2).replace(/0+$/, "").replace(/\.$/, "")}x`;
-      const label = data.native
+      let label = data.native
         ? `${data.width}×${data.height} · 原生 ${scaleText} ${shortUpscaler(data.upscaler)} · ${(Number(data.elapsed) || 0).toFixed(2)} 秒`
         : `${data.width}×${data.height} · ${scaleText} ${data.upscaler || "Lanczos"} · ${(Number(data.elapsed) || 0).toFixed(2)} 秒`;
       if (data.vramClamped) {
@@ -9064,11 +9064,14 @@
     el.upscalePreviewBtn.loading = false;
     el.upscalePreviewBtn.disabled = false;
     el.upscaleMeta.classList.remove("is-bad");
-    el.upscaleMeta.textContent = target?.url
+    // 画布结果是 blob url；图库/灯箱条目只有 path，要按 path 拼地址，
+    // 否则从作品库进来时预览区一片空白。
+    const previewUrl = target?.url || (target?.path ? galleryFileUrl(target) : "");
+    el.upscaleMeta.textContent = previewUrl
       ? "当前是原图 · 选好算法后点「开始放大」"
       : "选好算法后点「开始放大」";
-    if (target?.url) {
-      el.upscaleImg.src = target.url;
+    if (previewUrl) {
+      el.upscaleImg.src = previewUrl;
       el.upscaleImg.hidden = false;
       el.upscaleEmpty.hidden = true;
     } else {
