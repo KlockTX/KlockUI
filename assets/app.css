@@ -3255,6 +3255,16 @@ mdui-select::part(menu) mdui-menu-item { white-space: nowrap; }
 }
 .upscale-meta { font-size: var(--fs-xs); line-height: 1.5; color: rgb(var(--mdui-color-on-surface-variant)); font-variant-numeric: tabular-nums; }
 .upscale-meta.is-bad { color: rgb(var(--mdui-color-error)); }
+/* 放大进度：替代原来那行静态「正在放大…」。SeedVR2 有真实采样步数，
+   ESRGAN 分块有块计数，两者都没有（插值 / 单块）时退化成不确定进度。 */
+.upscale-progress { display: flex; align-items: center; gap: 10px; }
+.upscale-progress[hidden] { display: none; }
+.upscale-progress mdui-linear-progress { flex: 1; min-width: 0; }
+.upscale-progress-text {
+  flex: none; font-size: var(--fs-xs); color: rgb(var(--mdui-color-on-surface-variant));
+  font-variant-numeric: tabular-nums; white-space: nowrap;
+}
+.upscale-progress-text:empty { display: none; }
 @media (max-width: 600px) {
   .upscale-preview { min-height: 140px; max-height: 34vh; }
   .upscale-preview img { max-height: 34vh; }

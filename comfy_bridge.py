@@ -168,7 +168,18 @@ _JOB_START = 0.0
 _JOB_STEPS = 20
 _JOB_INDEX = 0      # 本批第几张（0 基），前端显示「第 N/总数 张」
 _JOB_COUNT = 1      # 本批总张数（n_iter）
+# 分块放大跑到第几块：ESRGAN 一次只提交一个瓦片，没有采样步数可读，
+# 进度条只能靠这里的块计数。非分块任务时为 0/0。
+_UPSCALE_TILE_DONE = 0
+_UPSCALE_TILE_TOTAL = 0
 _CLASSIFY_CACHE = {}
+
+
+def _set_upscale_tile(done, total):
+    global _UPSCALE_TILE_DONE, _UPSCALE_TILE_TOTAL
+    with _STATE_LOCK:
+        _UPSCALE_TILE_DONE = int(done)
+        _UPSCALE_TILE_TOTAL = int(total)
 
 
 class EngineError(RuntimeError):
@@ -1728,7 +1739,15 @@ def progress(consume_preview=True):
         preview, preview_seq = _WS.peek_preview()
     with _STATE_LOCK:
         job_index, job_count = _JOB_INDEX, _JOB_COUNT
-    if running and snap.get("max"):
+        tile_done, tile_total = _UPSCALE_TILE_DONE, _UPSCALE_TILE_TOTAL
+    if tile_total:
+        # 分块放大：一块一个独立 prompt，WS 里没有采样步数，只认块计数。
+        body = {"progress": round(min(1.0, tile_done / tile_total), 3), "eta_relative": 0.0,
+                "state": {"job_count": 1, "job_no": 0,
+                          "sampling_step": tile_done, "sampling_steps": tile_total,
+                          "interrupted": False, "textinfo": "ComfyUI upscale tiles"},
+                "upscale": {"done": tile_done, "total": tile_total}}
+    elif running and snap.get("max"):
         maximum = int(snap["max"]) or 1
         value = int(snap.get("value") or 0)
         base = int(snap.get("base") or 0)
@@ -1997,6 +2016,7 @@ def _upscale_with_model_tiled(blob, model_name, tile=512, overlap=64):
     total = len(xs) * len(ys)
     log.info("tiled upscale %s: %dx%d -> %dx%d, %d tiles",
              model_name, src.width, src.height, out_w, out_h, total)
+    _set_upscale_tile(0, total)
     for y in ys:
         for x in xs:
             box = (x, y, min(x + tile, src.width), min(y + tile, src.height))
@@ -2005,6 +2025,7 @@ def _upscale_with_model_tiled(blob, model_name, tile=512, overlap=64):
             crop.save(buf, format="PNG")
             idx += 1
             up = _esrgan_tile(buf.getvalue(), model_name, idx)
+            _set_upscale_tile(idx, total)
             # 边缘块尺寸小，遮罩要跟着裁
             mw = min(up.width, tile * native) if box[2] - box[0] == tile else up.width
             mh = min(up.height, tile * native) if box[3] - box[1] == tile else up.height
@@ -2092,20 +2113,24 @@ def upscale_image(blob, scale, upscaler):
         raise EngineError("Pillow 不可用，无法放大")
     name = str(upscaler or "")
     scale = max(1.0, min(8.0, float(scale or 2)))
-    if name.lower() == "seedvr2":
-        return upscale_seedvr2(blob, scale)
-    if name and os.path.isfile(os.path.join(UPSCALE_DIR, name)):
-        return _upscale_with_model(blob, scale, name)
-    image = Image.open(io.BytesIO(blob))
-    image.load()
-    low = name.lower()
-    resample = (Image.NEAREST if low.startswith("nearest")
-                else Image.BICUBIC if low.startswith("bicubic") else Image.LANCZOS)
-    out = image.convert("RGB").resize(
-        (int(image.width * scale), int(image.height * scale)), resample)
-    buffer = io.BytesIO()
-    out.save(buffer, format="PNG")
-    return buffer.getvalue()
+    # 块计数是给进度条看的，成功或异常都要清掉，否则下一次放大进去就是旧进度。
+    try:
+        if name.lower() == "seedvr2":
+            return upscale_seedvr2(blob, scale)
+        if name and os.path.isfile(os.path.join(UPSCALE_DIR, name)):
+            return _upscale_with_model(blob, scale, name)
+        image = Image.open(io.BytesIO(blob))
+        image.load()
+        low = name.lower()
+        resample = (Image.NEAREST if low.startswith("nearest")
+                    else Image.BICUBIC if low.startswith("bicubic") else Image.LANCZOS)
+        out = image.convert("RGB").resize(
+            (int(image.width * scale), int(image.height * scale)), resample)
+        buffer = io.BytesIO()
+        out.save(buffer, format="PNG")
+        return buffer.getvalue()
+    finally:
+        _set_upscale_tile(0, 0)
 
 
 # ---------------------------------------------------------------- API 分发

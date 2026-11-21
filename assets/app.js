@@ -420,6 +420,8 @@
     upscaleDialog: $("#upscaleDialog"), upscalePreview: $("#upscalePreview"), upscaleImg: $("#upscaleImg"),
     upscaleEmpty: $("#upscaleEmpty"), upscaleScale: $("#upscaleScale"), upscaleAlgo: $("#upscaleAlgo"),
     upscaleMeta: $("#upscaleMeta"), upscalePreviewBtn: $("#upscalePreviewBtn"),
+    upscaleProgress: $("#upscaleProgress"), upscaleProgressBar: $("#upscaleProgressBar"),
+    upscaleProgressText: $("#upscaleProgressText"),
     upscaleNativeHint: $("#upscaleNativeHint"), upscaleHint: $("#upscaleHint"),
     promptChips: $("#promptChips"),
     translateSwitch: $("#translateSwitch"), promptDraftConfirm: $("#promptDraftConfirm"),
@@ -8880,6 +8882,57 @@
   // 选中了超分模型就转去 ComfyUI 跑 UpscaleModelLoader（真正补细节）。
   let upscaleSeq = 0;
   let upscalePending = false;
+  let upscaleProgressTimer = null;
+
+  // 放大进度条：SeedVR2 走 ComfyUI 的真实采样步数，ESRGAN 分块走块计数；
+  // 两者都没有（插值 / 单块）或还在排队、加载时用不确定进度。
+  function stopUpscaleProgress() {
+    if (upscaleProgressTimer) {
+      clearInterval(upscaleProgressTimer);
+      upscaleProgressTimer = null;
+    }
+  }
+
+  function showUpscaleProgress() {
+    stopUpscaleProgress();
+    el.upscaleMeta.hidden = true;
+    el.upscaleProgress.hidden = false;
+    el.upscaleProgressBar.removeAttribute("value");
+    el.upscaleProgressText.textContent = "";
+    const tick = async () => {
+      try {
+        const res = await fetch("/api/sdapi/v1/progress?skip_current_image=true", { cache: "no-store" });
+        if (!res.ok) return;
+        const data = await res.json();
+        const done = Number(data.upscale?.done) || 0;
+        const total = Number(data.upscale?.total) || 0;
+        const steps = Number(data.state?.sampling_steps) || 0;
+        const step = Number(data.state?.sampling_step) || 0;
+        const estimated = /estimated/i.test(String(data.state?.textinfo || ""));
+        if (total > 0) {
+          const pct = Math.max(0, Math.min(100, Math.round((done / total) * 100)));
+          el.upscaleProgressBar.value = pct;
+          el.upscaleProgressText.textContent = `分块 ${done}/${total}`;
+        } else if (!estimated && steps > 1) {
+          const shown = Math.min(step, steps);
+          const pct = Math.max(0, Math.min(100, Math.round((shown / steps) * 100)));
+          el.upscaleProgressBar.value = pct;
+          el.upscaleProgressText.textContent = `第 ${shown}/${steps} 步`;
+        } else {
+          el.upscaleProgressBar.removeAttribute("value");
+          el.upscaleProgressText.textContent = "";
+        }
+      } catch { /* 单次轮询失败不影响放大本身 */ }
+    };
+    tick();
+    upscaleProgressTimer = setInterval(tick, 500);
+  }
+
+  function hideUpscaleProgress() {
+    stopUpscaleProgress();
+    el.upscaleProgress.hidden = true;
+    el.upscaleMeta.hidden = false;
+  }
   function upscaleSettings() {
     // 优先读控件当前值（重建按钮后我们自己写过 value，比内存变量更跟手）。
     const upscaler = String(el.upscaleAlgo?.value || upscaleAlgoValue || "Lanczos");
@@ -8946,7 +8999,7 @@
     el.upscaleSave.disabled = true;
     el.upscaleExport.disabled = true;
     el.upscaleMeta.classList.remove("is-bad");
-    el.upscaleMeta.textContent = save ? "正在保存…" : "正在放大…";
+    showUpscaleProgress();
     try {
       const data = await upscaleRequest(save);
       if (seq !== upscaleSeq) return null;
@@ -8994,6 +9047,7 @@
       return null;
     } finally {
       if (seq === upscaleSeq) {
+        hideUpscaleProgress();
         state.upscaleBusy = false;
         el.upscalePreviewBtn.loading = false;
         el.upscalePreviewBtn.disabled = false;
@@ -9055,6 +9109,7 @@
 
   // 放大弹窗的"待命"状态：预览区显示原图，保存/导出锁住，等用户按开始。
   function prepareUpscaleIdle(item) {
+    hideUpscaleProgress();
     const target = item || state.upscaleItem;
     state.upscalePreview = "";
     state.upscaleSavedPath = "";
@@ -11173,6 +11228,7 @@
     el.upscaleAlgo.addEventListener("change", handleUpscaleSettingChange);
     el.upscaleDialog.addEventListener("closed", () => {
       upscaleSeq += 1;
+      hideUpscaleProgress();
       state.upscaleBusy = false;
       state.upscalePreview = "";
       state.upscaleSavedPath = "";

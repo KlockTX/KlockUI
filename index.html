@@ -20,7 +20,7 @@
 <link rel="icon" href="/assets/favicon.svg" type="image/svg+xml">
 <link rel="alternate icon" href="/assets/klockui.ico" sizes="any">
 <link rel="stylesheet" href="/vendor/mdui.css">
-<link rel="stylesheet" href="/assets/app.css?v=20261121upscalefix">
+<link rel="stylesheet" href="/assets/app.css?v=20261121upscaleprog">
 </head>
 <body data-mode="txt2img">
 <a class="skip-link" href="#promptCard">跳到画面描述</a>
@@ -1111,6 +1111,10 @@
         </mdui-segmented-button-group>
       </div>
       <p class="helper" id="upscaleHint">超分模型是固定倍数的（本地三个都是 4×）：直接按原生倍数出图，不再缩回小倍数。选模型就是选风格，尺寸由模型决定。</p>
+      <div class="upscale-progress" id="upscaleProgress" hidden>
+        <mdui-linear-progress id="upscaleProgressBar" max="100"></mdui-linear-progress>
+        <span class="upscale-progress-text" id="upscaleProgressText"></span>
+      </div>
       <div class="upscale-meta" id="upscaleMeta">还没有预览。</div>
     </div>
   </div>
@@ -1165,11 +1169,11 @@
 </mdui-dialog>
 
 <script src="/vendor/mdui.global.js"></script>
-<script src="/assets/artists.js?v=20261121upscalefix"></script>
-<script src="/assets/characters.js?v=20261121upscalefix"></script>
-<script src="/assets/characters-normal.js?v=20261121upscalefix"></script>
-<script src="/assets/data.js?v=20261121upscalefix"></script>
-<script src="/assets/ui.js?v=20261121upscalefix"></script>
-<script src="/assets/app.js?v=20261121upscalefix"></script>
+<script src="/assets/artists.js?v=20261121upscaleprog"></script>
+<script src="/assets/characters.js?v=20261121upscaleprog"></script>
+<script src="/assets/characters-normal.js?v=20261121upscaleprog"></script>
+<script src="/assets/data.js?v=20261121upscaleprog"></script>
+<script src="/assets/ui.js?v=20261121upscaleprog"></script>
+<script src="/assets/app.js?v=20261121upscaleprog"></script>
 </body>
 </html>
