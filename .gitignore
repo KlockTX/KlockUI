@@ -48,6 +48,7 @@ desktop.ini
 
 # ---- 项目内部：备份、私密配置、个人数据
 _backup/
+.research/
 .private/
 *.disabled-*
 gallery-favorites.json
