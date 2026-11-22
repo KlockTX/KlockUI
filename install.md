@@ -143,15 +143,15 @@ Windows 注意：路径不要含中文或空格；用 `venv\Scripts\python.exe`�
 
 ---
 
-### 2.3 要装哪些 LoRA（两步问，别一次抛出 31 支）
+### 2.3 要装哪些 LoRA（两步问，别一次抛出 35 支）
 
 LoRA 不是必需品——不装也能出图，只是预设里挂的会提示缺件。
-清单在 [`loras.manifest.json`](loras.manifest.json)，31 支全部来自 `presets/` 里的配方，★ 是精选。
+清单在 [`loras.manifest.json`](loras.manifest.json)，35 支（31 支来自 `presets/` 配方，另 4 支是 2026-11-22 补的社区精选画师件），★ 是精选。
 
 #### 第一步：先选系（可多选）
 
 > 预设里的 LoRA 按底模分系，先选要装哪几系：
-> ① **Anima 系** —— 10 支，约 1.6GB
+> ① **Anima 系** —— 14 支，约 2.3GB
 > ② **Krea 2 系** —— 20 支，约 5.5GB
 > ③ **Z-Image 系** —— 1 支，约 0.3GB
 > 可以多选。没打算装的架构就别选，省得白下。
@@ -183,7 +183,7 @@ MOSS 系没有预设引用 LoRA，所以不用问；用户主动要 MOSS 的 LoR
 
 #### 各系清单
 
-**Anima 系 · 10 支 · 1.63GB**
+**Anima 系 · 14 支 · 2.26GB**
 
 | LoRA | 用途 | 体积 | 预设 |
 |---|---|---|---|
@@ -197,6 +197,10 @@ MOSS 系没有预设引用 LoRA，所以不用问；用户主动要 MOSS 的 LoR
 | `anima_anime_flat` | 作品风格 | 88MB | 1 |
 | `anima_takeda_hiromitsu` | 画师画风 | 175MB | 1 |
 | `anima_blueprint` | 画风 | 37MB | 1 |
+| `anima_miyu_style` | 画师画风（社区精选） | 88MB | 1 |
+| `anima_memani_flat` | 杂志厚涂（社区精选） | 264MB | 1 |
+| `anima_yuming_li` | 画师画风（社区精选） | 132MB | 1 |
+| `anima_mutopaint` | 画师画风（社区精选） | 132MB | 1 |
 
 **Krea 2 系 · 20 支 · 5.49GB**
 

@@ -1,5 +1,5 @@
 {
-  "_comment": "预设用到的 LoRA 清单。size 取自本机实测，缺失为 null；agent 按 search_hint 到 Civitai/HF 找，流程见 skill.md 11.7。",
+  "_comment": "预设用到的 LoRA 清单。size 取自本机实测，缺失为 null；agent 按 search_hint 到 Civitai/HF 找，流程见 skill.md 11.7。 2026-11-22 新增 4 支社区 Anima 画风 LoRA（详见 docs/community-lora-research-20261122.md）。",
   "items": [
     {
       "name": "anima_turbo_v0.2",
@@ -393,6 +393,54 @@
       ],
       "size": 11524152,
       "search_hint": "detail slider Krea 2"
+    },
+    {
+      "name": "anima_miyu_style",
+      "arch": "anima",
+      "purpose": "画师画风（三嶋）",
+      "tier": "optional",
+      "presets": 1,
+      "used_by": [
+        "Anima · 三嶋画风（Miyu）"
+      ],
+      "size": 91979131,
+      "search_hint": "Miyu Style Anima ty_lee @mxyx"
+    },
+    {
+      "name": "anima_memani_flat",
+      "arch": "anima",
+      "purpose": "杂志厚涂画风",
+      "tier": "optional",
+      "presets": 1,
+      "used_by": [
+        "Anima · Megami 杂志厚涂"
+      ],
+      "size": 277276624,
+      "search_hint": "MeMaAni Flat Anime Style Anima Megami Magazine"
+    },
+    {
+      "name": "anima_yuming_li",
+      "arch": "anima",
+      "purpose": "画师画风（梦幻厚涂）",
+      "tier": "optional",
+      "presets": 1,
+      "used_by": [
+        "Anima · 梦幻厚涂光影"
+      ],
+      "size": 138662640,
+      "search_hint": "Yuming Li Style Luminous Painterly Anima"
+    },
+    {
+      "name": "anima_mutopaint",
+      "arch": "anima",
+      "purpose": "画师画风（松粗笔触）",
+      "tier": "optional",
+      "presets": 1,
+      "used_by": [
+        "Anima · 松粗厚涂笔触"
+      ],
+      "size": 138662640,
+      "search_hint": "Mutomorokoshi Style Painterly Illustration Anima"
     }
   ]
 }

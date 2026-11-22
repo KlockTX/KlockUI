@@ -1,0 +1,29 @@
+{
+ "klockui": 1,
+ "arch": "anima",
+ "model": "anima-aesthetic-v1.1.safetensors",
+ "seed": -1,
+ "batch": 1,
+ "hires": false,
+ "easyCache": true,
+ "name": "Anima · 梦幻厚涂光影",
+ "prompt": "masterpiece, best quality, score_9, score_8, very aesthetic, year 2025, @yumingli, painterly, soft brushwork, dramatic lighting, 1girl, fantasy character, violet and blue shadows with warm highlights, ethereal glow, delicate brushwork, upper body, dark moody background",
+ "negative": "worst quality, low quality, score_1, score_2, blurry, jpeg artifacts, watermark, bad anatomy, bad hands",
+ "quality": "standard",
+ "size": {
+  "ratio": "2:3",
+  "width": 832,
+  "height": 1216
+ },
+ "steps": 28,
+ "cfg": 4.0,
+ "sampler": "Euler",
+ "scheduler": "SGM Uniform",
+ "loras": [
+  {
+   "name": "anima_yuming_li",
+   "weight": 0.6
+  }
+ ],
+ "note": "社区调研 B1 · Anima/MOSS 双架构（这里用 Anima 版 v2）。作者建议起始权重 0.6，最高可到 1.0。触发词 @yumingli + painterly/soft brushwork/dramatic lighting。MOSS 版另存，别混挂。待实拍验证。"
+}

@@ -1,0 +1,29 @@
+{
+ "klockui": 1,
+ "arch": "anima",
+ "model": "anima-aesthetic-v1.1.safetensors",
+ "seed": -1,
+ "batch": 1,
+ "hires": false,
+ "easyCache": true,
+ "name": "Anima · 松粗厚涂笔触",
+ "prompt": "masterpiece, best quality, score_9, score_8, ultra detailed, year 2026, @mutopaint, anime illustration, painterly shading, loose brushwork, 1girl, solo, layered colors, dimensional shading, visible brush strokes on hair and clothing, strong contrast, upper body, simple background",
+ "negative": "worst quality, low quality, score_1, score_2, blurry, jpeg artifacts, watermark, bad anatomy, bad hands",
+ "quality": "standard",
+ "size": {
+  "ratio": "2:3",
+  "width": 832,
+  "height": 1216
+ },
+ "steps": 28,
+ "cfg": 4.0,
+ "sampler": "Euler",
+ "scheduler": "SGM Uniform",
+ "loras": [
+  {
+   "name": "anima_mutopaint",
+   "weight": 0.8
+  }
+ ],
+ "note": "社区调研 B3 · C 站 142 下载，Positive 12 评。114 张精选图训练，作者建议 0.6–1.0，起始 0.8。触发词 @mutopaint + anime illustration/painterly shading/loose brushwork。待实拍验证。"
+}

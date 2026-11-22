@@ -1819,7 +1819,6 @@
     "krea2_kidsdrawing",
     "krea2_neondrip",
     "krea2_rainywindow",
-    "krea2_retroanime",
     "krea2_softwatercolor",
     "krea2_sunsetblur",
     "krea2_vintagetarot",
@@ -1832,7 +1831,6 @@
     "krea2_monochrome-anime-linework",
     "krea2_muted-anime-everyday",
     "krea2_bold-inked-anime-realism",
-    "krea2_ghibli_fortnox",
     "krea2_celdepth_25d",
     "krea2_semi_thick_paint",
     "krea2_aquarelle",
@@ -1858,7 +1856,6 @@
     "krea2_huke",
     "krea2_loundraw",
     "krea2_clear_anime",
-    "krea2_neon_syndicate",
     "krea2_retro_screencap",
     "krea2_painterly_game",
     "krea2_prismatica",
@@ -1869,17 +1866,11 @@
     "krea2_bioluminescent",
     "krea2_neon_bokeh",
     "krea2_cyberpunk_anime",
-    "krea2_blue_archive",
-    "krea2_retro_scifi_90s",
     "krea2_inkriot",
     "krea2_sumi_e",
-    "krea2_carefull_style",
     "krea2_dark_art",
-    "krea2_dark_synth",
-    "krea2_neon_cyberpunk",
     "krea2_90s_aesthetic",
     "krea2_urasawa_manga",
-    "krea2_3xperiment",
     "krea2_onitokyo",
     "krea2_expressions",
     "krea2_psx",
@@ -1913,8 +1904,6 @@
     "krea2_style_yarn",
     "moss_style_anime_flat",
     "moss_artist_afrobull",
-    "zimage_hands",
-    "zimage_detail_perfection",
     "zimage_skin_texture",
     "zimage_detail_slider",
     "zimage_nsfw_master",
@@ -1929,10 +1918,7 @@
     "zimage_wlop_impressions",
     "krea2_environment_art",
     "krea2_rooms_background",
-    "krea2_bg_detail_enhancer",
-    "krea2_cyberpunk_arch",
     "krea2_forests",
-    "krea2_composition_enhancer",
     "krea2_tilt_slider",
     "krea2_zoom_slider",
     "krea2_first_person",
@@ -1941,23 +1927,23 @@
     "krea2_weight_slider",
     "krea2_height_slider",
     "krea2_age_slider",
-    "krea2_nsfw_v4",
     "krea2_nsfw_v5",
     "krea2_hentai_studio",
     "krea2_riding_scene",
-    "krea2_aio_nsfw",
     "krea2_herpov_v2",
     "krea2_dbx_uncensored",
-    "krea2_nsfw_fix",
     "krea2_nsfw_slider",
     "krea2_style_reference",
     "anima_turbo_v0.2",
+    "anima_miyu_style",
+    "anima_memani_flat",
+    "anima_yuming_li",
+    "anima_mutopaint",
     "anima_hentai_comic",
     "anima_female_pov",
     "anima_giant_dom",
     "anima_blueprint",
     "moss_image_sft_8steps_dmd_lora",
-    "moss_hires_test_v07",
     "moss_beauty",
     "moss_gouache",
     "moss_impressionism",
@@ -1967,14 +1953,12 @@
     "moss_spider_legs",
     "moss_detailer",
     "moss_quality_slider",
-    "moss_quality_boost",
     "moss_better_nudes",
     "moss_mystic_xxx",
     "moss_gta_style",
     "moss_sakuga",
     "moss_lineart",
     "moss_90s_anime",
-    "moss_anime_flat",
     "moss_anime_superflat",
     "moss_anime_retrocel90",
     "moss_anime_bastyle",
@@ -1997,9 +1981,6 @@
     "MOSS-Image-NSFW-Uncensored-LoRA-ComfyUI",
     "moss_image_edit_lora_rank_64_bf16",
     "moss_image_color_depth_control",
-    "anima29b-turbolora1.1",
-    "anima_turbo_4step_v3",
-    "anima_highres_boost",
     "anima_rl_v0.1",
     "anima_greg_rutkowski",
     "style_diives",
@@ -2042,12 +2023,6 @@
       weight: 1.3,
       triggers: "rainy window style",
       desc: "官方风格：隔着一层雨玻璃看世界，水痕、失焦、冷调。触发词 rainy window style；建议 1.3（int8 + 8 步下 1.0 偏淡），人像会得到很自然的「窗内偷拍」感。"
-    },
-    "krea2_retroanime": {
-      title: "Krea · 紫调复古动画",
-      weight: 1.3,
-      triggers: "purple retro anime style",
-      desc: "官方风格：80–90 年代赛璐璐动画，紫青主色、颗粒与轻微色偏。触发词 purple retro anime style；建议 1.3——int8 底模配 8 步蒸馏时 1.0 偏淡，实测 1.5 才等同官方 1.0 的观感。"
     },
     "krea2_softwatercolor": {
       title: "Krea · 装饰水彩",
@@ -2130,11 +2105,6 @@
     },
     // ---- Krea 2 二次元画风追加（2026-11-15 第二批，Civitai 镜像）
     // 这 6 支补的是上一批 fal 系列没有的"质感方向"：吉卜力、2.5D、厚涂、水彩、黑白漫画、80s 剧场版。
-    "krea2_ghibli_fortnox": {
-      title: "Krea · 吉卜力（Fortnox）",
-      weight: 1,
-      desc: "吉卜力式背景美术：水彩天空、灰绿暖赭的克制配色、简笔圆脸，连人物带场景一起偏过去。无触发词；建议 0.9–1.1。禁用高饱和词（neon、vivid）否则立刻破功。"
-    },
     "krea2_celdepth_25d": {
       title: "Krea · 2.5D 半写实赛璐璐",
       weight: 1,
@@ -2247,16 +2217,6 @@
       weight: 0.9,
       desc: "室内空镜生成器（ROOMS 系列）：房间结构、家具摆放、窗光方向都更合理。无触发词；建议 0.8–1.0，写清房间类型（bedroom / classroom / lab）效果最好。"
     },
-    "krea2_bg_detail_enhancer": {
-      title: "Krea · 背景细节增强",
-      weight: 0.7,
-      desc: "不换风格，只往背景里补信息量（砖缝、管线、杂物、植被层次）。无触发词；建议 0.5–0.8，过高会让主体也跟着碎，适合放在最后一遍细化。"
-    },
-    "krea2_cyberpunk_arch": {
-      title: "Krea · 赛博建筑",
-      weight: 0.9,
-      desc: "赛博朋克建筑体块：巨型结构、外露管线、霓虹反射在湿地面。无触发词；建议 0.8–1.0，配 night / rain / neon 三联最稳。"
-    },
     "krea2_forests": {
       title: "Krea · 森林自然",
       weight: 0.9,
@@ -2298,11 +2258,6 @@
       title: "Krea · 清透赛璐璐",
       weight: 1,
       desc: "干净利落的 TV 动画赛璐璐：边界清晰、上色通透、无多余纹理，接近现代番剧截图。无触发词；建议 0.9–1.1。想要「作画感」而不是「插画感」时用这支。"
-    },
-    "krea2_neon_syndicate": {
-      title: "Krea · 霓虹赛璐璐",
-      weight: 1,
-      desc: "赛璐璐 + 霓虹描边的插画风：强对比冷光、角色轮廓带发光边、城市夜景背景。无触发词；建议 0.9–1.1。适合科幻/赛博题材。"
     },
     "krea2_retro_screencap": {
       title: "Krea · 90s 动画截图",
@@ -2357,16 +2312,6 @@
       weight: 0.9,
       desc: "赛博朋克动画风：霓虹灯牌、湿地面反射、冷蓝与品红对撞，人物仍是动画比例。无触发词；建议 0.8–1.0。C 站同类里下载量最高的一支（45k），比纯提示词更稳。"
     },
-    "krea2_blue_archive": {
-      title: "Krea · 蔚蓝档案",
-      weight: 0.9,
-      desc: "BA 的美术口径：干净平涂、明亮高饱和、柔和边光、眼睛大而清透。无触发词；建议 0.8–1.0。V2 用 64 维重训过，比早期版本更像。"
-    },
-    "krea2_retro_scifi_90s": {
-      title: "Krea · 90s 科幻动画",
-      weight: 0.9,
-      desc: "90 年代科幻 TV 动画：机械设定线条、有限色板、胶片感颗粒。触发词 retro_scifi_90s_anime_style；建议 0.8–1.0。配 spaceship、cockpit 很对味。"
-    },
     "krea2_inkriot": {
       title: "Krea · Inkriot 墨线",
       weight: 1,
@@ -2377,27 +2322,12 @@
       weight: 1,
       desc: "日式水墨（Sumi-e）：枯笔飞白、留白构图、单色浓淡，配一点朱红。无触发词；建议 0.9–1.1。适合风景与静物，人物细节会被笔触吃掉。"
     },
-    "krea2_carefull_style": {
-      title: "Krea · Carefull Style",
-      weight: 0.9,
-      desc: "作者自训练的个人画风：柔和粉彩、细腻笔触、少女感强，介于插画与动画之间。无触发词；建议 0.8–1.0。"
-    },
     // ---- 社区作者的风格族（2026-11-16 第六批）
     // 这几支来自三个高产作者：zura_janai（90s 复古系）、tehalex86（实验向）、Yofaraway（漫画风）。
     "krea2_dark_art": {
       title: "Krea · 暗黑插画",
       weight: 0.9,
       desc: "低明度、厚涂质感、大片阴影里透一点冷光，情绪偏压抑。无触发词；建议 0.8–1.0。作者 zura_janai 的高人气件（C 站 24.7k 下载）。"
-    },
-    "krea2_dark_synth": {
-      title: "Krea · 暗色合成波",
-      weight: 0.9,
-      desc: "暗调 + synthwave 电子光：紫粉渐变、扫描线、夜景霓虹反射。无触发词；建议 0.8–1.0。和「霓虹赛博」的区别是更暗更冷、更像 80s 电子封面。"
-    },
-    "krea2_neon_cyberpunk": {
-      title: "Krea · 复古霓虹赛博",
-      weight: 0.9,
-      desc: "80 年代想象的赛博朋克：铬金属、品红青绿、雨夜街景。无触发词；建议 0.8–1.0。比现代赛博风更「复古海报」，适合做封面。"
     },
     "krea2_90s_aesthetic": {
       title: "Krea · 90s 动画基调",
@@ -2409,11 +2339,6 @@
       weight: 0.9,
       desc: "浦泽直树（怪物 / 20世纪少年）的写实漫画线：克制笔触、细密排线阴影、人物表情内敛。无触发词；建议 0.8–1.0。适合悬疑、日常、人物特写。"
     },
-    "krea2_3xperiment": {
-      title: "Krea · 3xperiment",
-      weight: 0.9,
-      desc: "作者 tehalex86 的实验风格：粗颗粒、错位色版、印刷故障感，偏实验插画。无触发词；建议 0.8–1.0。适合做视觉冲击强的封面。"
-    },
     "krea2_onitokyo": {
       title: "Krea · 鬼东京",
       weight: 0.9,
@@ -2422,11 +2347,6 @@
     // ---- 构图 / 透视 / 体型控制（2026-11-16）
     // 这组不是「画风」，是「改画面结构」。滑块类有个共同用法：
     // 正权重增强、负权重反向（例如 Height 用 -1 会变矮），范围一般 −2 ~ +2。
-    "krea2_composition_enhancer": {
-      title: "Krea · 构图增强",
-      weight: 0.8,
-      desc: "强化画面骨架：主体位置更明确、前中后景分层、留白更讲究，偏史诗感的中心透视。无触发词；建议 0.6–1.0。构图已经很好时会显得过于「摆拍」。"
-    },
     "krea2_tilt_slider": {
       title: "Krea · 倾斜构图（滑块）",
       weight: 1,
@@ -2470,16 +2390,6 @@
     // ---- Krea 2 成人向 LoRA（Civitai 镜像，全部仅限成年角色）
     // 这一组不是"风格"，是能力补丁：Krea 2 原生对裸露 / 性场景会往时装、泳装方向修正，
     // 叠上这些才拉得回来。真正解除提示词拒答还得换编码器（见 krea2_noct 说明）。
-    "krea2_nsfw_v4": {
-      title: "Krea · 成人向 V4（综合）",
-      weight: 1,
-      desc: "综合向能力补丁，Civitai 上最常被引用的一支（迭代到 V4.1 再往后 3000 步）。无固定触发词，靠提示词；建议 0.9–1.1。和 aio 别同时开，两者作用重叠会过冲。仅限成年角色。"
-    },
-    "krea2_aio_nsfw": {
-      title: "Krea · 全能整合包",
-      weight: 1,
-      desc: "All-in-one 整合：把多支场景 LoRA 合成一个，省得叠一堆。无触发词；建议 0.8–1.0，和 nsfw_v4 二选一。仅限成年角色。"
-    },
     "krea2_herpov_v2": {
       title: "Krea · 第一人称视角",
       weight: 1,
@@ -2491,11 +2401,6 @@
       weight: 1,
       desc: "比单支场景 LoRA 更底层的一支：直接压掉模型对裸露 / 体液的回避倾向，作为其他场景 LoRA 的地基。无触发词；建议 0.8–1.0，和其他成人 LoRA 同开时降到 0.6。仅限成年角色。"
     },
-    "krea2_nsfw_fix": {
-      title: "Krea · 结构修正",
-      weight: 0.8,
-      desc: "专门修成人构图下的结构错误（肢体粘连、比例错、接缝）。无触发词；建议 0.6–0.9，出图有小瑕疵时挂上，正常图挂了会略微趋同标准脸。仅限成年角色。"
-    },
     "krea2_nsfw_slider": {
       title: "Krea · 衣物量滑块",
       weight: 0.8,
@@ -2506,17 +2411,36 @@
       weight: 1,
       desc: "Turbo 加速：8–12 步、CFG 1、Euler 即可出图，实测 10 步约 10 秒。CFG 1 时负面词几乎不生效，构图/细节也更随机；适合大批抽卡，选定图后关掉 Turbo 再做细化重绘。"
     },
+    "anima_miyu_style": {
+      title: "Anima · 三嶋画风",
+      weight: 1,
+      triggers: "@mxyx",
+      desc: "社区精选：柔和粉彩色、精致五官与梦幻氛围，触发词 @mxyx，作者推荐 1.0。Anima 版本 1030 下载、Very Positive 120 评（Anima 系评价样本最多）。单独挂，不叠其它画风。"
+    },
+    "anima_memani_flat": {
+      title: "Anima · Megami 厚涂",
+      weight: 1,
+      triggers: "megami magazine",
+      desc: "社区精选：Megami 杂志系的干净赛璐璐+厚涂，训练集已手撕日文文字；1792 分辨率训练，可上 1536²。v2.0C 4211 下载、Very Positive 165 评。建议 1.0，负面仍加 text 保险。"
+    },
+    "anima_yuming_li": {
+      title: "Anima · 梦幻厚涂光影",
+      weight: 0.6,
+      triggers: "@yumingli",
+      desc: "社区精选：柔和笔触、深紫蓝阴影配暖高光，作者建议起始 0.6、条件合适可到 1.0。触发词 @yumingli + painterly, soft brushwork, dramatic lighting。另有 MOSS 版，别混挂。"
+    },
+    "anima_mutopaint": {
+      title: "Anima · 松粗笔触",
+      weight: 0.8,
+      triggers: "@mutopaint",
+      desc: "社区精选：可见笔触的厚涂 shading，层次上色、强对比。触发词 @mutopaint + anime illustration, painterly shading, loose brushwork。建议 0.6–1.0，起始 0.8。"
+    },
     "moss_image_sft_8steps_dmd_lora": {
       title: "MOSS 8 步 DMD 极速出图",
       weight: 1,
       desc: "MOSS-Image 的 8 步 DMD 蒸馏：8–10 步、CFG 1、ER SDE 即可出图，实测 8 步约 20 秒。CFG 1 时负面词几乎不生效；适合抽卡，选定图后关掉再做 25 步细化。"
     },
     // ---- MOSS 质量 / 风格追加（2026-11-15 从 HF 拉的一批，都是 DiT-only）
-    "moss_hires_test_v07": {
-      title: "MOSS · 高清增强（实验）",
-      weight: 0.8,
-      desc: "comfyanonymous 自己在跑的 hires 测试 LoRA（v0.7）：专门给二采补细节，直出挂了容易发糊。无触发词；建议 0.6–0.9，只在开了高清放大时挂。"
-    },
     "moss_beauty": {
       title: "MOSS · 人像美化",
       weight: 0.7,
@@ -2538,11 +2462,6 @@
       title: "MOSS · 16×16 像素画",
       weight: 1,
       desc: "16×16 极小像素格栅：色板被压到十几色，适合做图标/精灵图。无触发词；建议 1.0–1.2，配合 nearest 放大才不糊。"
-    },
-    "anima_highres_boost": {
-      title: "官方高清增强",
-      weight: 0.6,
-      desc: "Highres/Aesthetic Boost：补细节密度、材质和整体观感。无固定触发词；建议 0.5–0.8，1024px、20 步以上更明显。"
     },
     "anima_rl_v0.1": {
       title: "官方 RL 质感",
@@ -2591,11 +2510,6 @@
     // ---- MOSS 二次元风格（Civitai 镜像，2026-11-15 一批 8 支）
     // MOSS 原生偏写实摄影，这几支是把它往动画方向拽的最直接手段：
     // 平涂 / 超扁平 / 90s 赛璐璐 / 现代干净赛璐璐 / 漫画草图 / 吉卜力 / 动画截图 / Q 版。
-    "moss_anime_flat": {
-      title: "MOSS · 平涂二次元",
-      weight: 0.9,
-      desc: "基础平涂：色块分明、阴影只分两层、几乎无渐变，最百搭的一支。无固定触发词；建议 0.8–1.0，想叠加别的画风时先用它打底。"
-    },
     "moss_anime_superflat": {
       title: "MOSS · 超扁平",
       weight: 0.9,
@@ -2734,11 +2648,6 @@
       weight: 0.8,
       desc: "文本滑块式质量调节：靠提示词里的强度词控制幅度（high quality / low quality 方向）。建议 0.6–1.0。适合压掉 MOSS 偶发的「塑料感」，过度会让画面变脏。"
     },
-    "moss_quality_boost": {
-      title: "MOSS · 质量提升（V67）",
-      weight: 0.8,
-      desc: "在 Base 上训练的质感提升：对比度、材质层次、暗部细节更实。无触发词；建议 0.7–1.0。和 8 步 DMD 一起用时权重别超过 0.9，两者都会加强对比，叠狠了会爆高光。"
-    },
     // ---- 成人向补充（2026-11-16，全部仅限成年角色）
     "krea2_nsfw_v5": {
       title: "Krea · 成人向 V5",
@@ -2813,16 +2722,6 @@
     },
     // ---- Z-Image（2026-11-17）
     // Z-Image 是蒸馏模型：LoRA 叠加强度总和建议压在 1 左右，叠三支就够，再多会糊。
-    "zimage_hands": {
-      title: "Z-Image · 手部修正",
-      weight: 0.8,
-      desc: "专治手指数量与关节：五指分明、握持关系合理。无触发词；建议 0.7–0.9。Z-Image 的手本来不算差，但双手交叠时仍会融，这支是目前最有效的补丁（C 站 31 万下载）。"
-    },
-    "zimage_detail_perfection": {
-      title: "Z-Image · 细节极致（手/脚/脸）",
-      weight: 0.7,
-      desc: "同时修手、脚、面部五处：指甲、脚趾分界、眼睑层次。无触发词；建议 0.6–0.8。和手部修正二选一，别同时上——两者的修正方向会打架。"
-    },
     "zimage_skin_texture": {
       title: "Z-Image · 皮肤质感",
       weight: 0.7,
@@ -3047,21 +2946,6 @@
       weight: 0.8,
       desc: "色彩与景深控制件：对饱和度、冷暖、虚化程度做定向调整，适合统一一组图的色调。无触发词；建议 0.5–0.8，过高会整体发灰或虚化过头。"
     },
-    "anima29b-turbolora1.1": {
-      title: "Anima 2.9B 加速 v1.1",
-      weight: 1,
-      desc: "Anima 2.9B 的 Turbo 加速 adapter：8–12 步、CFG 1 出图。和 anima_turbo_4step_v3 别同时开（都是同一段蒸馏，叠了只会过冲）。"
-    },
-    "anima_turbo_4step_v3": {
-      title: "Anima 极速 4 步 v3",
-      weight: 1,
-      desc: "更激进的 4 步蒸馏：出图最快，但结构稳定性明显下降，适合先大量抽构图，选定后再关掉重跑细化的那一步。"
-    },
-    "krea2_turbo_lora_rank_64_bf16": {
-      title: "Krea Turbo 差值 adapter（隐藏）",
-      weight: 1,
-      desc: "从 (Turbo − Raw) 权重差里 SVD 抽出来的 adapter，作用是让 Raw 底模跑出 Turbo 表现。本机底模本来就是 Turbo，再叠一层等于重复蒸馏，所以选了 Krea 时会自动隐藏——这里只留一条说明，免得你以为是丢了文件。"
-    }
   };
   const CHARACTER_TAG_ZH = {
     "black hair": "黑发", "blonde hair": "金发", "platinum blonde hair": "白金发",

@@ -1,0 +1,29 @@
+{
+ "klockui": 1,
+ "arch": "anima",
+ "model": "anima-aesthetic-v1.1.safetensors",
+ "seed": -1,
+ "batch": 1,
+ "hires": false,
+ "easyCache": true,
+ "name": "Anima · Megami 杂志厚涂",
+ "prompt": "masterpiece, best quality, score_9, score_8, ultra detailed, year 2026, megami magazine, 1girl, solo, beautiful detailed eyes, natural lighting, soft smile, sitting by window, warm afternoon light, upper body, clean simple background, anime illustration",
+ "negative": "worst quality, low quality, score_1, score_2, blurry, jpeg artifacts, watermark, text, japanese text, bad anatomy, bad hands",
+ "quality": "standard",
+ "size": {
+  "ratio": "2:3",
+  "width": 832,
+  "height": 1216
+ },
+ "steps": 28,
+ "cfg": 4.0,
+ "sampler": "Euler",
+ "scheduler": "SGM Uniform",
+ "loras": [
+  {
+   "name": "anima_memani_flat",
+   "weight": 1.0
+  }
+ ],
+ "note": "社区调研 A2 · C 站 4211 下载（v2.0 C），Very Positive 165 评（Anima 系评价样本最多）。训练集已手工去掉日文文字，但负面仍加 text 保险。1792 分辨率训练，可上 1536²。待实拍验证。"
+}

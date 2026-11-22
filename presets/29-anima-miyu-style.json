@@ -1,0 +1,29 @@
+{
+ "klockui": 1,
+ "arch": "anima",
+ "model": "anima-aesthetic-v1.1.safetensors",
+ "seed": -1,
+ "batch": 1,
+ "hires": false,
+ "easyCache": true,
+ "name": "Anima · 三嶋画风（Miyu）",
+ "prompt": "masterpiece, best quality, score_9, score_8, very aesthetic, ultra detailed, year 2026, @mxyx, 1girl, solo, soft pastel lighting, delicate features, gentle expression, looking at viewer, upper body, clean background, dreamy atmosphere",
+ "negative": "worst quality, low quality, score_1, score_2, blurry, jpeg artifacts, watermark, bad anatomy, bad hands, extra fingers",
+ "quality": "standard",
+ "size": {
+  "ratio": "2:3",
+  "width": 832,
+  "height": 1216
+ },
+ "steps": 28,
+ "cfg": 4.0,
+ "sampler": "Euler",
+ "scheduler": "SGM Uniform",
+ "loras": [
+  {
+   "name": "anima_miyu_style",
+   "weight": 1.0
+  }
+ ],
+ "note": "社区调研 A1 · C 站 1030 下载（Anima 版本），触发词 @mxyx，作者推荐权重 1.0。28 步 / CFG 4 标准档；画风 LoRA 单独挂，不与其它画风叠加。下载量小但评价样本在 Anima 系里最大（Very Positive 120）。待实拍验证。"
+}
