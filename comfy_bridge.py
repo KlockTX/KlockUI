@@ -843,12 +843,25 @@ def _add_loras(graph, loras, model_link, clip_link, start_id=100, model_only=Fal
     return model_link, clip_link
 
 
+# EasyCache 的 reuse_threshold 不是通用常数，各架构的「每步变化率」差一截：
+# 同一个 0.2，MOSS 25 步只跳 5/25（PSNR 31.2dB），Anima 28 步却跳 15/28
+# （PSNR 21.2dB，画面是真的会变）。所以按架构压上限，宁少跳不多跳。
+# 数值来自 2026-11-22 实测（768²/1024²，同 seed 关缓存 vs 开缓存）：
+#   MOSS 25 步   th0.20 → 1.26x / 31.24dB（跳 5）   ← 上限 0.20
+#   Anima 28 步  th0.03 → 1.25x / 30.69dB（跳 6）   ← 上限 0.03
+#   Anima 28 步  th0.05 → 1.41x / 24.42dB（跳 9）     再往上 PSNR 断崖
+#   Krea  16 步  th0.10 → 1.33x / 27.67dB（跳 6）   ← 上限 0.10（0.05 一步不跳）
+# 没测过的架构不给上限，沿用传入值。
+EASY_CACHE_MAX_THRESHOLD = {"moss": 0.2, "anima": 0.03, "krea": 0.1}
+
+
 def _apply_step_cache(graph, threshold=0.2, node_type="EasyCache"):
     """在 KSampler 前插入 ComfyUI 原生跳步缓存节点（EasyCache / LazyCache）。
 
-    实测 MOSS SFT 25 步 768²：基线 22.5–28.7s，EasyCache 0.2 约 13s，
-    PSNR 33.6dB（肉眼几乎无差）。多个 KSampler（Hires 二采）共享同一个节点。
-    只在 generate() 里做后处理，不动三个架构分支的构图逻辑。
+    不认架构，只要图里有 KSampler 且模型链路唯一就能挂——Anima/Krea/MOSS 都实测通过。
+    真正的约束是阈值：见上面 EASY_CACHE_MAX_THRESHOLD 的实测表，调用方负责按架构收敛。
+    多个 KSampler（Hires 二采）共享同一个节点。只在 generate() 里做后处理，
+    不动各架构分支的构图逻辑。
     """
     if node_type not in ("EasyCache", "LazyCache"):
         node_type = "EasyCache"
@@ -1604,6 +1617,11 @@ def generate(endpoint, payload, timeout=None):
                     if isinstance(cache_cfg, dict) else "EasyCache"
             except (TypeError, ValueError):
                 threshold, node_type = 0.2, "EasyCache"
+            cap = EASY_CACHE_MAX_THRESHOLD.get(arch)
+            if cap is not None and threshold > cap:
+                log.info("easy-cache threshold %.2f clipped to %.2f for %s",
+                         threshold, cap, arch)
+                threshold = cap
             _apply_step_cache(g, threshold, node_type)
         _apply_tiled_vae(g, _tiled_vae_enabled(payload))
         if control_image and control_cfg.get("model"):
