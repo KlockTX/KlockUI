@@ -486,6 +486,7 @@
     activeArch: "",
     activePreset: "",
     archByModel: {},
+    sizeByModel: {},
     animaModules: [],
     animaReady: false,
     kreaModules: [],
@@ -1831,13 +1832,17 @@
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
       const data = await res.json();
       const map = {};
+      const sizes = {};
       (Array.isArray(data.checkpoints) ? data.checkpoints : []).forEach((item) => {
         const name = String(item?.name || "").toLowerCase();
         if (name && item?.arch) map[name] = String(item.arch);
+        const bytes = Number(item?.size);
+        if (name && bytes > 0) sizes[name] = bytes;
       });
       const anima = data.anima && typeof data.anima === "object" ? data.anima : {};
       const krea = data.krea && typeof data.krea === "object" ? data.krea : {};
       state.archByModel = map;
+      state.sizeByModel = sizes;
       state.animaModules = [anima.text_encoder?.name, anima.vae?.name]
         .map((name) => String(name || "").trim())
         .filter(Boolean);
@@ -1850,6 +1855,8 @@
       state.seedvr2Ready = Boolean(seedvr2.ready);
       state.catalogLoaded = true;
       renderVaeOptions();
+      // 模型体积拿到后才知道 LoRA 叠加上限，这里补一次重绘。
+      renderLoraBlock();
       return true;
     } catch (err) {
       state.catalogLoaded = false;
@@ -2498,6 +2505,26 @@
     }
   }
 
+  // 底模越大，8GB 显存装不下时每轮生成都要重新 stage 一遍权重，
+  // 挂上的每个 LoRA 都要在这时候重打一遍 patch（实测 Krea2 12.86GB 挂 3 个：
+  // 640² 13.1s→32.2s、832² 23.2s→33.5s）。所以大盘只建议挂 1 个。
+  function loraBudget() {
+    // activeModel 可能是文件名、带路径的完整路径或去掉扩展名的名字，统一归一化后再查体积表。
+    const raw = String(state.activeModel || "").split(/[\\/]/).pop()
+      .toLowerCase().replace(/\.(safetensors|ckpt|pt|bin)$/, "");
+    if (!raw) return { limit: 3, gb: 0 };
+    let bytes = state.sizeByModel[raw] || 0;
+    if (!bytes) {
+      const hit = Object.keys(state.sizeByModel).find((key) => key === raw || key.startsWith(raw) || raw.startsWith(key));
+      if (hit) bytes = state.sizeByModel[hit];
+    }
+    if (!bytes) return { limit: 3, gb: 0 };
+    const gb = bytes / 1024 ** 3;
+    if (gb >= 10) return { limit: 1, gb };
+    if (gb >= 6) return { limit: 2, gb };
+    return { limit: 3, gb };
+  }
+
   function renderLoraBlock() {
     if (!el.loraBlock) return;
     const count = state.activeLoras.length;
@@ -2511,6 +2538,15 @@
     }
     el.loraHint.textContent = hint;
     el.loraHint.hidden = !hint;
+    if (el.loraHelper) {
+      const defaultText = "启用后在提示词末尾追加 <lora:名称:权重>；触发词用「插入」写进描述框。";
+      const budget = loraBudget();
+      const over = budget.gb > 0 && count > budget.limit;
+      el.loraHelper.textContent = over
+        ? `底模 ${budget.gb.toFixed(1)}GB，挂 ${count} 个 LoRA 会明显变慢：8GB 装不下这个底模，每轮生成都要重新加载权重，每个 LoRA 都得重打一遍补丁（实测 3 个 LoRA 慢 45%~145%）。建议不超过 ${budget.limit} 个。`
+        : defaultText;
+      el.loraHelper.classList.toggle("warn", over);
+    }
     if (el.loraActiveChips) {
       el.loraActiveChips.replaceChildren();
       state.activeLoras.forEach((item) => {
@@ -2998,6 +3034,8 @@
           ? "已切换，并挂载 Anima 的 Qwen3 编码器与 Qwen-Image VAE。下一张首次加载约 20–40 秒。"
           : "已切换，并套用该模型记住的参数。下一张首次加载约 20–40 秒。");
       const unknownActive = state.activeLoras.filter((item) => !loraInfo(item.name)).length;
+      // 底模体积变了，LoRA 叠加上限提示要跟着重算（大盘模型只建议挂 1 个）。
+      renderLoraBlock();
       if (state.activeArch === "anima" && unknownActive) {
         snack(`已切到 Anima；${unknownActive} 个未登记 LoRA 可能不兼容，先小权重试`, { bad: true });
       } else if (!silent) {

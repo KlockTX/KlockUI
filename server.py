@@ -5301,9 +5301,16 @@ def _engine_catalog():
             return payload
     checkpoints = []
     for path in _list_model_files(CHECKPOINT_DIRS):
+        try:
+            size = os.path.getsize(path)
+        except OSError:
+            size = 0
         checkpoints.append({
             "name": os.path.splitext(os.path.basename(path))[0],
             "file": path,
+            # 体积给前端算 LoRA 叠加上限用：大盘模型每轮都要重新 stage 权重，
+            # 每个 LoRA 都得重打一遍补丁，叠多了是实打实的成倍变慢。
+            "size": size,
             "arch": _classify_checkpoint(_safetensors_keys(path)),
         })
     modules = []

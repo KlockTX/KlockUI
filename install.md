@@ -141,6 +141,16 @@ Windows 注意：路径不要含中文或空格；用 `venv\Scripts\python.exe`�
 设置方式：`run_comfy.bat` 里直接加；或在 KlockUI 的 `start.bat` 走**兜底启动**时用
 `set KLOCK_ENGINE_ARGS=--cpu-vae` 追加（该变量只在没有 `run_comfy.bat` 时生效）。
 
+**另外两条与稳定性无关、但值得默认开/按需开的：**
+
+> **`--fast-disk` 建议默认开**：让权重卸载走 NVMe 而不是非固定内存。本机实测 Krea2
+> 1024² 冷启 55.8/51.3s → 48.1/42.3s（快 12–16%），MOSS 768² 25 步 34.1→31.7s。
+> 机械盘或慢 SATA 盘不要开，反而更慢。
+>
+> **内存只有 16GB 时可以加 `--disable-pinned-memory`**：实测释放 1.4GB（Krea）/ 0.4GB（MOSS）
+> 固定内存，速度没有可测的损失。代价是 CPU↔GPU 传输少一层加速，MOSS 这类大编码器
+> 反复换入的场景要先小图验证。
+
 ---
 
 ### 2.3 要装哪些 LoRA（两步问，别一次抛出 35 支）
@@ -696,10 +706,11 @@ print("OK", p)
 
 ```bash
 cd <父目录>/ComfyUI
-venv/bin/python main.py --listen 127.0.0.1 --port 8188 --lowvram --cache-ram 2 --preview-method auto
+venv/bin/python main.py --listen 127.0.0.1 --port 8188 --lowvram --cache-ram 2 --preview-method auto --fast-disk
 ```
 
 - `--preview-method auto` **必加**：默认 `NoPreviews` 会让界面步进预览全黑
+- `--fast-disk` 在 NVMe 上实测快 12–16%（见 §2.2），机械盘/慢 SATA 盘去掉
 - 等到日志出现 `To see the GUI go to: http://127.0.0.1:8188`（30–60 秒）
 
 ```bash

@@ -452,6 +452,45 @@ def _checkpoint_path(name):
     return None
 
 
+# 底模体积 -> 建议的 LoRA 叠加上限。判据是「8GB 显存装不下这个底模」那条线：
+# 装不下时每轮生成都要重新 stage 一遍权重，挂上的每个 LoRA 都得在这时候重打
+# 一遍 patch，所以叠越多越慢，且是每轮都付一次。
+# 实测 Krea2 12.86GB（8 步）：无 LoRA 640² 13.1s / 832² 23.2s；挂 3 个 LoRA
+# 变成 32.2s / 33.5s（+145% / +45%）。前端有同一套阈值，这里只落服务端日志。
+LORA_STACK_LIMITS = ((10.0, 1), (6.0, 2))
+
+
+def lora_stack_budget(size_bytes):
+    """按底模字节数返回建议的 LoRA 叠加上限；体积未知时给 3（不打扰）。"""
+    if not size_bytes or size_bytes <= 0:
+        return 3
+    gb = size_bytes / (1024 ** 3)
+    for threshold, limit in LORA_STACK_LIMITS:
+        if gb >= threshold:
+            return limit
+    return 3
+
+
+def _warn_lora_stack_cost(model, payload):
+    """叠的 LoRA 超过底模体积对应的建议上限时，记一条能解释「为什么变慢」的日志。"""
+    try:
+        loras = _extract_loras(str(payload.get("prompt") or ""))[1]
+        if len(loras) < 2:
+            return
+        path = _checkpoint_path(model)
+        if not path:
+            return
+        size = os.path.getsize(path)
+        limit = lora_stack_budget(size)
+        if len(loras) <= limit:
+            return
+        log.info("lora stack: %d loras on a %.1fGB base model (建议 <=%d) — "
+                 "8GB 显存装不下时会每轮重打 patch，叠越多越慢",
+                 len(loras), size / (1024 ** 3), limit)
+    except Exception:  # noqa: BLE001
+        pass
+
+
 def _classify(path):
     key = (path, os.path.getsize(path))
     if key in _CLASSIFY_CACHE:
@@ -1543,6 +1582,7 @@ def generate(endpoint, payload, timeout=None):
     arch = _arch_for(model)
     if arch == "unknown":
         arch = current_arch()
+    _warn_lora_stack_cost(model, payload)
     try:
         seed_raw = int(payload.get("seed") if payload.get("seed") is not None else -1)
     except (TypeError, ValueError):
