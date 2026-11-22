@@ -9,6 +9,7 @@
 [![Platform](https://img.shields.io/badge/platform-Windows%20%7C%20Linux%20%7C%20macOS-lightgrey.svg)]()
 [![No build step](https://img.shields.io/badge/build-none-brightgreen.svg)]()
 [![Local first](https://img.shields.io/badge/data-stays%20local-success.svg)]()
+[![Contributors](https://img.shields.io/github/contributors/KlockTX/KlockUI.svg)](https://github.com/KlockTX/KlockUI/graphs/contributors)
 
 ![KlockUI 主界面](docs/shot-main.jpg)
 
@@ -310,6 +311,20 @@ clone 下来就能跑，不需要 `npm install`。
    纯文档、文案类写「对 X 进行修改」；改动理由写正文，标题不铺开讲
 
 排错思路和已知坑写在 [`skill.md`](skill.md) 里，改代码前建议先扫一眼。
+
+---
+
+## 贡献者
+
+感谢每一位让这个项目变得更好的人。
+
+<a href="https://github.com/KlockTX/KlockUI/graphs/contributors">
+  <img src="https://contrib.rocks/image?repo=KlockTX/KlockUI" alt="Contributors" />
+</a>
+
+| 贡献者 | 角色 |
+|---|---|
+| [@KlockTX](https://github.com/KlockTX) | 作者 / 维护者 |
 
 ---
 
