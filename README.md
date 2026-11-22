@@ -10,55 +10,79 @@
 [![No build step](https://img.shields.io/badge/build-none-brightgreen.svg)]()
 [![Local first](https://img.shields.io/badge/data-stays%20local-success.svg)]()
 
-针对低显存与低内存深度优化。多架构预设、LoRA 按架构隔离、参数配方可存可分享。
-
 ![KlockUI 主界面](docs/shot-main.jpg)
+
+针对低显存与低内存深度优化。多架构预设、LoRA 按架构隔离、参数配方可存可分享。
 
 > **不含推理引擎，也不含任何模型权重。**
 > 引擎（ComfyUI）与底模由 [`install.md`](install.md) 指导安装——把仓库链接交给你的 agent 即可。
 
----
+**它能替你做的三件事：**
 
-## 目录
-
-- [为什么需要它](#为什么需要它)
-- [功能](#功能)
-- [支持的架构](#支持的架构)
-- [快速开始](#快速开始)
-- [运行结构](#运行结构)
-- [参数配方](#参数配方)
-- [配置](#配置)
-- [常见问题](#常见问题)
-- [项目结构](#项目结构)
-- [参与贡献](#参与贡献)
-- [许可](#许可)
+- **换模型不用重调** —— 采样器、调度器、步数、CFG、shift、编码器、VAE 全部跟着架构自动就位
+- **LoRA 不乱串** —— Krea 的画风件只在 Krea 下出现，切到 Anima 自动隐藏
+- **中文直接写** —— 本地转写成分架构的英文提示词，先预览再生成
 
 ---
 
-## 为什么需要它
+## 快速开始
 
-ComfyUI 本身很强，但有个日常成本：**每换一个底模，就要重来一遍。**
+**方式 A · 仓库链接**（agent 自己 clone）
 
-换 Anima 要 Euler + sgm-uniform、28 步、CFG 4；
-换 Krea 2 要 Euler + Simple、8 步、CFG 1，而且 shift 是烤死在模型里的；
-换 Z-Image 要 Res Multistep + Simple、9 步，编码器还得换成 `lumina2` 类型。
-走错一步不会报错，只会给你一张糊图——然后你要花十分钟才意识到是采样器选错了。
+把下面这句话发给你的 agent（Claude Code / Cursor / WorkBuddy 等都可以）：
 
-KlockUI 不重写引擎，只在外面包一层——把这些参数**固化成代码里的架构知识**，
-换模型时自动跟着换：
+> 安装 https://github.com/KlockTX/KlockUI ，按仓库里的 `install.md` 执行。
 
-```python
-# comfy_bridge.py 里的一小段
-zimage: {
-    "sampler": "Res Multistep", "scheduler": "Simple",
-    "steps": 9, "cfg": 1.0, "shift": 3,
-    "clip_type": "lumina2",            # 不是 stable_diffusion
-    "te": "qwen_3_4b_fp8_mixed.safetensors",
-    "vae": "ae.safetensors",
-}
+**方式 B · 安装包（推荐 · 不用 git）**
+
+从 [Releases](https://github.com/KlockTX/KlockUI/releases) 下载 `KlockUI-x.y.z.zip`，
+把**压缩包文件本身**发给 agent，并说：
+
+> 安装这个压缩包：`<拖入 KlockUI-x.y.z.zip>`，按包里的 `install.md` 执行安装配置。
+
+包里自带 `AGENT-INSTALL.md`，agent 解压后会按同一套流程装。**不需要 agent 会 git clone**，
+也不需要它访问 GitHub。
+
+两种方式拿到代码后，**剩下的交给 agent**：`install.md` 和 `skill.md` 会引导它
+先探测本机已有的 ComfyUI（有就复用，不重复装）、建 Python 环境、按显卡选量化档、
+**问你要装哪些模型**、逐个文件校验下载、装好 `skill.md`，最后跑一张测试图验收。
+
+仓库和包里都不含模型权重——**但不需要你自己下载**：agent 会按你的选择逐个装并校验。
+手动装也可以，[`install.md`](install.md) 里每一步都带断言，照着走即可。
+
+装完后启动：
+
+```bat
+start.bat      :: Windows：拉起引擎 + 界面，然后打开浏览器
+stop.bat       :: 只停界面，引擎保留
 ```
 
-换模型时它自动套用，你只关心画面。
+```bash
+# 任意平台
+../ComfyUI/venv/bin/python server.py
+```
+
+打开 <http://127.0.0.1:7861> 。
+
+---
+
+## 支持的架构
+
+| 架构 | 参数 | 默认配方 | 许可 |
+|---|---|---|---|
+| **Anima 2.9B** | 2.9B | Euler + sgm-uniform，28–50 步，CFG 3.5–5 | 非商用 |
+| **Z-Image Turbo** | 6B | Res Multistep + Simple，9 步，CFG 1 | Apache-2.0 |
+| **Krea 2 Turbo** | 12.9B | Euler + Simple，8 步起，CFG 1 | 社区（年收 <100 万美元免费） |
+| **MOSS-Image** | 5B | Euler + Simple，50 步，CFG 3 | Apache-2.0 |
+| **SDXL / Pony / Illustrious** | 6–7B | DPM++ 2M SDE + Karras，20–30 步 | 见各模型 |
+| **更多 / 新出的架构** | 任意 | 交给 agent：模型和官方工作流一起给它，按 [`skill.md`](skill.md) 第六节加进来 | 见各模型 |
+
+上面这几行不是白名单。新模型出来不用等更新——把它和官方 ComfyUI 工作流一起发给 agent，
+它会按 `skill.md` 第六节的清单改八处（后端四处、前端四处），
+再照官方工作流反推采样器、步数、CFG、shift 和各画质档，装完直接能用。
+
+白名单那处最容易漏：漏了不报错，而是把架构静默换成上一个用过的，
+拿错编码器去编码，最后报一个和真实原因无关的维度错。
 
 ---
 
@@ -88,7 +112,7 @@ Krea 2 和 MOSS 给完整段落——这两家的编码器读长文本，塞成�
 
 ### 预设可分享，LoRA 清单也给了
 
-`presets/` 里 27 个配方各自挂了自己的 LoRA。这些 LoRA 的名字、体积、用途
+`presets/` 里 31 个配方各自挂了自己的 LoRA。这些 LoRA 的名字、体积、用途
 整理在 [`loras.manifest.json`](loras.manifest.json)——想跑哪个预设，照着清单装就行。
 装不下全套也没关系：不装 LoRA 一样能出图，只是配方里挂的那几支会提示缺件。
 
@@ -100,9 +124,9 @@ Krea 2 和 MOSS 给完整段落——这两家的编码器读长文本，塞成�
 模型 + 画质档 + 尺寸 + 步数 + CFG + 采样器 + 调度器 + shift + 种子 + LoRA 及其权重
 ```
 
-### 其余
+### 其余能力
 
-| | |
+| 功能 | 说明 |
 |---|---|
 | **仓库配方一键导入** | 「参数预设」里直接列出 `presets/` 的示例，点导入即可，不用翻文件 |
 | **配方编辑器** | 界面里直接改 JSON，实时校验语法，保存写回 `presets/`（覆盖前自动 `.bak`） |
@@ -118,65 +142,30 @@ Krea 2 和 MOSS 给完整段落——这两家的编码器读长文本，塞成�
 
 ---
 
-## 支持的架构
+## 为什么需要它
 
-| 架构 | 参数 | 默认配方 | 许可 |
-|---|---|---|---|
-| **Anima 2.9B** | 2.9B | Euler + sgm-uniform，28–50 步，CFG 3.5–5 | 非商用 |
-| **Z-Image Turbo** | 6B | Res Multistep + Simple，9 步，CFG 1 | Apache-2.0 |
-| **Krea 2 Turbo** | 12.9B | Euler + Simple，8 步起，CFG 1 | 社区（年收 <100 万美元免费） |
-| **MOSS-Image** | 5B | Euler + Simple，50 步，CFG 3 | Apache-2.0 |
-| **SDXL / Pony / Illustrious** | 6–7B | DPM++ 2M SDE + Karras，20–30 步 | 见各模型 |
-| **更多 / 新出的架构** | 任意 | 交给 agent：模型和官方工作流一起给它，按 [`skill.md`](skill.md) 第六节加进来 | 见各模型 |
+ComfyUI 本身很强，但有个日常成本：**每换一个底模，就要重来一遍。**
 
-上面这几行不是白名单。新模型出来不用等更新——把它和官方 ComfyUI 工作流一起发给 agent，
-它会按 `skill.md` 第六节的清单改八处（后端四处、前端四处），
-再照官方工作流反推采样器、步数、CFG、shift 和各画质档，装完直接能用。
+换 Anima 要 Euler + sgm-uniform、28 步、CFG 4；
+换 Krea 2 要 Euler + Simple、8 步、CFG 1，而且 shift 是烤死在模型里的；
+换 Z-Image 要 Res Multistep + Simple、9 步，编码器还得换成 `lumina2` 类型。
+走错一步不会报错，只会给你一张糊图——然后你要花十分钟才意识到是采样器选错了。
 
-白名单那处最容易漏：漏了不报错，而是把架构静默换成上一个用过的，
-拿错编码器去编码，最后报一个和真实原因无关的维度错。
+KlockUI 不重写引擎，只在外面包一层——把这些参数**固化成代码里的架构知识**，
+换模型时自动跟着换：
 
----
-
-## 快速开始
-
-**方式 A · 仓库链接**（agent 自己 clone）
-
-把下面这句话发给你的 agent（Claude Code / Cursor / WorkBuddy 等都可以）：
-
-> 安装 https://github.com/KlockTX/KlockUI ，按仓库里的 `install.md` 执行。
-
-**方式 B · 安装包（推荐 · 不用 git）**
-
-从 [Releases](https://github.com/KlockTX/KlockUI/releases) 下载 `KlockUI-x.y.z.zip`，
-把**压缩包文件本身**发给 agent，并说：
-
-> 安装这个压缩包：`<拖入 KlockUI-x.y.z.zip>`，按包里的 `install.md` 执行安装配置。
-
-包里自带 `AGENT-INSTALL.md`，agent 解压后会按同一套流程装。**不需要 agent 会 git clone**，
-也不需要它访问 GitHub。
-
-两种方式拿到代码后，**剩下的交给 agent**：`install.md` 和 `skill.md` 会引导它
-先探测本机已有的 ComfyUI（有就复用，不重复装）、建 Python 环境、按显卡选量化档、
-**问你要装哪些模型**、逐个文件校验下载、装好 `skill.md`，最后跑一张测试图验收。
-
-仓库和包里都不含模型权重——**但不需要你自己下载**：agent 会按你的选择逐个装并校验。
-
-手动装也可以，[`install.md`](install.md) 里每一步都带断言，照着走即可。
-
-装完后启动：
-
-```bat
-start.bat      :: Windows：拉起引擎 + 界面，然后打开浏览器
-stop.bat       :: 只停界面，引擎保留
+```python
+# comfy_bridge.py 里的一小段
+zimage: {
+    "sampler": "Res Multistep", "scheduler": "Simple",
+    "steps": 9, "cfg": 1.0, "shift": 3,
+    "clip_type": "lumina2",            # 不是 stable_diffusion
+    "te": "qwen_3_4b_fp8_mixed.safetensors",
+    "vae": "ae.safetensors",
+}
 ```
 
-```bash
-# 任意平台
-../ComfyUI/venv/bin/python server.py
-```
-
-打开 <http://127.0.0.1:7861> 。
+换模型时它自动套用，你只关心画面。
 
 ---
 
@@ -218,7 +207,7 @@ stop.bat       :: 只停界面，引擎保留
 `quality` 是档位名（`gacha`/`draft`/`standard`/`fine`/`hires`），会一次性写入步数、CFG、二采；
 JSON 里再写 `steps` 则以显式值为准。
 
-`presets/` 里有 26 个可直接使用的例子，字段说明见 [`presets/README.md`](presets/README.md)。
+`presets/` 里有 31 个可直接使用的例子，字段说明见 [`presets/README.md`](presets/README.md)。
 
 二次元向的画师 LoRA 串、触发词与提示词模板整理在 [`docs/anime-recipes.md`](docs/anime-recipes.md)；
 生成耗时的实测拆解见 [`docs/performance.md`](docs/performance.md)。
@@ -294,7 +283,7 @@ KlockUI/
 │  ├─ artists.js        # 画师词库
 │  └─ characters*.js    # 角色词库
 ├─ vendor/              # mdui + 图标字体（离线，无构建步骤）
-├─ presets/             # 26 个示例配方
+├─ presets/             # 31 个示例配方
 ├─ docs/                # 架构图 · 二次元配方 · 前端约定
 ├─ install.md           # 安装说明（写给 agent）
 ├─ AGENT-INSTALL.md     # 仅发行包内有：告诉 agent「这是压缩包，照 install.md 装」
